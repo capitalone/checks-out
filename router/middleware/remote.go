@@ -1,41 +1,32 @@
+/*
+
+SPDX-Copyright: Copyright (c) Brad Rydzewski, project contributors, Capital One Services, LLC
+SPDX-License-Identifier: Apache-2.0
+Copyright 2017 Brad Rydzewski, project contributors, Capital One Services, LLC
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and limitations under the License.
+
+*/
 package middleware
 
 import (
-	"strings"
-
-	"github.com/lgtmco/lgtm/remote/github"
+	"github.com/capitalone/checks-out/remote"
 
 	"github.com/gin-gonic/gin"
-	"github.com/ianschenck/envflag"
-)
-
-const (
-	DefaultURL   = "https://github.com"
-	DefaultAPI   = "https://api.github.com/"
-	DefaultScope = "user:email,read:org,public_repo"
-)
-
-var (
-	server = envflag.String("GITHUB_URL", DefaultURL, "")
-	client = envflag.String("GITHUB_CLIENT", "", "")
-	secret = envflag.String("GITHUB_SECRET", "", "")
-	scope  = envflag.String("GITHUB_SCOPE", DefaultScope, "")
 )
 
 func Remote() gin.HandlerFunc {
-	remote := &github.Github{
-		API:    DefaultAPI,
-		URL:    *server,
-		Client: *client,
-		Secret: *secret,
-		Scopes: strings.Split(*scope, ","),
-	}
-	if remote.URL != DefaultURL {
-		remote.URL = strings.TrimSuffix(remote.URL, "/")
-		remote.API = remote.URL + "/api/v3/"
-	}
 	return func(c *gin.Context) {
-		c.Set("remote", remote)
+		remote.ToContext(c, remote.Get())
 		c.Next()
 	}
 }

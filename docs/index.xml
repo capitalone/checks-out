@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>checks-out</title>
+    <link>http://www.capitalone.io/checks-out/</link>
+    <description>Recent content on checks-out</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sat, 05 Dec 2015 16:00:21 -0800</lastBuildDate>
+    
+	<atom:link href="http://www.capitalone.io/checks-out/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Quick Start</title>
+      <link>http://www.capitalone.io/checks-out/overview/</link>
+      <pubDate>Sat, 05 Dec 2015 16:00:21 -0800</pubDate>
+      
+      <guid>http://www.capitalone.io/checks-out/overview/</guid>
+      <description>Overview Checks-out is a fork of LGTM.
+Checks-out will register itself as a required status check. When you enable your repository on public GitHub it is automatically configured to use protected branches. Protected branches prevent pull requests from being merged until required status checks are passing. If you are using Enterprise GitHub then you might be required to manually enable protected branches on the master branch.
+You can customize many options using a .</description>
+    </item>
+    
+    <item>
+      <title>Maintainers</title>
+      <link>http://www.capitalone.io/checks-out/maintainers/</link>
+      <pubDate>Sat, 05 Dec 2015 16:00:21 -0800</pubDate>
+      
+      <guid>http://www.capitalone.io/checks-out/maintainers/</guid>
+      <description>The list of approvers is stored in a MAINTAINERS text file in the root of your repository. The maintainers file can be in either a text or HJSON format. The format is specified in the .checks-out file file and the default format is text.
+You can inspect the maintainers file for your repository using the api endpoint /api/repos/[orgname]/[reponame]/maintainers. The output will have any github-org and github-team macros expanded (see below).</description>
+    </item>
+    
+    <item>
+      <title>Branches</title>
+      <link>http://www.capitalone.io/checks-out/branches/</link>
+      <pubDate>Sat, 05 Dec 2015 16:00:21 -0800</pubDate>
+      
+      <guid>http://www.capitalone.io/checks-out/branches/</guid>
+      <description>Overview Checks-out automatically enables GitHub protected branches for your repositories&amp;rsquo; default branch. You can further customize or disable this behavior by navigating to your repository branch settings screen in GitHub.
+GitHub Enterprise GitHub Enterprise 2.4 does not have an API for protected branches. As a result you will need to manually configure protected branches after enabling your repository in checks-out. This can be done by navigating to your repository branch settings screen in GitHub Enterprise (pictured above).</description>
+    </item>
+    
+    <item>
+      <title>Customize</title>
+      <link>http://www.capitalone.io/checks-out/customize/</link>
+      <pubDate>Sat, 05 Dec 2015 16:00:21 -0800</pubDate>
+      
+      <guid>http://www.capitalone.io/checks-out/customize/</guid>
+      <description>Introduction Place an .checks-out file in the root of your repository to customize your project&amp;rsquo;s approval process. This file is in Human JSON (HJSON) format. JSON is also valid HJSON so you can write your .checks-out file in JSON if you prefer.
+Each property of the .checks-out file has a default value that is used when you do not provide a value. This document will explain each section of the .</description>
+    </item>
+    
+    <item>
+      <title>Approval Policies</title>
+      <link>http://www.capitalone.io/checks-out/approvals/</link>
+      <pubDate>Sat, 05 Dec 2015 16:00:21 -0800</pubDate>
+      
+      <guid>http://www.capitalone.io/checks-out/approvals/</guid>
+      <description>Here are some templates you can use to write the approval policy section of your .checks-out configuration.
+match: &amp;quot;all[count=1,self=false]&amp;quot;  This policy requires one approval from anyone in the built-in &amp;lsquo;all&amp;rsquo; group. &amp;lsquo;all&amp;rsquo; expands to all the people in the MAINTAINERS file. Populating the MAINTAINERS file with the macro &amp;ldquo;github-org repo-self&amp;rdquo; will expand to everyone within the organization of the GitHub repository. self=false forbids the author of the pull request to approve their own request.</description>
+    </item>
+    
+    <item>
+      <title>Self Hosting</title>
+      <link>http://www.capitalone.io/checks-out/install/</link>
+      <pubDate>Sat, 05 Dec 2015 16:00:21 -0800</pubDate>
+      
+      <guid>http://www.capitalone.io/checks-out/install/</guid>
+      <description>Requirements checks-out ships as a single binary file. If you are planning on integrating with GitHub Enterprise it requires version 2.4 or higher.
+Configuration This is a full list of configuration options. Please note that many of these options use default configuration value that should work for the majority of installations.
+Environment Variables for checks-out This document contains information about all the environment variables that can or must be defined for checks-out to function.</description>
+    </item>
+    
+    <item>
+      <title>REST API</title>
+      <link>http://www.capitalone.io/checks-out/api/</link>
+      <pubDate>Wed, 21 Jun 2017 10:56:00 -0400</pubDate>
+      
+      <guid>http://www.capitalone.io/checks-out/api/</guid>
+      <description>REST API The following REST APIs are exposed by checks-out.
+Logging in checks-out relies on Github&amp;rsquo;s OAuth2 support for authentication. To log in to the REST API, a user must go to /settings/tokens on their Github server (for public Github, this would be https://github.com/settings/tokens.) and create a Personal Access Token. The token should have the permissions admin:org_hook, read:org, repo:status. Store this token in a safe place; you cannot get it again from Github.</description>
+    </item>
+    
+    <item>
+      <title>Support</title>
+      <link>http://www.capitalone.io/checks-out/support/</link>
+      <pubDate>Sat, 05 Dec 2015 16:00:21 -0800</pubDate>
+      
+      <guid>http://www.capitalone.io/checks-out/support/</guid>
+      <description>Please be sure to read the faq before engaging the support team. This is a free service run by open source community members and we ask that you are courteous of their time.</description>
+    </item>
+    
+    <item>
+      <title>FAQ</title>
+      <link>http://www.capitalone.io/checks-out/faq/</link>
+      <pubDate>Sat, 05 Dec 2015 16:00:21 -0800</pubDate>
+      
+      <guid>http://www.capitalone.io/checks-out/faq/</guid>
+      <description>Why don&amp;rsquo;t I see my repository? Here are some tips for troubleshooting:
+ Is your GitHub repository public? Do you have Admin access to the repository? Did you grant access to your GitHub organization? Did you recently create the repository? There may be up to a 15 minute delay due to internal caching. Does your organization restrict integrations? Learn more.  Can I use with GitHub Enterprise? Yes, In order to use with GitHub Enterprise you will need to install and run your own instance.</description>
+    </item>
+    
+  </channel>
+</rss>

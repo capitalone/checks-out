@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html ng-app="app" lang="en">
     <head>
-        <title>LGTM</title>
+        <title>Checks-Out</title>
 
         <base href="/">
         <meta charset="utf-8" />
@@ -19,7 +19,6 @@
     <body>
         <div class="navbar navbar-homepage">
             <div class="container cf">
-                <a href="" class="navbar-brand"></a>
                 <ul class="navbar-nav navbar-right">
                     <li><a href="/login" class="button button-outlined">Login</a></li>
                 </ul>
@@ -31,7 +30,7 @@
                 <p>Works with GitHub <a href="#">protected branches</a> to enforce Pull Request approvals before merging.</p>
                 <div class="banner-actions">
                     <a href="/login" class="button"><span class="octicon octicon-mark-github"></span>Sign In</a>
-                    <a href="https://lgtm.co/docs" class="button">Read the Docs</a>
+                    <a href="{{.DocsUrl}}" class="button">Read the Docs</a>
                 </div>
             </div>
         </div>
@@ -85,7 +84,7 @@
         <div class="feature">
             <div class="container">
                 <h2>Approval Workflow</h2>
-                <p>Approvers comment on the issue with LGTM, <em>looks good to me</em>, indicating their approval to merge the changeset.</p>
+                <p>Approvers comment on the issue with I approve, indicating their approval to merge the changeset.</p>
             </div>
             <div class="issues issues-animate">
                 <div class="container">
@@ -93,14 +92,14 @@
                         <img style="display:none" src="https://s3.amazonaws.com/uifaces/faces/twitter/athivvat/128.jpg" />
                         <div>
                             <div><em>bradrydzewski</em> commented just now</div>
-                            <div>LGTM</div>
+                            <div>I approve</div>
                         </div>
                     </div>
                     <div class="issue" id="comment-2" style="display:none">
                         <img style="display:none" src="https://s3.amazonaws.com/uifaces/faces/twitter/athivvat/128.jpg" />
                         <div>
                             <div><em>mattnorris</em> commented just now</div>
-                            <div>LGTM</div>
+                            <div>I approve</div>
                         </div>
                     </div>
                     <div class="checks checks-pending">
@@ -146,14 +145,9 @@
             <div class="container cf">
                 <a class="button button-outlined" href="/login"><span class="octicon octicon-mark-github"></span> Sign In</a>
                 <span class="separator">or</span>
-                <a class="button button-outlined" href="https://lgtm.co/docs/install/">Download</a>
+                <a class="button button-outlined" href="{{.DocsUrl}}/install/">Download</a>
             </div>
         </div>
-        <div class="footer">
-            <div class="container cf">
-                made by <a href="https://github.com/bradrydzewski">@bradrydzewski</a>
-            </div>
-        <div>
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0-alpha1/jquery.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/waypoints/4.0.0/jquery.waypoints.min.js"></script>
@@ -173,17 +167,6 @@
                   });
           },{offset:"50%"})
         })
-        </script>
-
-        <script>
-          if (window.location.hostname==='lgtm.co') {
-              (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-              (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-              m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-              })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-              ga('create', 'UA-71116539-1', 'auto');
-              ga('send', 'pageview');
-          }
         </script>
     </body>
 </html>

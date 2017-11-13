@@ -1,22 +1,35 @@
+/*
+
+SPDX-Copyright: Copyright (c) Brad Rydzewski, project contributors, Capital One Services, LLC
+SPDX-License-Identifier: Apache-2.0
+Copyright 2017 Brad Rydzewski, project contributors, Capital One Services, LLC
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and limitations under the License.
+
+*/
 package middleware
 
 import (
 	"time"
 
-	"github.com/lgtmco/lgtm/cache"
-
 	"github.com/gin-gonic/gin"
-	"github.com/ianschenck/envflag"
-)
-
-var (
-	ttl = envflag.Duration("CACHE_TTL", time.Minute*15, "")
+	"github.com/capitalone/checks-out/cache"
+	"github.com/capitalone/checks-out/envvars"
 )
 
 func Cache() gin.HandlerFunc {
-	cache_ := cache.NewTTL(*ttl)
+	cache_ := cache.NewTTL(time.Duration(envvars.Env.Cache.CacheTTL))
 	return func(c *gin.Context) {
-		c.Set("cache", cache_)
+		cache.ToContext(c,  cache_)
 		c.Next()
 	}
 }

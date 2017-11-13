@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  
+  <url>
+    <loc>http://www.capitalone.io/checks-out/overview/</loc>
+    <lastmod>2015-12-05T16:00:21-08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://www.capitalone.io/checks-out/maintainers/</loc>
+    <lastmod>2015-12-05T16:00:21-08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://www.capitalone.io/checks-out/branches/</loc>
+    <lastmod>2015-12-05T16:00:21-08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://www.capitalone.io/checks-out/customize/</loc>
+    <lastmod>2015-12-05T16:00:21-08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://www.capitalone.io/checks-out/approvals/</loc>
+    <lastmod>2015-12-05T16:00:21-08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://www.capitalone.io/checks-out/install/</loc>
+    <lastmod>2015-12-05T16:00:21-08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://www.capitalone.io/checks-out/api/</loc>
+    <lastmod>2017-06-21T10:56:00-04:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://www.capitalone.io/checks-out/support/</loc>
+    <lastmod>2015-12-05T16:00:21-08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://www.capitalone.io/checks-out/faq/</loc>
+    <lastmod>2015-12-05T16:00:21-08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://www.capitalone.io/checks-out/categories/</loc>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>http://www.capitalone.io/checks-out/tags/</loc>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>http://www.capitalone.io/checks-out/</loc>
+    <lastmod>2015-12-05T16:00:21-08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+</urlset>

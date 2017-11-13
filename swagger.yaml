@@ -1,0 +1,154 @@
+# Example YAML to get you started quickly.
+# Be aware that YAML has indentation based scoping.
+# Code completion support is available so start typing for available options.
+swagger: '2.0'
+
+# This is your document metadata
+info:
+  version: "0.7.0"
+  title: Checks-Out
+securityDefinitions:
+  CookieSession:
+    type: apiKey
+    in: header
+    name: user_sess
+  HeaderSession:
+    type: apiKey
+    in: header
+    name: Authorization
+  QuerySession:
+    type: apiKey
+    in: query
+    name: access_token
+# Describe your paths here
+paths:
+  /api/count:
+    # This is a HTTP operation
+    get:
+      # Describe this verb here. Note: you can use markdown
+      description: |
+        Number of public and private repositories.
+      responses:
+        # Response code
+        200:
+          description: count
+          # A schema describing your response object.
+          # Use JSON Schema format
+          schema:
+            type: number
+  /api/repos:
+    # This is a HTTP operation
+    get:
+      # Describe this verb here. Note: you can use markdown
+      description: |
+        Metadata about the public GitHub repositories
+        registered with this service. This endpoint is
+        enabled if the CHECKS_OUT_SUNLIGHT environment variable
+        is set.
+      produces:
+        - application/json
+      responses:
+        # Response code
+        200:
+          description: repositories
+          # A schema describing your response object.
+          # Use JSON Schema format
+          schema:
+            type: array
+            description: Repos
+            items:
+              description: Repo
+              properties:
+                id:
+                  type: number
+                owner:
+                  type: string
+                name:
+                  type: string
+                slug:
+                  type: string
+                link_url:
+                  type: string
+                private:
+                  type: boolean
+              
+  /api/repos/{owner}/{repo}/config:
+    get:
+      # Describe this verb here. Note: you can use markdown
+      description: |
+        Parses repository configuration file
+        and returns a complete configuration with
+        default sections populated.
+      parameters:
+        - name: owner
+          in: path
+          required: true
+          description: user or organization
+          type: string
+        - name: repo
+          in: path
+          required: true
+          description: repository name
+          type: string
+      security:
+        - CookieSession: [ ]
+        - HeaderSession: [ ]
+        - QuerySession: [ ]
+      produces:
+        - application/json
+      responses:
+        # Response code
+        200:
+          description: configuration
+          # A schema describing your response object.
+          # Use JSON Schema format
+          schema:
+            description: ChecksOutConfig
+            type: object
+  /api/repos/{owner}/{repo}/maintainers:
+    get:
+      # Describe this verb here. Note: you can use markdown
+      description: |
+        Parses repository MAINTAINERS configuration file
+        and returns the populated group information.
+      parameters:
+        - name: owner
+          in: path
+          required: true
+          description: user or organization
+          type: string
+        - name: repo
+          in: path
+          required: true
+          description: repository name
+          type: string
+      security:
+        - CookieSession: [ ]
+        - HeaderSession: [ ]
+        - QuerySession: [ ]
+      produces:
+        - application/json
+      responses:
+        # Response code
+        200:
+          description: maintainers
+          # A schema describing your response object.
+          # Use JSON Schema format
+          schema:
+            description: Maintainers
+            type: object
+  /version:
+    # This is a HTTP operation
+    get:
+      # Describe this verb here. Note: you can use markdown
+      description: |
+        Version information. This endpoint is enabled if the
+        CHECKS_OUT_SUNLIGHT environment variable is set.
+      responses:
+        # Response code
+        200:
+          description: version
+          # A schema describing your response object.
+          # Use JSON Schema format
+          schema:
+            type: string

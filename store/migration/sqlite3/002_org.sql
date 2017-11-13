@@ -1,0 +1,3 @@
+-- +migrate Up
+
+ALTER TABLE repos ADD COLUMN repo_org BOOLEAN DEFAULT FALSE;

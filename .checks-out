@@ -1,0 +1,108 @@
+approvals:
+# This is the array of approval policies.
+#
+# For each pull request we traverse the array
+# of approval policies until we find the first policy
+# that matches. Note that the approval policy is
+# an ordered list. You should specify your most specific
+# policies first and your least specific policies last.
+#
+# An approval policy will match based
+# on the criteria in the "scope" section. You can
+# match based on the pull request base branch or
+# based on the file paths of the modified files.
+#
+# The most common configuration will have only
+# a single approval policy. The last approval policy
+# is required to have an empty "scope" section.
+# The last policy is the default approval policy. This
+# policy will be applied when none of the other policies
+# have matched.
+[
+  {
+    #
+    # The name is strictly for human consumption.
+    # It is used by the comment section. It is optional.
+    #
+    name: "dev"
+    #
+    # Limit this policy to pull requests that have
+    # base branch 'dev'. The base branch is where the
+    # changes should be applied.
+    #
+    scope:
+    {
+      branches: [ "dev", "qa" ]
+    }
+    #
+    # Require 1 approver from the MAINTAINERS file.
+    # Allow self-approval.
+    #
+    match: "all[count=1,self=true]"
+    #
+    # Apply a git tag after auto-merging the pull request.
+    # This feature is disabled by default.
+    tag:
+    {
+      enable: true
+      template: "{{.Version}}-dev"
+      increment: "patch"
+    }
+  }
+  {
+    name: "master"
+    scope:
+    {
+      branches: [ "master" ]
+    }
+    #
+    # Use this approval pattern instead of the default pattern.
+    #
+    pattern: "(?i)^shipit\\s*(?P<version>\\S*)"
+    #
+    # Require 1 approver from the MAINTAINERS file.
+    # Deny self-approval.
+    #
+    match: "all[count=1,self=false]"
+    tag:
+    {
+      enable: true
+      template: "{{.Version}}"
+      increment: "minor"
+    }
+  }
+  # Disable service on remaining branches
+  # The remaining branches are feature branches
+  # and do not require approval.
+  #
+  {
+    match: "off"
+  }
+]
+#
+# Block a pull request with this pull request comment.
+# This feature is disabled by default.
+#
+antipattern: "(?i)^holdit"
+#
+# Automatically merge the pull request when all status checks pass.
+# This feature is disabled by default.
+#
+merge:
+{
+  enable: true
+}
+#
+# Report the status of pull request to various comment sinks.
+# This feature is disabled by default.
+#
+comment:
+{
+  enable: true
+  targets: [
+    {
+      target: github
+      types: [ "approve", "block", "reset" ]
+    }
+  ]
+}

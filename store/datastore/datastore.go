@@ -1,47 +1,79 @@
+/*
+
+SPDX-Copyright: Copyright (c) Brad Rydzewski, project contributors, Capital One Services, LLC
+SPDX-License-Identifier: Apache-2.0
+Copyright 2017 Brad Rydzewski, project contributors, Capital One Services, LLC
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and limitations under the License.
+
+*/
 package datastore
 
 import (
 	"database/sql"
-	"os"
+	"sync"
 	"time"
 
-	"github.com/lgtmco/lgtm/store"
-	"github.com/lgtmco/lgtm/store/migration"
+	"github.com/capitalone/checks-out/envvars"
+	"github.com/capitalone/checks-out/set"
+	"github.com/capitalone/checks-out/store"
+	"github.com/capitalone/checks-out/store/migration"
 
 	"github.com/Sirupsen/logrus"
+	// bindings for meddler
 	_ "github.com/go-sql-driver/mysql"
+	// bindings for meddler
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/rubenv/sql-migrate"
+	// bindings for meddler
+	_ "github.com/lib/pq"
+	migrate "github.com/rubenv/sql-migrate"
 	"github.com/russross/meddler"
 )
 
 type datastore struct {
 	*sql.DB
+	Migrations set.Set
+	curDB      string
 }
 
-// New creates a database connection for the given driver and datasource
+var once sync.Once
+var cachedStore store.Store
+
+func Get() store.Store {
+	once.Do(func() {
+		cachedStore = create(envvars.Env.Db.Driver, envvars.Env.Db.Datasource)
+	})
+	return cachedStore
+}
+
+// creates a database connection for the given driver and datasource
 // and returns a new Store.
-func New(driver, config string) store.Store {
-	db := Open(driver, config)
-	return From(db)
+func create(driver, config string) store.Store {
+	db, migrations := Open(driver, config)
+	return From(db, migrations, driver)
 }
 
 // From returns a Store using an existing database connection.
-func From(db *sql.DB) store.Store {
-	return &datastore{db}
+func From(db *sql.DB, migrations set.Set, driver string) store.Store {
+	return &datastore{db, migrations, driver}
 }
 
 // Open opens a new database connection with the specified
 // driver and connection string and returns a store.
-func Open(driver, config string) *sql.DB {
+func Open(driver, config string) (*sql.DB, set.Set) {
 	db, err := sql.Open(driver, config)
 	if err != nil {
 		logrus.Errorln(err)
 		logrus.Fatalln("database connection failed")
-	}
-	if driver == "mysql" {
-		// per issue https://github.com/go-sql-driver/mysql/issues/257
-		db.SetMaxIdleConns(0)
 	}
 
 	setupMeddler(driver)
@@ -49,31 +81,16 @@ func Open(driver, config string) *sql.DB {
 	logrus.Debugf("Driver %s", driver)
 	logrus.Debugf("Data Source %s", config)
 
-	if err := pingDatabase(db); err != nil {
+	if err = pingDatabase(db); err != nil {
 		logrus.Errorln(err)
 		logrus.Fatalln("database ping attempts failed")
 	}
-
-	if err := setupDatabase(driver, db); err != nil {
+	ids, err := setupDatabase(driver, db)
+	if err != nil {
 		logrus.Errorln(err)
 		logrus.Fatalln("migration failed")
 	}
-	return db
-}
-
-// OpenTest opens a new database connection for testing purposes.
-// The database driver and connection string are provided by
-// environment variables, with fallback to in-memory sqlite.
-func openTest() *sql.DB {
-	var (
-		driver = "sqlite3"
-		config = ":memory:"
-	)
-	if os.Getenv("DATABASE_DRIVER") != "" {
-		driver = os.Getenv("DATABASE_DRIVER")
-		config = os.Getenv("DATABASE_DATASOURCE")
-	}
-	return Open(driver, config)
+	return db, ids
 }
 
 // helper function to ping the database with backoff to ensure
@@ -85,7 +102,7 @@ func pingDatabase(db *sql.DB) (err error) {
 		if err == nil {
 			return
 		}
-		logrus.Infof("database ping failed. retry in 1s")
+		logrus.Infof("database ping failed. retry in 1s. %s", err)
 		time.Sleep(time.Second)
 	}
 	return
@@ -93,14 +110,25 @@ func pingDatabase(db *sql.DB) (err error) {
 
 // helper function to setup the databsae by performing
 // automated database migration steps.
-func setupDatabase(driver string, db *sql.DB) error {
+func setupDatabase(driver string, db *sql.DB) (set.Set, error) {
 	var migrations = &migrate.AssetMigrationSource{
 		Asset:    migration.Asset,
 		AssetDir: migration.AssetDir,
 		Dir:      driver,
 	}
-	_, err := migrate.Exec(db, driver, migrations, migrate.Up)
-	return err
+	todo, _, err := migrate.PlanMigration(db, driver, migrations, migrate.Up, 0)
+	if err != nil {
+		return nil, err
+	}
+	_, err = migrate.Exec(db, driver, migrations, migrate.Up)
+	if err != nil {
+		return nil, err
+	}
+	done := set.Empty()
+	for _, m := range todo {
+		done.Add(m.Id)
+	}
+	return done, nil
 }
 
 // helper function to setup the meddler default driver
@@ -115,3 +143,9 @@ func setupMeddler(driver string) {
 		meddler.Default = meddler.PostgreSQL
 	}
 }
+
+const (
+	POSTGRES = "postgres"
+	MYSQL    = "mysql"
+	SQLITE   = "sqlite3"
+)

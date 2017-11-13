@@ -1,0 +1,111 @@
+
+# Gopkg.toml example
+#
+# Refer to https://github.com/golang/dep/blob/master/docs/Gopkg.toml.md
+# for detailed Gopkg.toml documentation.
+#
+# required = ["github.com/user/thing/cmd/thing"]
+# ignored = ["github.com/user/project/pkgX", "bitbucket.org/user/project/pkgA/pkgY"]
+#
+# [[constraint]]
+#   name = "github.com/user/project"
+#   version = "1.0.0"
+#
+# [[constraint]]
+#   name = "github.com/user/project2"
+#   branch = "dev"
+#   source = "github.com/myfork/project2"
+#
+# [[override]]
+#  name = "github.com/x/y"
+#  version = "2.4.0"
+
+
+[[constraint]]
+  name = "github.com/Sirupsen/logrus"
+  version = "0.11.0"
+
+[[constraint]]
+  name = "github.com/dgrijalva/jwt-go"
+  version = "3.0.0"
+
+[[constraint]]
+  name = "github.com/elazarl/go-bindata-assetfs"
+
+[[constraint]]
+  name = "github.com/franela/goblin"
+  branch = "master"
+
+[[constraint]]
+  name = "github.com/gin-gonic/gin"
+  version = "1.0.0"
+
+[[constraint]]
+  name = "github.com/go-sql-driver/mysql"
+  version = "1.2.0"
+
+[[constraint]]
+  name = "github.com/google/go-github"
+
+[[constraint]]
+  name = "github.com/hashicorp/go-version"
+
+[[constraint]]
+  name = "github.com/hjson/hjson-go"
+  version = "0.2.2"
+
+[[constraint]]
+  name = "github.com/ianschenck/envflag"
+
+[[constraint]]
+  name = "github.com/joho/godotenv"
+  version = "1.0.0"
+
+[[constraint]]
+  name = "github.com/koding/cache"
+
+[[constraint]]
+  name = "github.com/lib/pq"
+
+[[constraint]]
+  name = "github.com/mattn/go-jsonpointer"
+
+[[constraint]]
+  name = "github.com/mattn/go-sqlite3"
+  version = "1.2.0"
+
+[[constraint]]
+  name = "github.com/mspiegel/go-multierror"
+
+[[constraint]]
+  name = "github.com/pelletier/go-toml"
+
+[[constraint]]
+  name = "github.com/pkg/errors"
+  version = "0.8.0"
+
+[[constraint]]
+  name = "github.com/rubenv/sql-migrate"
+
+[[constraint]]
+  name = "github.com/russross/meddler"
+
+[[constraint]]
+  name = "github.com/stretchr/testify"
+  version = "1.1.4"
+
+[[override]]
+  name = "golang.org/x/net"
+  source = "github.com/golang/net"
+
+[[override]]
+  name = "golang.org/x/oauth2"
+  source = "github.com/golang/oauth2"
+
+[[override]]
+  name = "golang.org/x/sys"
+  source = "github.com/golang/sys"
+
+[[override]]
+  name = "google.golang.org/appengine"
+  source = "github.com/golang/appengine"
