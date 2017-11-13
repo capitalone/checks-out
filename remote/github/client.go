@@ -1,3 +1,21 @@
+/*
+
+SPDX-Copyright: Copyright (c) Brad Rydzewski, project contributors, Capital One Services, LLC
+SPDX-License-Identifier: Apache-2.0
+Copyright 2017 Brad Rydzewski, project contributors, Capital One Services, LLC
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and limitations under the License.
+
+*/
 package github
 
 import (
@@ -18,7 +36,7 @@ const (
 	pathRepos  = "%sapi/user/repos"
 	pathRepo   = "%sapi/repos/%s"
 	pathConf   = "%sapi/repos/%s/maintainers"
-	pathBranch = "%srepos/%s/%s/branches/%s"
+	pathBranch = "%srepos/%s/%s/branches/%s/protection/required_status_checks/contexts"
 )
 
 type Client struct {
@@ -35,8 +53,8 @@ func NewClient(uri string) *Client {
 // authenticates all outbound requests with the given token.
 func NewClientToken(uri, token string) *Client {
 	config := new(oauth2.Config)
-	auther := config.Client(oauth2.NoContext, &oauth2.Token{AccessToken: token})
-	return &Client{auther, uri}
+	author := config.Client(oauth2.NoContext, &oauth2.Token{AccessToken: token})
+	return &Client{author, uri}
 }
 
 // SetClient sets the default http client. This should be
@@ -46,16 +64,14 @@ func (c *Client) SetClient(client *http.Client) {
 	c.client = client
 }
 
-func (c *Client) Branch(owner, name, branch string) (*Branch, error) {
-	out := new(Branch)
+func (c *Client) AddBranchProtect(owner, name, branch string, ctxs []string) error {
 	uri := fmt.Sprintf(pathBranch, c.base, owner, name, branch)
-	err := c.get(uri, out)
-	return out, err
+	return c.post(uri, ctxs, nil)
 }
 
-func (c *Client) BranchProtect(owner, name, branch string, in *Branch) error {
+func (c *Client) RemoveBranchProtect(owner, name, branch string, ctxs []string) error {
 	uri := fmt.Sprintf(pathBranch, c.base, owner, name, branch)
-	return c.patch(uri, in, nil)
+	return c.delete(uri, ctxs, nil)
 }
 
 //
@@ -83,8 +99,8 @@ func (c *Client) patch(rawurl string, in, out interface{}) error {
 }
 
 // helper function for making an http DELETE request.
-func (c *Client) delete(rawurl string) error {
-	return c.do(rawurl, "DELETE", nil, nil)
+func (c *Client) delete(rawurl string, in, out interface{}) error {
+	return c.do(rawurl, "DELETE", in, nil)
 }
 
 // helper function to make an http request
@@ -117,7 +133,7 @@ func (c *Client) stream(rawurl, method string, in, out interface{}) (io.ReadClos
 	var buf io.ReadWriter
 	if in != nil {
 		buf = new(bytes.Buffer)
-		err := json.NewEncoder(buf).Encode(in)
+		err = json.NewEncoder(buf).Encode(in)
 		if err != nil {
 			return nil, err
 		}

@@ -1,0 +1,65 @@
+
+<link href="/static/main_styles.css" rel="stylesheet" />
+<link href="/static/toggle_switch.css" rel="stylesheet" />
+<div class="navbar">
+    <div class="container cf">
+        <ul class="navbar-nav navbar-right">
+            <li><a ng-click="deleteUser()">delete user</a></li>
+            <li><a href="{{docsUrl}}" target="_blank">docs</a></li>
+            <li><a href="/logout" target="_self">logout</a></li>
+            <li><img ng-src="{{user.avatar}}" /></li>
+        </ul>
+    </div>
+</div>
+<div>
+    <div class="container">
+        <div class='grid-flex-container'>
+          <div class='grid-flex-cell grid-flex-cell-1of3'>
+              <nav role='navigation'>
+                  <ul class='list-unstyled side-nav'>
+                      <li ng-repeat="o in orgs">
+                          <a ng-href="/{{o.login}}" ng-class="{'current-item': o.login === org.login}">
+                              <img ng-src="{{o.avatar}}" />
+                              <span>{{o.login}}</span>
+                          </a>
+                          <toggle-switch ng-if="o.login != user.login && o.admin" ng-model="o.enabled" ng-click="toggleOrg(o)"></toggle-switch>
+                      </li>
+                  </ul>
+              </nav>
+          </div>
+          <div class='grid-flex-cell'>
+              <div class="message" ng-if="repos && repos.length == 0">There are no repositories to manage.</div>
+              <div class="message message-error" ng-if="error">{{error.data}}</div>
+              <ul class="list-unstyled list-repos">
+                  <li ng-repeat="repo in repos">
+                      <h3>{{ repo.slug }} <a target="_blank" ng-if="repo.id" ng-href="{{repo.link_url + '/settings/branches'}}"><i class="material-icons">link</i></a></h3>
+                      <button ng-if="repo.id"  ng-click="validate(repo)"  class="button button-outlined-validate">Validate</button>
+                      <toggle-switch ng-model="repo.id" ng-click="toggle(repo)"></toggle-switch>
+                  </li>
+              </ul>
+          </div>
+        </div>
+    </div>
+</div>
+
+<div ng-if="repo" class="overlay"></div>
+<div ng-if="repo" class="modal">
+    <div class='modal-head cf'>
+      <h3 class='modal-title'>{{repo.slug}}</h3>
+      <a href="" class="modal-close" ng-click="close()">×</a>
+    </div>
+    <div class="modal-footer">
+        <button class="button button-outlined-approve" ng-click="activate(repo, link, link_to)" ng-if="!repo.conf_url" ng-disabled="saving">Activate</button>
+    </div>
+</div>
+
+<div ng-if="validInfo" class="overlay"></div>
+<div ng-if="validInfo" class="modal">
+    <div class='modal-head cf'>
+        <h3 class='modal-title'>{{validInfo.slug}}</h3>
+        <a href="" class="modal-close" ng-click="close()">×</a>
+    </div>
+    <div class="modal-footer">
+        <div class="message validate-result">{{validInfo.message}} <pre style="text-align:left;" ng-if="validInfo.fileContent">{{validInfo.fileContent}}</pre></div>
+    </div>
+</div>

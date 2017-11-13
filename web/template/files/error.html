@@ -13,8 +13,12 @@
     <body>
         <div class="container logout">
             <div class="message message-full-width">
-                {{ if eq .error "closed_beta" }}
-                We are currently in closed beta. Contact @bradrydzewski on Twitter if you would like to participate.
+                {{ if eq .error "no_access_error" }}
+                You do not have permission to create an account.
+                {{ else if eq .error "oauth_error" }}
+                We are unable to authenticate you.
+                {{ else if eq .error "internal_error" }}
+                An internal error has occurred. Please try again later.
                 {{else}}
                 {{ .error }}
                 {{ end}}

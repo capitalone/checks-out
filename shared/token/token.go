@@ -1,3 +1,21 @@
+/*
+
+SPDX-Copyright: Copyright (c) Brad Rydzewski, project contributors, Capital One Services, LLC
+SPDX-License-Identifier: Apache-2.0
+Copyright 2017 Brad Rydzewski, project contributors, Capital One Services, LLC
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and limitations under the License.
+
+*/
 package token
 
 import (
@@ -5,6 +23,7 @@ import (
 	"net/http"
 
 	"github.com/dgrijalva/jwt-go"
+	"golang.org/x/oauth2/jwt"
 )
 
 type SecretFunc func(*Token) (string, error)
@@ -91,10 +110,11 @@ func (t *Token) Sign(secret string) (string, error) {
 // with an expiration date.
 func (t *Token) SignExpires(secret string, exp int64) (string, error) {
 	token := jwt.New(jwt.SigningMethodHS256)
-	token.Claims["type"] = t.Kind
-	token.Claims["text"] = t.Text
+	claims := token.Claims.(jwt.MapClaims)
+	claims["type"] = t.Kind
+	claims["text"] = t.Text
 	if exp > 0 {
-		token.Claims["exp"] = float64(exp)
+		claims["exp"] = float64(exp)
 	}
 	return token.SignedString([]byte(secret))
 }
@@ -108,7 +128,8 @@ func keyFunc(token *Token, fn SecretFunc) jwt.Keyfunc {
 
 		// extract the token kind and cast to
 		// the expected type.
-		kindv, ok := t.Claims["type"]
+		claims := t.Claims.(jwt.MapClaims)
+		kindv, ok := claims["type"]
 		if !ok {
 			return nil, jwt.ValidationError{}
 		}
@@ -116,7 +137,7 @@ func keyFunc(token *Token, fn SecretFunc) jwt.Keyfunc {
 
 		// extract the token value and cast to
 		// exepected type.
-		textv, ok := t.Claims["text"]
+		textv, ok := claims["text"]
 		if !ok {
 			return nil, jwt.ValidationError{}
 		}

@@ -1,17 +1,36 @@
+/*
+
+SPDX-Copyright: Copyright (c) Brad Rydzewski, project contributors, Capital One Services, LLC
+SPDX-License-Identifier: Apache-2.0
+Copyright 2017 Brad Rydzewski, project contributors, Capital One Services, LLC
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and limitations under the License.
+
+*/
 package datastore
 
 import (
 	"testing"
 
+	"github.com/capitalone/checks-out/model"
+
 	"github.com/franela/goblin"
-	"github.com/lgtmco/lgtm/model"
 )
 
 func Test_repostore(t *testing.T) {
-	db := openTest()
+	db, ids, driver := openTest()
 	defer db.Close()
 
-	s := From(db)
+	s := From(db, ids, driver)
 	g := goblin.Goblin(t)
 	g.Describe("Repo", func() {
 
@@ -147,6 +166,88 @@ func Test_repostore(t *testing.T) {
 			}
 			err1 := s.CreateRepo(&repo1)
 			err2 := s.CreateRepo(&repo2)
+			g.Assert(err1 == nil).IsTrue()
+			g.Assert(err2 == nil).IsFalse()
+		})
+	})
+}
+
+func Test_orgstore(t *testing.T) {
+	db, ids, driver := openTest()
+	defer db.Close()
+
+	s := From(db, ids, driver)
+	g := goblin.Goblin(t)
+	g.Describe("Org", func() {
+
+		// before each test be sure to purge the package
+		// table data from the database.
+		g.BeforeEach(func() {
+			db.Exec("DELETE FROM orgs")
+			db.Exec("DELETE FROM users")
+		})
+
+		g.It("Should Add an Org and get by name", func() {
+			org := model.OrgDb{
+				UserID: 1,
+				Owner:  "testorg",
+			}
+			err1 := s.CreateOrg(&org)
+			getorg, err3 := s.GetOrgByName(org.Owner)
+			g.Assert(err1 == nil).IsTrue()
+			g.Assert(err3 == nil).IsTrue()
+			g.Assert(org.ID).Equal(getorg.ID)
+		})
+
+		g.It("Should Get a Multiple Orgs", func() {
+			org1 := &model.OrgDb{
+				UserID: 1,
+				Owner:  "foo",
+			}
+			org2 := &model.OrgDb{
+				UserID: 2,
+				Owner:  "octocat",
+			}
+			org3 := &model.OrgDb{
+				UserID: 2,
+				Owner:  "bar",
+			}
+			s.CreateOrg(org1)
+			s.CreateOrg(org2)
+			s.CreateOrg(org3)
+
+			repos, err := s.GetUserEnabledOrgs([]string{"octocat", "bar"})
+			g.Assert(err == nil).IsTrue()
+			g.Assert(len(repos)).Equal(2)
+			g.Assert(repos[0].Owner == "octocat" || repos[0].Owner == "bar").IsTrue("Expected to be octocat or bar")
+			g.Assert(repos[1].Owner == "octocat" || repos[1].Owner == "bar").IsTrue("Expected to be octocat or bar")
+		})
+
+		g.It("Should Delete an Org", func() {
+			org := model.OrgDb{
+				UserID: 1,
+				Owner:  "testorg",
+			}
+			s.CreateOrg(&org)
+			_, err1 := s.GetOrgByName(org.Owner)
+			err2 := s.DeleteOrg(&org)
+			_, err3 := s.GetOrgByName(org.Owner)
+			g.Assert(err1 == nil).IsTrue()
+			g.Assert(err2 == nil).IsTrue()
+			g.Assert(err3 == nil).IsFalse()
+		})
+
+		g.It("Should Enforce Unique Owners", func() {
+			org1 := model.OrgDb{
+				UserID: 1,
+				Owner:  "foo",
+			}
+			org2 := model.OrgDb{
+				UserID: 2,
+				Owner:  "foo",
+			}
+			err1 := s.CreateOrg(&org1)
+			err2 := s.CreateOrg(&org2)
 			g.Assert(err1 == nil).IsTrue()
 			g.Assert(err2 == nil).IsFalse()
 		})
