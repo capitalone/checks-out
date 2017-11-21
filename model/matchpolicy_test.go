@@ -38,15 +38,9 @@ func createRequest() *ApprovalRequest {
 		"carol": &Person{Name: "carol"},
 		"dan":   &Person{Name: "dan"},
 	}
-	request.Maintainer.Org = map[string]*Org{
-		"guelph":     &Org{People: map[string]bool{"alice": true, "bob": true}},
-		"ghibelline": &Org{People: map[string]bool{"carol": true, "dan": true}},
-	}
-	request.Maintainer.PersonToOrg = map[string]set.Set{
-		"alice": set.New("guelph"),
-		"bob":   set.New("guelph"),
-		"carol": set.New("ghibelline"),
-		"dan":   set.New("ghibelline"),
+	request.Maintainer.Org = map[string]Org{
+		"guelph":     &OrgSerde{People: map[string]bool{"alice": true, "bob": true}},
+		"ghibelline": &OrgSerde{People: map[string]bool{"carol": true, "dan": true}},
 	}
 	request.PullRequest.Author = lowercase.Create("alice")
 	request.PullRequest.Branch.BaseName = "master"
@@ -77,7 +71,7 @@ func TestAnyoneMatch(t *testing.T) {
 	request.Config.Approvals[0].Match = match
 	approvers := set.Empty()
 	policy := FindApprovalPolicy(request)
-	success := Approve(request, policy, func(f Feedback, op ApprovalOp) {
+	success, _ := Approve(request, policy, func(f Feedback, op ApprovalOp) {
 		if op == Approval {
 			approvers.Add(f.GetAuthor().String())
 		}
@@ -101,7 +95,7 @@ func TestAuthorPolicy(t *testing.T) {
 	request.Config.Approvals[0].Match = MatcherHolder{Matcher: &author}
 	approvers := set.Empty()
 	policy := FindApprovalPolicy(request)
-	success := Approve(request, policy, func(f Feedback, op ApprovalOp) {
+	success, _ := Approve(request, policy, func(f Feedback, op ApprovalOp) {
 		if op == Approval {
 			approvers.Add(f.GetAuthor().String())
 		}
@@ -121,7 +115,7 @@ func TestAuthorPolicy(t *testing.T) {
 	request.Config.Approvals[0].Match = MatcherHolder{Matcher: &author}
 	approvers = set.Empty()
 	policy = FindApprovalPolicy(request)
-	success = Approve(request, policy, func(f Feedback, op ApprovalOp) {
+	success, _ = Approve(request, policy, func(f Feedback, op ApprovalOp) {
 		if op == Approval {
 			approvers.Add(f.GetAuthor().String())
 		}
@@ -144,7 +138,7 @@ func TestAnonymousMatch(t *testing.T) {
 	request.Config.Approvals[0].Match = match
 	approvers := set.Empty()
 	policy := FindApprovalPolicy(request)
-	success := Approve(request, policy, func(f Feedback, op ApprovalOp) {
+	success, _ := Approve(request, policy, func(f Feedback, op ApprovalOp) {
 		if op == Approval {
 			approvers.Add(f.GetAuthor().String())
 		}
@@ -156,7 +150,7 @@ func TestAnonymousMatch(t *testing.T) {
 	request.Config.Approvals[0].Match = match
 	approvers = set.Empty()
 	policy = FindApprovalPolicy(request)
-	success = Approve(request, policy, func(f Feedback, op ApprovalOp) {
+	success, _ = Approve(request, policy, func(f Feedback, op ApprovalOp) {
 		if op == Approval {
 			approvers.Add(f.GetAuthor().String())
 		}
@@ -179,7 +173,7 @@ func TestAnonymousUserAndGroupMatch(t *testing.T) {
 	request.Config.Approvals[0].Match = match
 	approvers := set.Empty()
 	policy := FindApprovalPolicy(request)
-	success := Approve(request, policy, func(f Feedback, op ApprovalOp) {
+	success, _ := Approve(request, policy, func(f Feedback, op ApprovalOp) {
 		if op == Approval {
 			approvers.Add(f.GetAuthor().String())
 		}
@@ -191,7 +185,7 @@ func TestAnonymousUserAndGroupMatch(t *testing.T) {
 	request.Config.Approvals[0].Match = match
 	approvers = set.Empty()
 	policy = FindApprovalPolicy(request)
-	success = Approve(request, policy, func(f Feedback, op ApprovalOp) {
+	success, _ = Approve(request, policy, func(f Feedback, op ApprovalOp) {
 		if op == Approval {
 			approvers.Add(f.GetAuthor().String())
 		}
@@ -210,7 +204,7 @@ func TestIssueAuthorMatch(t *testing.T) {
 	request.Config.Approvals[0].Match = MatcherHolder{&m}
 	approvers := set.Empty()
 	policy := FindApprovalPolicy(request)
-	success := Approve(request, policy, func(f Feedback, op ApprovalOp) {
+	success, _ := Approve(request, policy, func(f Feedback, op ApprovalOp) {
 		if op == Approval {
 			approvers.Add(f.GetAuthor().String())
 		}
@@ -221,7 +215,7 @@ func TestIssueAuthorMatch(t *testing.T) {
 	request.Issues = append(request.Issues, &Issue{Author: lowercase.Create("david")})
 	approvers = set.Empty()
 	policy = FindApprovalPolicy(request)
-	success = Approve(request, policy, func(f Feedback, op ApprovalOp) {
+	success, _ = Approve(request, policy, func(f Feedback, op ApprovalOp) {
 		if op == Approval {
 			approvers.Add(f.GetAuthor().String())
 		}
@@ -245,7 +239,7 @@ func TestAuthorMatch(t *testing.T) {
 	approvers := set.Empty()
 	author := false
 	policy := FindApprovalPolicy(request)
-	success := Approve(request, policy, func(f Feedback, op ApprovalOp) {
+	success, _ := Approve(request, policy, func(f Feedback, op ApprovalOp) {
 		if op == Approval {
 			approvers.Add(f.GetAuthor().String())
 		} else if op == ValidAuthor {
@@ -262,7 +256,7 @@ func TestAuthorMatch(t *testing.T) {
 	approvers = set.Empty()
 	author = false
 	policy = FindApprovalPolicy(request)
-	success = Approve(request, policy, func(f Feedback, op ApprovalOp) {
+	success, _ = Approve(request, policy, func(f Feedback, op ApprovalOp) {
 		if op == Approval {
 			approvers.Add(f.GetAuthor().String())
 		} else if op == ValidAuthor {
@@ -286,7 +280,7 @@ func TestMaintainersMatch(t *testing.T) {
 	request.Config.Approvals[0].Match = match
 	approvers := set.Empty()
 	policy := FindApprovalPolicy(request)
-	success := Approve(request, policy, func(f Feedback, op ApprovalOp) {
+	success, _ := Approve(request, policy, func(f Feedback, op ApprovalOp) {
 		if op == Approval {
 			approvers.Add(f.GetAuthor().String())
 		}
@@ -300,7 +294,7 @@ func TestMaintainersMatch(t *testing.T) {
 	request.Config.Approvals[0].Match = match
 	approvers = set.Empty()
 	policy = FindApprovalPolicy(request)
-	success = Approve(request, policy, func(f Feedback, op ApprovalOp) {
+	success, _ = Approve(request, policy, func(f Feedback, op ApprovalOp) {
 		if op == Approval {
 			approvers.Add(f.GetAuthor().String())
 		}
@@ -323,7 +317,7 @@ func TestEntityGroupMatch(t *testing.T) {
 	request.Config.Approvals[0].Match = match
 	approvers := set.Empty()
 	policy := FindApprovalPolicy(request)
-	success := Approve(request, policy, func(f Feedback, op ApprovalOp) {
+	success, _ := Approve(request, policy, func(f Feedback, op ApprovalOp) {
 		if op == Approval {
 			approvers.Add(f.GetAuthor().String())
 		}
@@ -337,7 +331,7 @@ func TestEntityGroupMatch(t *testing.T) {
 	request.Config.Approvals[0].Match = match
 	approvers = set.Empty()
 	policy = FindApprovalPolicy(request)
-	success = Approve(request, policy, func(f Feedback, op ApprovalOp) {
+	success, _ = Approve(request, policy, func(f Feedback, op ApprovalOp) {
 		if op == Approval {
 			approvers.Add(f.GetAuthor().String())
 		}
@@ -360,7 +354,7 @@ func TestEntityIndividualMatch(t *testing.T) {
 	request.Config.Approvals[0].Match = match
 	approvers := set.Empty()
 	policy := FindApprovalPolicy(request)
-	success := Approve(request, policy, func(f Feedback, op ApprovalOp) {
+	success, _ := Approve(request, policy, func(f Feedback, op ApprovalOp) {
 		if op == Approval {
 			approvers.Add(f.GetAuthor().String())
 		}
@@ -374,7 +368,7 @@ func TestEntityIndividualMatch(t *testing.T) {
 	request.Config.Approvals[0].Match = match
 	approvers = set.Empty()
 	policy = FindApprovalPolicy(request)
-	success = Approve(request, policy, func(f Feedback, op ApprovalOp) {
+	success, _ = Approve(request, policy, func(f Feedback, op ApprovalOp) {
 		if op == Approval {
 			approvers.Add(f.GetAuthor().String())
 		}
@@ -396,7 +390,7 @@ func TestUsMatch(t *testing.T) {
 	request.Config.Approvals[0].Match = match
 	approvers := set.Empty()
 	policy := FindApprovalPolicy(request)
-	success := Approve(request, policy, func(f Feedback, op ApprovalOp) {
+	success, _ := Approve(request, policy, func(f Feedback, op ApprovalOp) {
 		if op == Approval {
 			approvers.Add(f.GetAuthor().String())
 		}
@@ -410,7 +404,7 @@ func TestUsMatch(t *testing.T) {
 	request.Config.Approvals[0].Match = match
 	approvers = set.Empty()
 	policy = FindApprovalPolicy(request)
-	success = Approve(request, policy, func(f Feedback, op ApprovalOp) {
+	success, _ = Approve(request, policy, func(f Feedback, op ApprovalOp) {
 		if op == Approval {
 			approvers.Add(f.GetAuthor().String())
 		}
@@ -432,7 +426,7 @@ func TestThemMatch(t *testing.T) {
 	request.Config.Approvals[0].Match = match
 	approvers := set.Empty()
 	policy := FindApprovalPolicy(request)
-	success := Approve(request, policy, func(f Feedback, op ApprovalOp) {
+	success, _ := Approve(request, policy, func(f Feedback, op ApprovalOp) {
 		if op == Approval {
 			approvers.Add(f.GetAuthor().String())
 		}
@@ -446,7 +440,7 @@ func TestThemMatch(t *testing.T) {
 	request.Config.Approvals[0].Match = match
 	approvers = set.Empty()
 	policy = FindApprovalPolicy(request)
-	success = Approve(request, policy, func(f Feedback, op ApprovalOp) {
+	success, _ = Approve(request, policy, func(f Feedback, op ApprovalOp) {
 		if op == Approval {
 			approvers.Add(f.GetAuthor().String())
 		}
@@ -464,7 +458,7 @@ func TestTrueMatch(t *testing.T) {
 	match := MatcherHolder{&TrueMatch{}}
 	request.Config.Approvals[0].Match = match
 	policy := FindApprovalPolicy(request)
-	success := Approve(request, policy, func(f Feedback, _ ApprovalOp) {})
+	success, _ := Approve(request, policy, func(f Feedback, _ ApprovalOp) {})
 	if success == false {
 		t.Error("match did not succeed")
 	}
@@ -475,7 +469,7 @@ func TestDisableMatch(t *testing.T) {
 	match := MatcherHolder{&DisableMatch{}}
 	request.Config.Approvals[0].Match = match
 	policy := FindApprovalPolicy(request)
-	success := Approve(request, policy, func(f Feedback, _ ApprovalOp) {})
+	success, _ := Approve(request, policy, func(f Feedback, _ ApprovalOp) {})
 	if success == false {
 		t.Error("match did not succeed")
 	}
@@ -486,7 +480,7 @@ func TestFalseMatch(t *testing.T) {
 	match := MatcherHolder{&FalseMatch{}}
 	request.Config.Approvals[0].Match = match
 	policy := FindApprovalPolicy(request)
-	success := Approve(request, policy, func(f Feedback, _ ApprovalOp) {})
+	success, _ := Approve(request, policy, func(f Feedback, _ ApprovalOp) {})
 	if success == true {
 		t.Error("match did not fail")
 	}
@@ -497,7 +491,7 @@ func TestNotMatch(t *testing.T) {
 	match := MatcherHolder{&NotMatch{Not: MatcherHolder{&FalseMatch{}}}}
 	request.Config.Approvals[0].Match = match
 	policy := FindApprovalPolicy(request)
-	success := Approve(request, policy, func(f Feedback, _ ApprovalOp) {})
+	success, _ := Approve(request, policy, func(f Feedback, _ ApprovalOp) {})
 	if success == false {
 		t.Error("match did not succeed")
 	}
@@ -511,7 +505,7 @@ func TestAndMatch(t *testing.T) {
 			{&TrueMatch{}}}}}
 	request.Config.Approvals[0].Match = match
 	policy := FindApprovalPolicy(request)
-	success := Approve(request, policy, func(f Feedback, _ ApprovalOp) {})
+	success, _ := Approve(request, policy, func(f Feedback, _ ApprovalOp) {})
 	if success == true {
 		t.Error("match did not fail")
 	}
@@ -521,7 +515,7 @@ func TestAndMatch(t *testing.T) {
 			{&TrueMatch{}}}}}
 	request.Config.Approvals[0].Match = match
 	policy = FindApprovalPolicy(request)
-	success = Approve(request, policy, func(f Feedback, _ ApprovalOp) {})
+	success, _ = Approve(request, policy, func(f Feedback, _ ApprovalOp) {})
 	if success == false {
 		t.Error("match did not succeed")
 	}
@@ -535,7 +529,7 @@ func TestOrMatch(t *testing.T) {
 			{&FalseMatch{}}}}}
 	request.Config.Approvals[0].Match = match
 	policy := FindApprovalPolicy(request)
-	success := Approve(request, policy, func(f Feedback, _ ApprovalOp) {})
+	success, _ := Approve(request, policy, func(f Feedback, _ ApprovalOp) {})
 	if success == true {
 		t.Error("match did not fail")
 	}
@@ -545,7 +539,7 @@ func TestOrMatch(t *testing.T) {
 			MatcherHolder{&TrueMatch{}}}}}
 	request.Config.Approvals[0].Match = match
 	policy = FindApprovalPolicy(request)
-	success = Approve(request, policy, func(f Feedback, _ ApprovalOp) {})
+	success, _ = Approve(request, policy, func(f Feedback, _ ApprovalOp) {})
 	if success == false {
 		t.Error("match did not succeed")
 	}
@@ -583,7 +577,7 @@ func TestDisapprovalComments(t *testing.T) {
 		}
 	}
 	policy := FindApprovalPolicy(request)
-	success := Approve(request, policy, approverFunc)
+	success, _ := Approve(request, policy, approverFunc)
 	if success == true {
 		t.Error("match did not fail")
 	}
@@ -596,7 +590,7 @@ func TestDisapprovalComments(t *testing.T) {
 	request.ApprovalComments = append(request.ApprovalComments, &Comment{Author: lowercase.Create("carol"), Body: "I approve"})
 	request.DisapprovalComments = request.ApprovalComments
 	policy = FindApprovalPolicy(request)
-	success = Approve(request, policy, approverFunc)
+	success, _ = Approve(request, policy, approverFunc)
 	if success == false {
 		t.Error("match did not succeed")
 	}
@@ -639,7 +633,7 @@ func TestDisapprovalReview(t *testing.T) {
 		}
 	}
 	policy := FindApprovalPolicy(request)
-	success := Approve(request, policy, approverFunc)
+	success, _ := Approve(request, policy, approverFunc)
 	if success == true {
 		t.Error("match did not fail")
 	}
@@ -652,7 +646,7 @@ func TestDisapprovalReview(t *testing.T) {
 	request.ApprovalComments = append(request.ApprovalComments, &Comment{Author: lowercase.Create("carol"), Body: "I approve"})
 	request.DisapprovalComments = request.ApprovalComments
 	policy = FindApprovalPolicy(request)
-	success = Approve(request, policy, approverFunc)
+	success, _ = Approve(request, policy, approverFunc)
 	if success == false {
 		t.Error("match did not succeed")
 	}
@@ -679,7 +673,7 @@ func TestTitleMatch(t *testing.T) {
 	approvers := set.Empty()
 	validTitle := false
 	policy := FindApprovalPolicy(request)
-	success := Approve(request, policy, func(f Feedback, op ApprovalOp) {
+	success, _ := Approve(request, policy, func(f Feedback, op ApprovalOp) {
 		if op == Approval {
 			approvers.Add(f.GetAuthor().String())
 		} else if op == ValidTitle {
@@ -695,7 +689,7 @@ func TestTitleMatch(t *testing.T) {
 	request.PullRequest.Title = "An experiment"
 	validTitle = false
 	policy = FindApprovalPolicy(request)
-	success = Approve(request, policy, func(f Feedback, op ApprovalOp) {
+	success, _ = Approve(request, policy, func(f Feedback, op ApprovalOp) {
 		if op == Approval {
 			approvers.Add(f.GetAuthor().String())
 		} else if op == ValidTitle {

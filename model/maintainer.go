@@ -32,14 +32,18 @@ type Person struct {
 }
 
 // Org represents a group, team or subset of users.
-type Org struct {
+type Org interface {
+	GetPeople() (set.Set, error)
+}
+
+type OrgSerde struct {
 	People set.Set `json:"people"  toml:"people"`
 }
 
 // Maintainer represents a MAINTAINERS file.
 type Maintainer struct {
-	RawPeople map[string]*Person `json:"people" toml:"people"`
-	RawOrg    map[string]*Org    `json:"org" toml:"org"`
+	RawPeople map[string]*Person   `json:"people" toml:"people"`
+	RawOrg    map[string]*OrgSerde `json:"org" toml:"org"`
 }
 
 var MaintTypes = set.New("text", "hjson", "toml", "legacy")
@@ -50,4 +54,8 @@ func validateMaintainerConfig(c *MaintainersConfig) error {
 			c.Type, MaintTypes.Keys())
 	}
 	return nil
+}
+
+func (o *OrgSerde) GetPeople() (set.Set, error) {
+	return o.People, nil
 }

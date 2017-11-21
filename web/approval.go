@@ -25,12 +25,13 @@ import (
 	"strconv"
 	"strings"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/capitalone/checks-out/envvars"
 	"github.com/capitalone/checks-out/logstats"
 	"github.com/capitalone/checks-out/model"
 	"github.com/capitalone/checks-out/remote"
 	"github.com/capitalone/checks-out/set"
+
+	log "github.com/Sirupsen/logrus"
 )
 
 // https://help.github.com/articles/closing-issues-via-commit-messages/
@@ -204,7 +205,7 @@ func buildApprovers(c context.Context,
 	if err != nil {
 		return nil, err
 	}
-	return calculateApprovalInfo(request, policy, audit), nil
+	return calculateApprovalInfo(request, policy, audit)
 }
 
 func calculateAuditInfo(c context.Context, user *model.User, request *model.ApprovalRequest) (bool, error) {
@@ -218,13 +219,13 @@ func calculateAuditInfo(c context.Context, user *model.User, request *model.Appr
 	return validAudit, err
 }
 
-func calculateApprovalInfo(request *model.ApprovalRequest, policy *model.ApprovalPolicy, audit bool) *ApprovalInfo {
+func calculateApprovalInfo(request *model.ApprovalRequest, policy *model.ApprovalPolicy, audit bool) (*ApprovalInfo, error) {
 	approvers := set.Empty()
 	disapprovers := set.Empty()
 	validAuthor := false
 	validTitle := false
 	validAudit := audit
-	approved := model.Approve(request, policy,
+	approved, err := model.Approve(request, policy,
 		func(f model.Feedback, op model.ApprovalOp) {
 			author := f.GetAuthor().String()
 			switch op {
@@ -242,6 +243,9 @@ func calculateApprovalInfo(request *model.ApprovalRequest, policy *model.Approva
 				panic(fmt.Sprintf("Unknown approval operation %d", op))
 			}
 		})
+	if err != nil {
+		return nil, err
+	}
 	approved = approved && audit
 
 	ai := ApprovalInfo{
@@ -284,7 +288,7 @@ func calculateApprovalInfo(request *model.ApprovalRequest, policy *model.Approva
 			})
 	}
 
-	return &ai
+	return &ai, nil
 }
 
 func generateStatus(info *ApprovalInfo) (string, string) {

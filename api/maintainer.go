@@ -47,7 +47,14 @@ func GetMaintainer(c *gin.Context) {
 	if err != nil {
 		msg := fmt.Sprintf("Getting maintainer file for %s", name)
 		c.Error(exterror.Append(err, msg))
-	} else {
-		IndentedJSON(c, 200, maintainer)
+		return
 	}
+	_, err = maintainer.PersonToOrg()
+	if err != nil {
+		msg := fmt.Sprintf("Expanding maintainer file for %s", name)
+		c.Error(exterror.Append(err, msg))
+		return
+	}
+	IndentedJSON(c, 200, maintainer)
+
 }

@@ -59,8 +59,8 @@ func parseMaintainerToml(data []byte) (*model.Maintainer, error) {
 	return m, err
 }
 
-func buildRawOrg(tree *toml.Tree) (map[string]*model.Org, error) {
-	rawOrg := map[string]*model.Org{}
+func buildRawOrg(tree *toml.Tree) (map[string]*model.OrgSerde, error) {
+	rawOrg := map[string]*model.OrgSerde{}
 	o, ok := tree.Get("org").(*toml.Tree)
 	if !ok {
 		return nil, errors.New("Invalid Toml format. Org section is invalid.")
@@ -70,7 +70,7 @@ func buildRawOrg(tree *toml.Tree) (map[string]*model.Org, error) {
 		if !ok {
 			return nil, fmt.Errorf("Invalid toml format. Org %s is invalid.", v)
 		}
-		curOrg := &model.Org{}
+		curOrg := &model.OrgSerde{}
 		pSlice, ok := org.Get("people").([]interface{})
 		if !ok {
 			return nil, fmt.Errorf("Invalid toml format. Org %s people isn't a slice of strings", v)
