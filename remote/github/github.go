@@ -485,6 +485,122 @@ func (g *Github) SetHook(ctx context.Context, user *model.User, repo *model.Repo
 	return g.setHook(ctx, client, user, repo, link)
 }
 
+// createProtectionRequest takes the GitHub protection status returned by
+// GET /repos/:owner/:repo/branches/:branch/protection and converts it into
+// a format suitable for PUT /repos/:owner/:repo/branches/:branch/protection
+// (GitHub please fix your API)
+func createProtectionRequest(input *github.Protection) *github.ProtectionRequest {
+	output := &github.ProtectionRequest{
+		RequiredStatusChecks:       nil,
+		EnforceAdmins:              false,
+		RequiredPullRequestReviews: nil,
+		Restrictions:               nil,
+	}
+	if input == nil {
+		return output
+	}
+	output.RequiredStatusChecks = input.RequiredStatusChecks
+	if input.EnforceAdmins != nil {
+		output.EnforceAdmins = input.EnforceAdmins.Enabled
+	}
+	if input.RequiredPullRequestReviews != nil {
+		inReviews := input.RequiredPullRequestReviews
+		outReviews := &github.PullRequestReviewsEnforcementRequest{
+			DismissalRestrictionsRequest: nil,
+			DismissStaleReviews:          inReviews.DismissStaleReviews,
+			RequireCodeOwnerReviews:      inReviews.RequireCodeOwnerReviews,
+		}
+		inDismissal := inReviews.DismissalRestrictions
+		if len(inDismissal.Users) > 0 || len(inDismissal.Teams) > 0 {
+			outDismissal := &github.DismissalRestrictionsRequest{
+				Users: []string{},
+				Teams: []string{},
+			}
+			for _, user := range inDismissal.Users {
+				outDismissal.Users = append(outDismissal.Users, user.GetLogin())
+			}
+			for _, team := range inDismissal.Teams {
+				outDismissal.Teams = append(outDismissal.Teams, team.GetSlug())
+			}
+			outReviews.DismissalRestrictionsRequest = outDismissal
+		}
+		output.RequiredPullRequestReviews = outReviews
+	}
+	if input.Restrictions != nil {
+		inRestrict := input.Restrictions
+		outRestrict := &github.BranchRestrictionsRequest{
+			Users: []string{},
+			Teams: []string{},
+		}
+		for _, user := range inRestrict.Users {
+			outRestrict.Users = append(outRestrict.Users, user.GetLogin())
+		}
+		for _, team := range inRestrict.Teams {
+			outRestrict.Teams = append(outRestrict.Teams, team.GetSlug())
+		}
+		output.Restrictions = outRestrict
+	}
+	return output
+}
+
+func addBranchProtection(ctx context.Context, client *github.Client, owner, repo, branch string) error {
+	protect, resp, err := client.Repositories.GetBranchProtection(ctx, owner, repo, branch)
+	if err != nil && resp.StatusCode != http.StatusNotFound {
+		return createError(resp, err)
+	}
+	preq := createProtectionRequest(protect)
+	if preq.RequiredStatusChecks == nil {
+		preq.RequiredStatusChecks = &github.RequiredStatusChecks{
+			Strict:   true,
+			Contexts: []string{},
+		}
+	}
+	for _, ctx := range preq.RequiredStatusChecks.Contexts {
+		if ctx == model.ServiceName {
+			return nil
+		}
+	}
+	preq.RequiredStatusChecks.Contexts = append(preq.RequiredStatusChecks.Contexts, model.ServiceName)
+	_, resp, err = client.Repositories.UpdateBranchProtection(ctx, owner, repo, branch, preq)
+	if err != nil {
+		return createError(resp, err)
+	}
+	return nil
+}
+
+func removeBranchProtection(ctx context.Context, client *github.Client, owner, repo, branch string) error {
+	protect, resp, err := client.Repositories.GetBranchProtection(ctx, owner, repo, branch)
+	if resp.StatusCode == http.StatusNotFound {
+		return nil
+	}
+	if err != nil {
+		return createError(resp, err)
+	}
+	preq := createProtectionRequest(protect)
+	if preq.RequiredStatusChecks == nil {
+		return nil
+	}
+	success := false
+	ctxs := preq.RequiredStatusChecks.Contexts
+	for i, ctx := range ctxs {
+		if ctx == model.ServiceName {
+			success = true
+			ctxs[i] = ctxs[len(ctxs)-1]
+			ctxs = ctxs[:len(ctxs)-1]
+			break
+		}
+	}
+	if !success {
+		return nil
+	}
+	preq.RequiredStatusChecks.Contexts = ctxs
+	_, resp, err = client.Repositories.UpdateBranchProtection(ctx, owner, repo, branch, preq)
+	if err != nil {
+		return createError(resp, err)
+	}
+	return nil
+}
+
 func (g *Github) setHook(ctx context.Context, client *github.Client, user *model.User, repo *model.Repo, link string) error {
 	old, err := getHook(ctx, client, repo.Owner, repo.Name, link)
 	if err == nil && old != nil {
@@ -503,17 +619,14 @@ func (g *Github) setHook(ctx context.Context, client *github.Client, user *model
 	}
 
 	_, resp, err = client.Repositories.GetBranch(ctx, repo.Owner, repo.Name, r.GetDefaultBranch())
+	if resp.StatusCode == http.StatusNotFound {
+		return nil
+	}
 	if err != nil {
-		if resp.StatusCode == http.StatusNotFound {
-			return nil
-		}
 		return createError(resp, err)
 	}
 
-	c := NewClientToken(g.API, user.Token)
-	in := []string{model.ServiceName}
-
-	return c.AddBranchProtect(repo.Owner, repo.Name, r.GetDefaultBranch(), in)
+	return addBranchProtection(ctx, client, repo.Owner, repo.Name, r.GetDefaultBranch())
 }
 
 func (g *Github) DelHook(ctx context.Context, user *model.User, repo *model.Repo, link string) error {
@@ -538,10 +651,15 @@ func (g *Github) delHook(ctx context.Context, client *github.Client, user *model
 		return createError(resp, err)
 	}
 
-	c := NewClientToken(g.API, user.Token)
-	in := []string{model.ServiceName}
+	_, resp, err = client.Repositories.GetBranch(ctx, repo.Owner, repo.Name, r.GetDefaultBranch())
+	if resp.StatusCode == http.StatusNotFound {
+		return nil
+	}
+	if err != nil {
+		return createError(resp, err)
+	}
 
-	return c.RemoveBranchProtect(repo.Owner, repo.Name, r.GetDefaultBranch(), in)
+	return removeBranchProtection(ctx, client, repo.Owner, repo.Name, r.GetDefaultBranch())
 }
 
 func (g *Github) SetOrgHook(ctx context.Context, user *model.User, org *model.OrgDb, link string) error {
