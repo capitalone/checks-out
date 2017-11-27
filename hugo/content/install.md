@@ -301,7 +301,7 @@ and hostname exactly with `/login` as the path.
 
 Please use this screenshot for reference:
 
-![github registration](/images/app_registration.png)
+![github registration](/checks-out/images/app_registration.png)
 
 # Reverse Proxies
 

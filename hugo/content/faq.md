@@ -53,11 +53,11 @@ Verify that hooks are being sent correctly. You can see an audit log of all hook
 
 Verify the message is being processed successful. An unsuccessful message will be flagged accordingly in GitHub. Error messages from the service are written to the response body.
 
-![hook error](/images/hook_error.png)
+![hook error](/checks-out/images/hook_error.png)
 
 Verify the response from a successful hook. The approval settings, approval status, and list of individuals that approved the pull request are included in the payload for auditing purposes.
 
-![hook success](/images/hook_success.png)
+![hook success](/checks-out/images/hook_success.png)
 
 If the payload indicates the pull request was approved, and this is not reflected in the status you can click the re-deliver button to re-deliver the payload.
 

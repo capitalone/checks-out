@@ -11,7 +11,7 @@ toc = true
 
 Checks-out automatically enables GitHub protected branches for your repositories' __default branch__. You can further customize or disable this behavior by navigating to your repository branch settings screen in GitHub.
 
-![protected branches](/images/protected_branches.png)
+![protected branches](/checks-out/images/protected_branches.png)
 
 # GitHub Enterprise
 
