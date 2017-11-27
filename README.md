@@ -64,7 +64,7 @@ approvals:
 
 #### MAINTAINERS file
 
-Each repository managed by Meow should have a MAINTAINERS file that specifies
+Each repository managed by Checks-Out should have a MAINTAINERS file that specifies
 who is allowed to approve pull requests. The format of the file
 is described in the maintainers section of the online
 documentation. Here is a sample MAINTAINERS file to get you started:
