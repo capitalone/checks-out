@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html ng-app="app" lang="en">
+
+<head>
+    <title>{{ .Title }} · {{ .Site.Title }}</title>
+
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1" name="viewport" />
+    <meta content="ie=edge" http-equiv="x-ua-compatible" />
+    <meta name="Description" content="{{ .Site.Params.description}}" />
+
+    <link href="//fonts.googleapis.com/css?family=Roboto:400,300" rel="stylesheet" type="text/css">
+    <link href="//fonts.googleapis.com/css?family=Roboto+Mono" rel="stylesheet" type="text/css">
+    <link href="//cdnjs.cloudflare.com/ajax/libs/octicons/3.3.0/octicons.css" rel="stylesheet">
+    <link href="/pages/checks-out/docs/style.css" rel="stylesheet">
+    <link href="/pages/checks-out/docs/docs.css" rel="stylesheet">
+
+</head>
+
+<body>
+    <div class="navbar navbar-homepage" style="-padding-bottom:0px;">
+        <div class="container cf">
+            <a href="{{ .Site.BaseURL }}" class="navbar-brand"></a>
+            <ul class="navbar-nav navbar-right">
+            </ul>
+        </div>
+    </div>
+    <div class="grid-flex-container container">
+
+        <div class="grid-flex-cell">
+            <h1>{{ .Title }}</h1>
+            {{ if .Params.toc }} {{ .TableOfContents }} {{ end }}
+            <section>{{ .Content }}</section>
+        </div>
+
+        <div class="grid-flex-cell grid-flex-cell-1of4">
+            {{ $currentPage := . }}
+            <nav role='navigation'>
+                <ul class='list-unstyled side-nav'>
+                    {{ $currentNode := . }} {{ range .Site.Menus }} {{ range . }} {{ if eq $currentPage.Params.menu .Menu }}
+                    <li>
+                        <a href="{{.URL}}" class="{{if or ($currentNode.IsMenuCurrent $currentPage.Params.menu .) ($currentNode.HasMenuCurrent $currentPage.Params.menu .) }} current-item{{end}}">{{ .Name }}</a>
+                    </li>
+                    {{ end }} {{ end }} {{ end }}
+                </ul>
+            </nav>
+        </div>
+    </div>
+</body>
+
+</html>
