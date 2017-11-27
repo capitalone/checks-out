@@ -1,0 +1,4 @@
+baseurl = "http://www.capitalone.io/checks-out/"
+languageCode = "en-us"
+title = "checks-out"
+theme = "default"

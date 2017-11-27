@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html ng-app="app" lang="en">
+
+<head>
+    <title>FAQ · checks-out</title>
+
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1" name="viewport" />
+    <meta content="ie=edge" http-equiv="x-ua-compatible" />
+    <meta name="Description" content="" />
+
+    <link href="//fonts.googleapis.com/css?family=Roboto:400,300" rel="stylesheet" type="text/css">
+    <link href="//fonts.googleapis.com/css?family=Roboto+Mono" rel="stylesheet" type="text/css">
+    <link href="//cdnjs.cloudflare.com/ajax/libs/octicons/3.3.0/octicons.css" rel="stylesheet">
+    <link href="/pages/checks-out/docs/style.css" rel="stylesheet">
+    <link href="/pages/checks-out/docs/docs.css" rel="stylesheet">
+
+</head>
+
+<body>
+    <div class="navbar navbar-homepage" style="-padding-bottom:0px;">
+        <div class="container cf">
+            <a href="http://www.capitalone.io/checks-out/" class="navbar-brand"></a>
+            <ul class="navbar-nav navbar-right">
+            </ul>
+        </div>
+    </div>
+    <div class="grid-flex-container container">
+
+        <div class="grid-flex-cell">
+            <h1>FAQ</h1>
+             <nav id="TableOfContents">
+<ul>
+<li><a href="#why-don-t-i-see-my-repository">Why don&rsquo;t I see my repository?</a></li>
+<li><a href="#can-i-use-with-github-enterprise">Can I use with GitHub Enterprise?</a></li>
+<li><a href="#why-are-all-the-configuration-files-in-hjson-format">Why are all the configuration files in HJSON format?</a></li>
+<li><a href="#can-i-install-on-my-own-server">Can I install on my own server?</a></li>
+<li><a href="#can-i-use-a-central-maintainers-file">Can I use a central Maintainers file?</a></li>
+<li><a href="#why-aren-t-approvals-being-processed">Why aren&rsquo;t approvals being processed?!</a></li>
+<li><a href="#why-can-t-i-merge-my-pull-request">Why can&rsquo;t I merge my pull request?</a></li>
+<li><a href="#this-thing-is-busted">This thing is busted!</a></li>
+</ul>
+</nav> 
+            <section>
+
+<h1 id="why-don-t-i-see-my-repository">Why don&rsquo;t I see my repository?</h1>
+
+<p>Here are some tips for troubleshooting:</p>
+
+<ul>
+<li>Is your GitHub repository public?</li>
+<li>Do you have Admin access to the repository?</li>
+<li>Did you grant access to your GitHub organization?</li>
+<li>Did you recently create the repository? There may be up to a 15 minute delay due to internal caching.</li>
+<li>Does your organization restrict integrations? <a href="https://github.com/blog/1941-organization-approved-applications">Learn more</a>.</li>
+</ul>
+
+<h1 id="can-i-use-with-github-enterprise">Can I use with GitHub Enterprise?</h1>
+
+<p>Yes, In order to use with GitHub Enterprise you will need to install and run your own instance. See the <a href="../install">the documentation</a>.</p>
+
+<p>GitHub Enterprise 2.4 has partial support for protected branches and requires <a href="../branches/#github-enterprise:84e35ebc125ab31a6f85cb9b5e08d8c9">manual configuration</a>. GitHub Enterprise 2.3 and below are not supported.</p>
+
+<h1 id="why-are-all-the-configuration-files-in-hjson-format">Why are all the configuration files in HJSON format?</h1>
+
+<p>When we began to write complex approval policies in the .checks-out
+configuration file, it became apparent that TOML was too verbose for
+the nested configuration sections. We looked for a golang text format
+serde library that supported the following features: actually parses
+whatever format without crashing on corner cases, can defer
+unmarshal of specific fields (json.rawMessage), and can write custom
+marshal and unmarshal functions.</p>
+
+<p>The encoding/json library is the only library that met these requirements.
+Human JSON is a small amount of syntactic sugar for JSON and adding
+support for HJSON was trivial.</p>
+
+<h1 id="can-i-install-on-my-own-server">Can I install on my own server?</h1>
+
+<p>Yes. See the <a href="../install">install documentation</a>.</p>
+
+<h1 id="can-i-use-a-central-maintainers-file">Can I use a central Maintainers file?</h1>
+
+<p>Sort of. You can create a maintainers team in your GitHub organization. See the <a href="../maintainers">maintainers documentation</a>.</p>
+
+<h1 id="why-aren-t-approvals-being-processed">Why aren&rsquo;t approvals being processed?!</h1>
+
+<p>Verify that you have receive the correct number of approvals. The default configuration requires a minimum of two approvals. See the <a href="../customize">documentation</a> to learn more about custom configurations.</p>
+
+<p>Verify that hooks are being sent correctly. You can see an audit log of all hooks in the <strong>Webhooks &amp; Services</strong> section or your repository settings.</p>
+
+<p>Verify the message is being processed successful. An unsuccessful message will be flagged accordingly in GitHub. Error messages from the service are written to the response body.</p>
+
+<p><img src="/images/hook_error.png" alt="hook error" /></p>
+
+<p>Verify the response from a successful hook. The approval settings, approval status, and list of individuals that approved the pull request are included in the payload for auditing purposes.</p>
+
+<p><img src="/images/hook_success.png" alt="hook success" /></p>
+
+<p>If the payload indicates the pull request was approved, and this is not reflected in the status you can click the re-deliver button to re-deliver the payload.</p>
+
+<h1 id="why-can-t-i-merge-my-pull-request">Why can&rsquo;t I merge my pull request?</h1>
+
+<p>Please remember that checks-out uses GitHub <a href="https://github.com/blog/2051-protected-branches-and-required-status-checks">protected branches</a> which prevents merging a branch that has failed to meet all required status checks. The ability to merge a pull request is completely governed by GitHub.</p>
+
+<p>Please also note that when protected branches prevent you from merging a pull request that has fallen behind the target branch. That is to say, if a pull request is merged, all outstanding pull requests will need to re-sync before they can be merged.</p>
+
+<h1 id="this-thing-is-busted">This thing is busted!</h1>
+
+<p>Please be sure you have read the documentation, including this FAQ, and fully understand how GitHub <a href="https://github.com/blog/2051-protected-branches-and-required-status-checks">protected branches</a> work. If you are still experiencing issues please <a href="../support">contact support</a> and we&rsquo;ll be happy to help!</p>
+</section>
+        </div>
+
+        <div class="grid-flex-cell grid-flex-cell-1of4">
+            
+            <nav role='navigation'>
+                <ul class='list-unstyled side-nav'>
+                       
+                    <li>
+                        <a href="/checks-out/overview/" class="">Quick Start</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/maintainers/" class="">Maintainers</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/branches/" class="">Branches</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/customize/" class="">Customize</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/approvals/" class="">Approval Policies</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/install/" class="">Self Hosting</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/api/" class="">REST API</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/support/" class="">Support</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/faq/" class=" current-item">FAQ</a>
+                    </li>
+                      
+                </ul>
+            </nav>
+        </div>
+    </div>
+</body>
+
+</html>

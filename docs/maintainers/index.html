@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html ng-app="app" lang="en">
+
+<head>
+    <title>Maintainers · checks-out</title>
+
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1" name="viewport" />
+    <meta content="ie=edge" http-equiv="x-ua-compatible" />
+    <meta name="Description" content="" />
+
+    <link href="//fonts.googleapis.com/css?family=Roboto:400,300" rel="stylesheet" type="text/css">
+    <link href="//fonts.googleapis.com/css?family=Roboto+Mono" rel="stylesheet" type="text/css">
+    <link href="//cdnjs.cloudflare.com/ajax/libs/octicons/3.3.0/octicons.css" rel="stylesheet">
+    <link href="/pages/checks-out/docs/style.css" rel="stylesheet">
+    <link href="/pages/checks-out/docs/docs.css" rel="stylesheet">
+
+</head>
+
+<body>
+    <div class="navbar navbar-homepage" style="-padding-bottom:0px;">
+        <div class="container cf">
+            <a href="http://www.capitalone.io/checks-out/" class="navbar-brand"></a>
+            <ul class="navbar-nav navbar-right">
+            </ul>
+        </div>
+    </div>
+    <div class="grid-flex-container container">
+
+        <div class="grid-flex-cell">
+            <h1>Maintainers</h1>
+            
+            <section>
+
+<p>The list of approvers is stored in a <code>MAINTAINERS</code> text file in the root
+of your repository. The maintainers file can be in either a text or HJSON
+format. The format is specified in the <a href="../customize">.checks-out file</a> file
+and the default format is text.</p>
+
+<p>You can inspect the maintainers file for your repository using the api endpoint
+<code>/api/repos/[orgname]/[reponame]/maintainers</code>. The output will have any
+github-org and github-team macros expanded (see below). If the maintainers
+file cannot be parsed then an error message will be returned.</p>
+
+<h1 id="text-format">Text format</h1>
+
+<p>The text format can be any of the following types.</p>
+
+<p>Username, separated by newline:</p>
+
+<pre><code>foo
+bar
+baz
+</code></pre>
+
+<p>Username and email address, separated by newline:</p>
+
+<pre><code>foo &lt;foo@mail.com&gt;
+bar &lt;bar@mail.com&gt;
+baz &lt;baz@mail.com&gt;
+</code></pre>
+
+<p>FullName, email address and username, separated by newline:</p>
+
+<pre><code>Fooshure Jones &lt;foo@mail.com&gt; (@foo)
+Bar None &lt;bar@mail.com&gt; (@bar)
+Bazinga Smith &lt;baz@mail.com&gt; (@baz)
+</code></pre>
+
+<p>Directives for importing GitHub organizations and GitHub teams.
+These directives populate both the &lsquo;people&rsquo; and &lsquo;org&rsquo; fields
+with the correct values (see below).</p>
+
+<pre><code>github-org foo # loads organization foo
+github-team bar # loads team bar within the organization of the repository
+github-team bar foo # loads team bar from organization foo
+github-org repo-self # loads the organization of the repository
+github-team repo-self # loads all the teams of the repository
+</code></pre>
+
+<p>In the examples above the groups are automatically assigned the following names:</p>
+
+<pre><code>foo
+bar
+foo-bar
+[name of organization]
+[names of teams]
+</code></pre>
+
+<h1 id="hjson-format">HJSON format</h1>
+
+<p><a href="http://hjson.org">Human JSON</a> format inspired by the <a href="https://github.com/docker/opensource/blob/master/MAINTAINERS">Docker
+project</a>.
+Organizations can be specified using this format.</p>
+
+<p>The github-org and github-team directives can be used in the &lsquo;group&rsquo; section
+but not in the &lsquo;people&rsquo; section. These directives will populate the correct
+values into the &lsquo;people&rsquo; section.</p>
+
+<pre><code>{
+  people:
+  {
+    bob:
+    {
+      name: Bob Bobson
+      email: bob@email.co
+    }
+    fred:
+    {
+      name: Fred Fredson
+      email: fred@email.co
+    }
+    jon:
+    {
+      name: Jon Jonson
+      email: jon@email.co
+    }
+    ralph:
+    {
+      name: Ralph Ralphington
+      email: ralph@email.co
+    }
+    george:
+    {
+      name: George McGeorge
+      email: george@email.co
+    }
+  }
+  org:
+  {
+    cap:
+    {
+      people: [ &quot;bob&quot;, &quot;fred&quot;, &quot;jon&quot;, &quot;github-org cap&quot; ]
+    }
+    iron:
+    {
+      people: [ &quot;ralph&quot;, &quot;george&quot;, &quot;github-team iron&quot; ]
+    }
+  }
+}
+</code></pre>
+</section>
+        </div>
+
+        <div class="grid-flex-cell grid-flex-cell-1of4">
+            
+            <nav role='navigation'>
+                <ul class='list-unstyled side-nav'>
+                       
+                    <li>
+                        <a href="/checks-out/overview/" class="">Quick Start</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/maintainers/" class=" current-item">Maintainers</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/branches/" class="">Branches</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/customize/" class="">Customize</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/approvals/" class="">Approval Policies</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/install/" class="">Self Hosting</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/api/" class="">REST API</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/support/" class="">Support</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/faq/" class="">FAQ</a>
+                    </li>
+                      
+                </ul>
+            </nav>
+        </div>
+    </div>
+</body>
+
+</html>
