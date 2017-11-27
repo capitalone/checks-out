@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html ng-app="app" lang="en">
+
+<head>
+    <title>REST API · checks-out</title>
+
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1" name="viewport" />
+    <meta content="ie=edge" http-equiv="x-ua-compatible" />
+    <meta name="Description" content="" />
+
+    <link href="//fonts.googleapis.com/css?family=Roboto:400,300" rel="stylesheet" type="text/css">
+    <link href="//fonts.googleapis.com/css?family=Roboto+Mono" rel="stylesheet" type="text/css">
+    <link href="//cdnjs.cloudflare.com/ajax/libs/octicons/3.3.0/octicons.css" rel="stylesheet">
+    <link href="/checks-out/style.css" rel="stylesheet">
+    <link href="/checks-out/docs.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="navbar navbar-homepage" style="-padding-bottom:0px;">
+        <div class="container cf">
+            <a href="http://www.capitalone.io/checks-out/" class="navbar-brand"></a>
+            <ul class="navbar-nav navbar-right">
+            </ul>
+        </div>
+    </div>
+    <div class="grid-flex-container container">
+
+        <div class="grid-flex-cell">
+            <h1>REST API</h1>
+            
+            <section>
+
+<h1 id="rest-api">REST API</h1>
+
+<p>The following REST APIs are exposed by checks-out.</p>
+
+<h2 id="logging-in">Logging in</h2>
+
+<p>checks-out relies on Github&rsquo;s OAuth2 support for authentication. To log in to the REST API, a user must go to /settings/tokens on their Github server (for public Github, this
+would be <a href="https://github.com/settings/tokens">https://github.com/settings/tokens</a>.) and create a Personal Access Token. The token should have the permissions admin:org_hook, read:org, repo:status. Store this
+token in a safe place; you cannot get it again from Github.</p>
+
+<p>Endpoint: /login
+Method: POST
+Query parameters: access_token=PERSONAL_ACCESS_TOKEN
+Body: none</p>
+
+<p>Success: returns an AuthToken JSON structure, status = 200
+Failure: returns status 401 (unauthorized)
+Tokens are currently set to expire after 72 hours.</p>
+
+<h3 id="authtoken-json-structure">AuthToken JSON structure</h3>
+
+<pre><code class="language-json">{
+    &quot;access_token&quot;: &quot;JWT_TOKEN&quot;,
+    &quot;expires_in&quot;: SECONDS_UNTIL_EXPIRY
+}
+</code></pre>
+
+<h2 id="authorization">Authorization</h2>
+
+<p>After calling the initial login, you will get back a JWT Token. This token must be supplied to all other authenticated requests using one of the following methods:</p>
+
+<ul>
+<li>a header with key<code>Authorization</code> and value <code>Bearer JWT_TOKEN</code></li>
+<li>a query parameter with key <code>access_token</code> and value <code>JWT_TOKEN</code></li>
+<li>a cookie with key <code>user_sess</code> and value <code>JWT_TOKEN</code></li>
+</ul>
+
+<h2 id="get-current-user-info">Get Current User Info</h2>
+
+<p>Endpoint: /api/user
+Method: GET</p>
+
+<p>Success: returns a GetCurrentUser JSON structure</p>
+
+<h3 id="getcurrentuser-json-structure">GetCurrentUser JSON Structure</h3>
+
+<pre><code class="language-json">{
+    &quot;id&quot;: ID,
+    &quot;login&quot;: &quot;USER_NAME&quot;,
+    &quot;avatar&quot;: &quot;GITHUB_AVATAR_URL_FOR_USER&quot;
+}
+</code></pre>
+
+<h2 id="delete-current-user">Delete Current User</h2>
+
+<p>This call removes the currently logged-in user from checks-out. If you do this, you will need to recreate your account.</p>
+
+<p>Endpoint: /api/user
+Method: DELETE</p>
+
+<p>Success: returns a 204 (deleted) status code</p>
+
+<h2 id="get-orgs-for-current-user">Get Orgs for Current User</h2>
+
+<p>Returns all orgs that the current user belongs to.</p>
+
+<p>Endpoint: /api/user/orgs
+Method: GET</p>
+
+<p>Success: returns a JSON list of GetOrg JSON structures</p>
+
+<h3 id="getorg-json-structure">GetOrg JSON Structure</h3>
+
+<pre><code class="language-json">    {
+        &quot;login&quot;: &quot;NAME_OF_ORG&quot;,
+        &quot;avatar&quot;: &quot;GITHUB_AVATAR_URL_FOR_ORG&quot;,
+        &quot;enabled&quot;: true|false,
+        &quot;admin&quot;: true|false
+    },
+</code></pre>
+
+<p>If the current user is an admin for the org, <code>admin</code> is set to true.
+If the org has been enabled in checks-out, <code>enabled</code> is set to true.</p>
+
+<h2 id="get-personal-repos-for-current-user">Get Personal Repos for Current User</h2>
+
+<p>Returns all repos in the user&rsquo;s account (not repos in orgs that the user belongs to)</p>
+
+<p>Endpoint: /api/user/repos
+Method: GET</p>
+
+<p>Success: returns a 200 (ok) status code and a JSON list of GetRepo JSON structures</p>
+
+<h3 id="getrepo-json-structure">GetRepo JSON Structure</h3>
+
+<pre><code class="language-json">    {
+        &quot;id&quot;: ID_IN_checks-out,
+        &quot;owner&quot;: &quot;USER_NAME&quot;,
+        &quot;name&quot;: &quot;REPO_NAME&quot;,
+        &quot;slug&quot;: &quot;USER_NAME/REPO_NAME&quot;,
+        &quot;link_url&quot;: URL_IN_GITHUB&quot;,
+        &quot;private&quot;: true|false,
+        &quot;org&quot;: true|false
+    },
+</code></pre>
+
+<p>If <code>id</code> is present, the repo is managed by checks-out.
+If the repo is enabled because its org is managed by checks-out, <code>org</code> is set to <code>true</code>.
+If the repo is private to the user, <code>private</code> is set to <code>true</code>.</p>
+
+<h2 id="get-repos-in-specified-org">Get Repos in Specified Org</h2>
+
+<p>Returns all repos in the specified org</p>
+
+<dl>
+<dt>Method: GET</dt>
+</dl>
+
+<dl>
+<dt>Method: GET</dt>
+</dl>
+
+<dl>
+<dt>Method: GET</dt>
+</dl>
+
+<dl>
+<dt>GET</dt>
+</dl>
+
+<p>:org is replaced with the name of the org whose repos are being requested.</p>
+
+<p>Success: returns a JSON list of GetRepo JSON structures</p>
+
+<h2 id="get-enabled-orgs-for-current-user">Get Enabled Orgs for Current User</h2>
+
+<p>Returns all orgs that have been enabled by the current user</p>
+
+<p>Endpoint: /api/user/orgs/enabled
+Method: GET</p>
+
+<p>Success: return a JSON list of GetOrg JSON structures</p>
+
+<p>note: the <code>avatar</code> and <code>admin</code> fields will always be set to <code>&quot;&quot;</code> and <code>false</code> respectively. the <code>enabled</code> field will always be set to <code>true</code>.</p>
+
+<h2 id="enable-repo">Enable Repo</h2>
+
+<p>Turns on checks-out monitoring for the specified repo.</p>
+
+<dl>
+<dt>Body: none</dt>
+<dt>:owner is the name of the org or the name of the user, for a personal repo
+:repo is the name of the repo</dt>
+</dl>
+
+<p>a personal repo
+:repo is the name of the repo</p>
+
+<p>Success: returns 200 (ok) and a GetRepo JSON structure
+Failure: returns 409 (Conflict) if the repo is already enabled
+Failure: returns 404 (not found) if the repo does not exist or is not available to the user</p>
+
+<h2 id="disable-repo">Disable Repo</h2>
+
+<p>Turns off checks-out monitoring for the specified repo</p>
+
+<dl>
+<dt>Method: DELETE</dt>
+<dt>:owner is the name of the org or the name of the user, for a personal repo
+:repo is the name of the repo</dt>
+</dl>
+
+<p>po
+:repo is the name of the repo</p>
+
+<p>Success: returns 200 (ok)
+Failure: returns 409 (Conflict) if the repo is already disabled
+Failure: returns 404 (not found) if the repo does not exist or is not available to the user</p>
+
+<h2 id="get-enabled-repo">Get Enabled Repo</h2>
+
+<p>Returns information on the specified enabled repo</p>
+
+<dl>
+<dt>Method: GET</dt>
+<dt>:owner is the name of the org or the name of the user, for a personal repo
+:repo is the name of the repo</dt>
+</dl>
+
+<p>po
+:repo is the name of the repo</p>
+
+<p>Success: returns 200 (ok) and a GetRepo JSON structure
+Failure: returns 404 (not found) if the repo does not exist or is not available to the user</p>
+
+<h2 id="enable-org">Enable Org</h2>
+
+<p>Turns on checks-out monitoring for the specified org. All repos currently in the org are enabled and all repos added to the org in the future will be enabled on creation.</p>
+
+<dl>
+<dt>Body: none</dt>
+</dl>
+
+<dl>
+<dt>Body: none</dt>
+</dl>
+
+<dl>
+<dt>Body: none</dt>
+</dl>
+
+<dl>
+<dt>Body: none</dt>
+</dl>
+
+<dl>
+<dt>one</dt>
+</dl>
+
+<p>:owner is the name of the org</p>
+
+<p>Success: returns 200 (ok) and an OrgInfo JSON structure
+Failure: returns 409 (Conflict) if the org is already enabled
+Failure: returns 404 (not found) if the org does not exist, is not available to the user, or if it is the user&rsquo;s personal repos (owner == user name)</p>
+
+<h3 id="orginfo-json-structure">OrgInfo JSON Structure</h3>
+
+<pre><code class="language-json">{
+    &quot;id&quot;: ID_IN_checks-out,
+    &quot;owner&quot;: &quot;ORG_NAME&quot;,
+    &quot;link_url&quot;: &quot;GITHUB_URL&quot;,
+    &quot;private&quot;: true|false
+}
+</code></pre>
+
+<p>If the org is private, <code>private</code> is set to <code>true</code>.</p>
+
+<h2 id="disable-org">Disable Org</h2>
+
+<p>Turns on checks-out monitoring for the specified org. All repos currently in the org are enabled and all repos added to the org in the future will be enabled on creation.</p>
+
+<dl>
+<dt>Method: DELETE</dt>
+</dl>
+
+<dl>
+<dt>Method: DELETE</dt>
+</dl>
+
+<dl>
+<dt>od: DELETE</dt>
+</dl>
+
+<p>:owner is the name of the org</p>
+
+<p>Success: returns 200 (ok)
+Failure: returns 409 (Conflict) if the org is already disabled
+Failure: returns 404 (not found) if the org does not exist, is not available to the user, or if it is the user&rsquo;s personal repos (owner == user name)</p>
+
+<h2 id="get-config-for-repo">Get Config for Repo</h2>
+
+<p>Returns the .lgtm or .checks-out file for the repo</p>
+
+<dl>
+<dt>Method: GET</dt>
+<dt>:owner is the name of the org or the name of the user, for a personal repo
+:repo is the name of the repo</dt>
+</dl>
+
+<p>onal repo
+:repo is the name of the repo</p>
+
+<p>Success: returns 200 (ok) and a .checks-out config file in JSON
+Failure: returns 404 (not found) if the file does not exist or is not available to the user</p>
+
+<h2 id="get-maintainers-for-repo">Get Maintainers for Repo</h2>
+
+<p>Returns the MAINTAINERS file for the repo</p>
+
+<dl>
+<dt>Method: GET</dt>
+<dt>:owner is the name of the org or the name of the user, for a personal repo
+:repo is the name of the repo</dt>
+</dl>
+
+<p>personal repo
+:repo is the name of the repo</p>
+
+<p>Success: returns 200 (ok) and a MAINTAINERS config file
+Failure: returns 404 (not found) if the file does not exist or is not available to the user</p>
+
+<h2 id="validate-config-and-maintainers-for-repo">Validate Config and Maintainers for Repo</h2>
+
+<p>Validates that the .lgtm/.checks-out and MAINTAINERS files are present and valid</p>
+
+<dl>
+<dt>Method: GET</dt>
+<dt>:owner is the name of the org or the name of the user, for a personal repo
+:repo is the name of the repo</dt>
+</dl>
+
+<p>rsonal repo
+:repo is the name of the repo</p>
+
+<p>Success: returns 200 (ok)
+Failure: returns 404 (not found) if the file does not exist or is not available to the user
+Failure: returns 400 (bad request) if the .lgtm/.checks-out or MAINTAINERS file is not valid. Error messages returned as text in body of response.</p>
+
+<h2 id="convert-lgtm-to-checks-out">Convert .lgtm to .checks-out</h2>
+
+<p>Converts a .lgtm file in a repo into the equivalent .checks-out file</p>
+
+<dl>
+<dt>Method: GET</dt>
+<dt>:owner is the name of the org or the name of the user, for a personal repo
+:repo is the name of the repo</dt>
+</dl>
+
+<p>, for a personal repo
+:repo is the name of the repo</p>
+
+<p>Success: returns 200 (ok) and a .checks-out config file in JSON
+Failure: returns 404 (not found) if the file does not exist or is not available to the user
+Failure: returns 400 (bad request) if the .lgtm file is not valid. Error messages returned as text in body of response.</p>
+
+<h2 id="get-teams-in-org">Get Teams in Org</h2>
+
+<p>Returns the teams defined in an org</p>
+
+<dl>
+<dt>Method: GET</dt>
+</dl>
+
+<dl>
+<dt>Method: GET</dt>
+</dl>
+
+<dl>
+<dt>Method: GET</dt>
+</dl>
+
+<p>:owner is the name of the org</p>
+
+<p>Success: returns 200 (ok) and a JSON array of strings. Each string is the name of a team in the org
+Failure: returns 404 (not found) if the org does not exist, is not available to the user, or is the user&rsquo;s personal repos (owner == user name)</p>
+
+<h2 id="get-checks-out-status-for-pull-request">Get checks-out Status for Pull Request</h2>
+
+<p>Returns the status of a pull request and the configuration used to process it</p>
+
+<dl>
+<dt>Method: GET</dt>
+<dt>:owner is the name of the org or the name of the user, for a personal repo
+:repo is the name of the repo
+:id is the id of the pull request in Github</dt>
+</dl>
+
+<p>is the id of the pull request in Github</p>
+
+<p>Success: returns 200 (ok) and a Status JSON structure
+Failure: returns 404 (not found) if the org, repo, or id does not exist or is not available to the user</p>
+
+<h3 id="status-json-structure">Status JSON Structure</h3>
+
+<pre><code class="language-json">{
+    &quot;approved&quot;: true|false,
+    &quot;approvers&quot;: [&quot;USER_NAMES_OF_APPROVERS&quot;],
+    &quot;disapprovers&quot;: [&quot;USER_NAMES_OF_DISAPPROVERS&quot;],
+    &quot;policy&quot;: {
+    },
+    &quot;settings&quot;: {
+    }
+}
+</code></pre>
+
+<p><code>approved</code> is <code>true</code> if the pull request has been approved by checks-out, <code>false</code> otherwise.
+<code>approvers</code> is an array of user names of the people who have approved the pull request.
+<code>disapprovers</code> is an array of user names of the people who have disapproved the pull request.
+<code>policy</code> is the policy in the .checks-out configuration file that is used for this pull request.
+<code>settings</code> is the .checks-out configuration file. All optional sections are filled in with their default values.</p>
+
+<h2 id="user-slack-url-management">User Slack URL Management</h2>
+
+<h3 id="register-new-user-level-slack-target">Register new User-Level Slack Target</h3>
+
+<p>Registers a new Slack target for all repos managed by the current user. The slack target&rsquo;s name is the hostname for the Slack instance.
+A User-Level Slack Target will override an Admin-Level Slack Target for the same hostname. It is not visible by any other users in checks-out.</p>
+
+<dl>
+<dt>Body: URL JSON Structure</dt>
+</dl>
+
+<dl>
+<dt>Body: URL JSON Structure</dt>
+</dl>
+
+<dl>
+<dt>y: URL JSON Structure</dt>
+</dl>
+
+<p>:hostname is the hostname for the slack group</p>
+
+<p>Success: returns a 201 (created) status code</p>
+
+<h4 id="url-json-structure">URL JSON Structure</h4>
+
+<p><code>json
+{
+    &quot;url&quot;:&quot;_URL_FOR_INCOMING_NOTIFICATIONS_WEBHOOKS_&quot;
+}</code></p>
+
+<h3 id="get-url-for-user-level-slack-target">Get URL for User-Level Slack Target</h3>
+
+<p>Returns the URL for a User-Level Slack target for all repos managed by the current user.</p>
+
+<dl>
+<dt>Method: GET</dt>
+</dl>
+
+<dl>
+<dt>Method: GET</dt>
+</dl>
+
+<dl>
+<dt>Method: GET</dt>
+</dl>
+
+<dl>
+<dt>hod: GET</dt>
+</dl>
+
+<p>:hostname is the hostname for the slack group</p>
+
+<p>Success: returns a 200 (ok) status code and a URL JSON structure
+Failure: returns a 404 (not found) status code if no URL is registered by the current user for the specified slack target</p>
+
+<h3 id="update-url-for-user-level-slack-target">Update URL for User-Level Slack Target</h3>
+
+<p>Updates the specified Slack target for all repos managed by the current user.</p>
+
+<dl>
+<dt>Body: URL JSON Structure</dt>
+</dl>
+
+<dl>
+<dt>Body: URL JSON Structure</dt>
+</dl>
+
+<dl>
+<dd>URL JSON Structure</dd>
+</dl>
+
+<p>:hostname is the hostname for the slack group</p>
+
+<p>Success: returns a 200 (created) status code</p>
+
+<h3 id="delete-user-level-slack-target">Delete User-Level Slack Target</h3>
+
+<p>Removes the specified Slack target for all repos managed by the current user. If there is an admin-level Slack target specified for
+the same hostname, it will be used instead.</p>
+
+<dl>
+<dt>Method: DELETE</dt>
+</dl>
+
+<dl>
+<dt>Method: DELETE</dt>
+</dl>
+
+<dl>
+<dt>Method: DELETE</dt>
+</dl>
+
+<dl>
+<dt>TE</dt>
+</dl>
+
+<p>:hostname is the hostname for the slack group</p>
+
+<p>Success: returns a 204 (deleted) status code
+Failure: returns a 404 (not found) status code if no URL is registered by the current user for the specified slack target</p>
+
+<h2 id="admin">Admin</h2>
+
+<h3 id="get-all-enabled-repos">Get All Enabled Repos</h3>
+
+<p>Returns a list of all repos that have been enabled in checks-out across all users</p>
+
+<p>Endpoint: /api/repos
+Method: GET</p>
+
+<p>Success: returns a 200 (ok) status code and a JSON list of GetRepo JSON structures</p>
+
+<h3 id="get-count-of-enabled-repos">Get Count of Enabled Repos</h3>
+
+<p>Returns a count of all repos that have been enabled in checks-out across all users</p>
+
+<p>Endpoint: /api/count
+Method: GET</p>
+
+<p>Success: returns a 200 (ok) status code and a number as text</p>
+
+<h3 id="admin-slack-url-management">Admin Slack URL Management</h3>
+
+<h4 id="register-new-admin-level-slack-target">Register New Admin-Level Slack Target</h4>
+
+<p>Registers a new Slack target for all repos. The slack target&rsquo;s name is the hostname for the Slack instance.
+A User-Level Slack Target will override an Admin-Level Slack Target for the same hostname.</p>
+
+<dl>
+<dt>Body: URL JSON Structure</dt>
+</dl>
+
+<dl>
+<dt>Body: URL JSON Structure</dt>
+</dl>
+
+<dl>
+<dt>dy: URL JSON Structure</dt>
+</dl>
+
+<p>:hostname is the hostname for the slack group</p>
+
+<p>Success: returns a 201 (created) status code</p>
+
+<h3 id="get-url-for-admin-level-slack-target">Get URL for Admin-Level Slack Target</h3>
+
+<p>Returns the URL for an Admin-Level Slack target for all repos.</p>
+
+<dl>
+<dt>Method: GET</dt>
+</dl>
+
+<dl>
+<dt>Method: GET</dt>
+</dl>
+
+<dl>
+<dt>Method: GET</dt>
+</dl>
+
+<dl>
+<dt>thod: GET</dt>
+</dl>
+
+<p>:hostname is the hostname for the slack group</p>
+
+<p>Success: returns a 200 (ok) status code and a URL JSON structure
+Failure: returns a 404 (not found) status code if no URL is registered by the admin for the specified slack target</p>
+
+<h3 id="update-url-for-admin-level-slack-target">Update URL for Admin-Level Slack Target</h3>
+
+<p>Updates the specified Slack target for all repos.</p>
+
+<dl>
+<dt>Body: URL JSON Structure</dt>
+</dl>
+
+<dl>
+<dt>Body: URL JSON Structure</dt>
+</dl>
+
+<dl>
+<dt>y: URL JSON Structure</dt>
+</dl>
+
+<p>:hostname is the hostname for the slack group</p>
+
+<p>Success: returns a 200 (created) status code</p>
+
+<h3 id="delete-admin-level-slack-target">Delete Admin-Level Slack Target</h3>
+
+<p>Removes the specified Slack target for all repos. If there are user-level Slack targets specified for
+the same hostname, they will be used instead for those users.</p>
+
+<dl>
+<dt>Method: DELETE</dt>
+</dl>
+
+<dl>
+<dt>Method: DELETE</dt>
+</dl>
+
+<dl>
+<dt>Method: DELETE</dt>
+</dl>
+
+<dl>
+<dt>ETE</dt>
+</dl>
+
+<p>:hostname is the hostname for the slack group</p>
+
+<p>Success: returns a 204 (deleted) status code
+Failure: returns a 404 (not found) status code if no URL is registered by the current user for the specified slack target</p>
+</section>
+        </div>
+
+        <div class="grid-flex-cell grid-flex-cell-1of4">
+            
+            <nav role='navigation'>
+                <ul class='list-unstyled side-nav'>
+                       
+                    <li>
+                        <a href="/checks-out/overview/" class="">Quick Start</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/maintainers/" class="">Maintainers</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/branches/" class="">Branches</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/customize/" class="">Customize</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/approvals/" class="">Approval Policies</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/install/" class="">Self Hosting</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/api/" class=" current-item">REST API</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/support/" class="">Support</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/faq/" class="">FAQ</a>
+                    </li>
+                      
+                </ul>
+            </nav>
+        </div>
+    </div>
+</body>
+
+</html>

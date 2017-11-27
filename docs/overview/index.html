@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html ng-app="app" lang="en">
+
+<head>
+    <title>Quick Start · checks-out</title>
+
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1" name="viewport" />
+    <meta content="ie=edge" http-equiv="x-ua-compatible" />
+    <meta name="Description" content="" />
+
+    <link href="//fonts.googleapis.com/css?family=Roboto:400,300" rel="stylesheet" type="text/css">
+    <link href="//fonts.googleapis.com/css?family=Roboto+Mono" rel="stylesheet" type="text/css">
+    <link href="//cdnjs.cloudflare.com/ajax/libs/octicons/3.3.0/octicons.css" rel="stylesheet">
+    <link href="/checks-out/style.css" rel="stylesheet">
+    <link href="/checks-out/docs.css" rel="stylesheet">
+
+</head>
+
+<body>
+    <div class="navbar navbar-homepage" style="-padding-bottom:0px;">
+        <div class="container cf">
+            <a href="http://www.capitalone.io/checks-out/" class="navbar-brand"></a>
+            <ul class="navbar-nav navbar-right">
+            </ul>
+        </div>
+    </div>
+    <div class="grid-flex-container container">
+
+        <div class="grid-flex-cell">
+            <h1>Quick Start</h1>
+             <nav id="TableOfContents">
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#setup">Setup</a>
+<ul>
+<li><a href="#organization-setup">Organization Setup</a></li>
+</ul></li>
+<li><a href="#approvers">Approvers</a></li>
+<li><a href="#approvals">Approvals</a></li>
+</ul>
+</nav> 
+            <section>
+
+<h1 id="overview">Overview</h1>
+
+<p>Checks-out is a fork of <a href="https://github.com/lgtmco/lgtm">LGTM</a>.</p>
+
+<p>Checks-out will register itself as a required status check. When you enable your repository on public GitHub it is automatically configured to use <a href="https://github.com/blog/2051-protected-branches-and-required-status-checks">protected branches</a>. Protected branches prevent pull requests from being merged until required status checks are passing. If you are using Enterprise GitHub then you might be required to manually enable protected branches on the master branch.</p>
+
+<p>You can customize many options using a .checks-out file in your repository. Please see the <a href="../customize">customization documentation</a> for more detail.</p>
+
+<h1 id="setup">Setup</h1>
+
+<p>The simplest way to configure checks-out is to create a .checks-out file the
+default branch of your GitHub repository with the contents:</p>
+
+<pre><code>approvals:
+[
+  {
+    # count determines how many approvals are needed
+    # self determines whether you can approve your own pull requests
+    match: &quot;all[count=1,self=true]&quot;
+  }
+]
+</code></pre>
+
+<p>Create a MAINTAINERS file in the default branch with the contents:</p>
+
+<pre><code>github-org repo-self
+</code></pre>
+
+<p>Login to the checks-out service (this will provide the bot
+with credentials to monitor your repository) and enable the service
+for your repo. Click on the button that says &ldquo;OFF&rdquo; to enable the service.</p>
+
+<h2 id="organization-setup">Organization Setup</h2>
+
+<p>Create a repository named &ldquo;checks-out-configuration&rdquo; in your organization.
+The files template.checks-out and template.MAINTAINERS in the
+checks-out-configuration repository will be used for any repository
+that is missing .checks-out or MAINTAINERS files. You can also register
+an entire GitHub organization using the checks-out user interface. Select
+the &ldquo;on/off&rdquo; toggle next to the name of an organization. Registering
+an organization will register any existing repositories and will auto-register
+any new repositories. Added in version 0.12.0.</p>
+
+<h1 id="approvers">Approvers</h1>
+
+<p>Define a list of individuals that can approve pull requests. This list should be store in a MAINTAINERS file to the root of your repository. Please see the <a href="../maintainers">maintainers</a> documentation for supported file formats.</p>
+
+<p><strong>Please note</strong> that checks-out pulls the MAINTAINERS file from your repository default branch (typically master). Changes to the MAINTAINERS file are not recognized until present in the default branch. Changes to the MAINTAINERS file in a pull request are therefore not recognized until merged.</p>
+
+<h1 id="approvals">Approvals</h1>
+
+<p>Pull requests are locked and cannot be merged until the minimum number of approvals are received. Project maintainers can indicate their approval by commenting on the pull request and including &ldquo;I approve&rdquo; in their approval text.</p>
+
+<p>The service also provides integration with GitHub Reviews. An accepted GitHub
+Review is counted as an approval. GitHub Review that requests additional
+changes blocks the pull request from merging.</p>
+</section>
+        </div>
+
+        <div class="grid-flex-cell grid-flex-cell-1of4">
+            
+            <nav role='navigation'>
+                <ul class='list-unstyled side-nav'>
+                       
+                    <li>
+                        <a href="/checks-out/overview/" class=" current-item">Quick Start</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/maintainers/" class="">Maintainers</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/branches/" class="">Branches</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/customize/" class="">Customize</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/approvals/" class="">Approval Policies</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/install/" class="">Self Hosting</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/api/" class="">REST API</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/support/" class="">Support</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/faq/" class="">FAQ</a>
+                    </li>
+                      
+                </ul>
+            </nav>
+        </div>
+    </div>
+</body>
+
+</html>
