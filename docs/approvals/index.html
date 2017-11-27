@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html ng-app="app" lang="en">
+
+<head>
+    <title>Approval Policies · checks-out</title>
+
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1" name="viewport" />
+    <meta content="ie=edge" http-equiv="x-ua-compatible" />
+    <meta name="Description" content="" />
+
+    <link href="//fonts.googleapis.com/css?family=Roboto:400,300" rel="stylesheet" type="text/css">
+    <link href="//fonts.googleapis.com/css?family=Roboto+Mono" rel="stylesheet" type="text/css">
+    <link href="//cdnjs.cloudflare.com/ajax/libs/octicons/3.3.0/octicons.css" rel="stylesheet">
+    <link href="/checks-out/style.css" rel="stylesheet">
+    <link href="/checks-out/docs.css" rel="stylesheet">
+
+</head>
+
+<body>
+    <div class="navbar navbar-homepage" style="-padding-bottom:0px;">
+        <div class="container cf">
+            <a href="http://www.capitalone.io/checks-out/" class="navbar-brand"></a>
+            <ul class="navbar-nav navbar-right">
+            </ul>
+        </div>
+    </div>
+    <div class="grid-flex-container container">
+
+        <div class="grid-flex-cell">
+            <h1>Approval Policies</h1>
+              
+            <section><p>Here are some templates you can use to write the approval policy section
+of your .checks-out configuration.</p>
+
+<pre><code>match: &quot;all[count=1,self=false]&quot;
+</code></pre>
+
+<p>This policy requires one approval from anyone in the built-in &lsquo;all&rsquo;
+group. &lsquo;all&rsquo; expands to all the people in the MAINTAINERS file.
+Populating the MAINTAINERS file with the macro &ldquo;github-org repo-self&rdquo;
+will expand to everyone within the organization of the GitHub repository.
+self=false forbids the author of the pull request to approve their own
+request. If you want self-approval then use &ldquo;all[count=1,self=true]&rdquo;</p>
+
+<pre><code>match: &quot;sharks[count=1,self=false] and jets[count=1,self=false]&quot;
+</code></pre>
+
+<p>You have defined the groups &lsquo;sharks&rsquo; and &lsquo;jets&rsquo; in the MAINTAINERS file.
+This policy requires one approval from the sharks and one approval
+from the jets. If someone belongs to both the sharks and the jets, then
+their approval will count for both of the clauses and therefore they
+do not require a second reviewer. In general, the teams work best when
+they are non-overlapping. But the next example takes advantage of
+overlapping groups.</p>
+
+<pre><code>match: &quot;all[count=2,self=false] and reviewers[count=1,self=false]&quot;
+</code></pre>
+
+<p>This policy requires two approvals and at least one of the approvals
+must be from the group &lsquo;reviewers&rsquo; in the MAINTAINERS file. The policy
+takes advantage of the fact that reviewers is a subset of all. If
+you only have 1 person in the reviewers group and you want the reviewer
+to submit pull requests and it is OK to have only a single approval
+against those pull request, then use
+&ldquo;all[count=2,self=false] and reviewers[count=1,self=true]&rdquo; and the
+reviewer must self-approve their pull request.</p>
+</section>
+        </div>
+
+        <div class="grid-flex-cell grid-flex-cell-1of4">
+            
+            <nav role='navigation'>
+                <ul class='list-unstyled side-nav'>
+                       
+                    <li>
+                        <a href="/checks-out/overview/" class="">Quick Start</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/maintainers/" class="">Maintainers</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/branches/" class="">Branches</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/customize/" class="">Customize</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/approvals/" class=" current-item">Approval Policies</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/install/" class="">Self Hosting</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/api/" class="">REST API</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/support/" class="">Support</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/faq/" class="">FAQ</a>
+                    </li>
+                      
+                </ul>
+            </nav>
+        </div>
+    </div>
+</body>
+
+</html>

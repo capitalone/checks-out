@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html ng-app="app" lang="en">
+
+<head>
+    <title>Customize · checks-out</title>
+
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1" name="viewport" />
+    <meta content="ie=edge" http-equiv="x-ua-compatible" />
+    <meta name="Description" content="" />
+
+    <link href="//fonts.googleapis.com/css?family=Roboto:400,300" rel="stylesheet" type="text/css">
+    <link href="//fonts.googleapis.com/css?family=Roboto+Mono" rel="stylesheet" type="text/css">
+    <link href="//cdnjs.cloudflare.com/ajax/libs/octicons/3.3.0/octicons.css" rel="stylesheet">
+    <link href="/checks-out/style.css" rel="stylesheet">
+    <link href="/checks-out/docs.css" rel="stylesheet">
+
+</head>
+
+<body>
+    <div class="navbar navbar-homepage" style="-padding-bottom:0px;">
+        <div class="container cf">
+            <a href="http://www.capitalone.io/checks-out/" class="navbar-brand"></a>
+            <ul class="navbar-nav navbar-right">
+            </ul>
+        </div>
+    </div>
+    <div class="grid-flex-container container">
+
+        <div class="grid-flex-cell">
+            <h1>Customize</h1>
+             <nav id="TableOfContents">
+<ul>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#approval-policies">Approval Policies</a>
+<ul>
+<li><a href="#policy-scope">Policy Scope</a></li>
+<li><a href="#policy-name">Policy Name</a></li>
+<li><a href="#policy-match">Policy Match</a>
+<ul>
+<li><a href="#all-match">All Match</a></li>
+<li><a href="#universe-match">Universe Match</a></li>
+<li><a href="#us-match">Us Match</a></li>
+<li><a href="#them-match">Them Match</a></li>
+<li><a href="#org-match">Org Match</a></li>
+<li><a href="#anonymous-org-match">Anonymous Org Match</a></li>
+<li><a href="#and-match">And Match</a></li>
+<li><a href="#or-match">Or Match</a></li>
+<li><a href="#not-match">Not Match</a></li>
+<li><a href="#true-match">True Match</a></li>
+<li><a href="#false-match">False Match</a></li>
+<li><a href="#disable-match">Disable Match</a></li>
+<li><a href="#atleast-function">Atleast Function</a></li>
+<li><a href="#author-function">Author Function</a></li>
+</ul></li>
+<li><a href="#pattern">Pattern</a></li>
+<li><a href="#disapproval">Disapproval</a></li>
+<li><a href="#author-restriction">Author Restriction</a></li>
+<li><a href="#work-in-progress-pull-requests">Work-In-Progress Pull Requests</a></li>
+<li><a href="#commit">Commit</a></li>
+<li><a href="#maintainers">Maintainers</a></li>
+<li><a href="#merge">Merge</a></li>
+<li><a href="#tag">Tag</a>
+<ul>
+<li><a href="#semantic-versioning">Semantic Versioning</a></li>
+<li><a href="#timestamp-versioning">Timestamp Versioning</a></li>
+</ul></li>
+<li><a href="#feedback">Feedback</a></li>
+<li><a href="#comment">Comment</a>
+<ul>
+<li><a href="#github-comments">GitHub Comments</a></li>
+<li><a href="#slack-comments">Slack Comments</a></li>
+</ul></li>
+<li><a href="#deploy">Deploy</a></li>
+</ul></li>
+</ul>
+</nav> 
+            <section>
+
+<h1 id="introduction">Introduction</h1>
+
+<p>Place an <code>.checks-out</code> file in the root of your repository to customize your
+project&rsquo;s approval process. This file is in Human JSON
+(<a href="http://hjson.org/">HJSON</a>) format. JSON is also valid HJSON so
+you can write your .checks-out file in JSON if you prefer.</p>
+
+<p>Each property of the .checks-out file has a default value that is used
+when you do not provide a value. This document will explain each
+section of the .checks-out file. At the beginning of each section an
+example of the configuration will be provided. The example will
+be populated with the default values for that section.</p>
+
+<p>For example here are all the default values of the .checks-out file:</p>
+
+<pre><code>approvals:
+[
+  {
+    scope:
+    {
+      branches: []
+      paths: []
+    }
+    name: &quot;&quot;
+    match: &quot;all[count=1,self=true]&quot;
+    antimatch: &quot;all[count=1,self=true]&quot;
+    authormatch: &quot;universe[count=1,self=true]&quot;
+    pattern: null
+    antipattern: null
+    antititle: null
+    tag: null
+    merge: null
+    feedback: null
+  }
+]
+pattern: &quot;(?i)^I approve\\s*(version:\\s*(?P&lt;version&gt;\\S+))?\\s*(comment:\\s*(?P&lt;comment&gt;.*\\S))?\\s*&quot;
+antipattern: null
+antititle: null
+commit:
+{
+  range: head
+  antirange: head
+  tagrange: head
+  ignoreuimerge: false
+}
+maintainers:
+{
+  path: MAINTAINERS
+  type: text
+}
+feedback:
+{
+  type: [&quot;comment&quot;, &quot;review&quot;]
+}
+merge:
+{
+  enable: false
+  merge: &quot;merge&quot;
+  delete: false
+  uptodate: true
+}
+tag:
+{
+  enable: false
+  algorithm: semver
+  template: &quot;{{.Version}}&quot;
+  increment: &quot;patch&quot;
+  docker: false
+}
+comment:
+{
+  enable: false
+  targets: []
+}
+deploy:
+{
+  enable: false
+  deployment: DEPLOYMENTS
+}
+</code></pre>
+
+<p>If you do not need to change the default values in a section
+of the .checks-out then you may leave out that section from
+the file. Here is a valid .checks-out file where we are changing
+the number of approvers from 1 to 2 and the remaining properties
+use the default values:</p>
+
+<pre><code>approvals:
+[
+  {
+    match: &quot;all[count=2]&quot;
+  }
+]
+</code></pre>
+
+<p>You can inspect the .checks-out file for your repository using the api endpoint
+<code>/api/repos/[orgname]/[reponame]/config</code>. The output will have any missing
+configuration parameters populated with default values. If the configuration
+file cannot be parsed then an error message will be returned.</p>
+
+<h1 id="approval-policies">Approval Policies</h1>
+
+<p>checks-out has extensive support for different approval policies. Each approval
+policy consists of two sections: the approval scope and the approval match.
+The scope determines which policy is applied against a pull request.
+The match determines when the pull request is allowed to merge. The
+approvals section of .checks-out is an ordered list (an array) of policies.
+The policies are traversed in the order specified by the configuration file.
+The first scope that matches against the pull request is the policy
+that is used (see Policy Scope section).</p>
+
+<p>Each approval policy may optionally declare a tag section. The tag
+section is identical in structure to the global tag section. If a policy
+has a tag section then its tag section is applied instead of the global
+tag section.</p>
+
+<p>Each approval policy may optionally declare a merge section. The merge
+section is identical in structure to the global merge section. If a policy
+has a merge section then its merge section is applied instead of the global
+merge section.</p>
+
+<p>Each approval policy may optionally declare a pattern. If a policy has a pattern
+then it is is applied for regular expression matching instead of the global
+pattern. Each approval policy may optionally declare an antipattern. If a policy
+has a antipattern then it is is applied for regular expression matching instead
+of the global antipattern.</p>
+
+<p>An .checks-out configuration file is required to have an empty scope
+in the last policy in the policies array. This ensures that every
+pull request has a matching scope.</p>
+
+<p>If you have several approval policies, then we recommend enabling the <a href="#github-comments">GitHub
+notification channel</a> and include &ldquo;open&rdquo; in the types
+field. This will enable checks-out to post a GitHub comment on a pull request
+when the request is opened. The comment will describe which approval policy
+is being applied to the pull request.</p>
+
+<h2 id="policy-scope">Policy Scope</h2>
+
+<pre><code>scope:
+{
+  branches: []
+  paths: []
+}
+</code></pre>
+
+<p>If the &lsquo;branches&rsquo; array is non-empty then the policy is limited
+to the specified branches. In GitHub terminology this is a list of base
+branches. The base branch is where the changes should be applied.</p>
+
+<p>If the &lsquo;paths&rsquo; array is non-empty then the policy is limited
+to the specified file paths. Paths uses a simplified form of wildcard
+glob expansion. The sequence <code>**</code> will match zero or more instances
+of any character. The sequence <code>*</code> will match zero or more instances
+of any character except the directory separator <code>/</code>. All other character
+sequences are literal matches.</p>
+
+<p>For example, to match against all java source files use the path
+expression <code>**.java</code>. To match against recursively against all files
+in a subdirectory use <code>foo/bar/**</code>.</p>
+
+<h2 id="policy-name">Policy Name</h2>
+
+<pre><code>name: &quot;&quot;
+</code></pre>
+
+<p>The &lsquo;name&rsquo; field of a policy allows you to optionally specify a human-readable
+description of the policy. If the name is empty then the policy is
+identified by it&rsquo;s 1-based offset into the policy array. If the name is
+nonempty then no two policies can have the same name.</p>
+
+<h2 id="policy-match">Policy Match</h2>
+
+<pre><code>match: &quot;all[count=1,self=true]&quot;
+</code></pre>
+
+<p>The policy match algorithms are specified with a domain-specific language (DSL).
+The DSL is based around the concept of organization approvals. Boolean operators
+can be used to combine organizations. Parenthesis may be used to defined
+precedence of operations. There are several predefined organizations: &ldquo;all&rdquo;,
+&ldquo;universe&rdquo;, &ldquo;us&rdquo;, and &ldquo;them&rdquo;.</p>
+
+<h3 id="all-match">All Match</h3>
+
+<pre><code>match: &quot;all[count=1,self=true]&quot;
+</code></pre>
+
+<p>This matches against anyone in the MAINTAINERS file. The &lsquo;count&rsquo;
+field determines the minimum amount of approvals for a pull request
+to be accepted. The &lsquo;self&rsquo; field determines whether the author
+of a pull request is allowed to approve the pull request.</p>
+
+<h3 id="universe-match">Universe Match</h3>
+
+<pre><code>match: &quot;universe[count=1,self=true]&quot;
+</code></pre>
+
+<p>This is a variation of &ldquo;all&rdquo; matching where anyone with an account
+on this GitHub instance can approve the pull request. The &lsquo;count&rsquo;
+field determines the minimum amount of approvals for a pull request
+to be accepted. The &lsquo;self&rsquo; field determines whether the author
+of a pull request is allowed to approve the pull request.</p>
+
+<h3 id="us-match">Us Match</h3>
+
+<pre><code>match: &quot;us[count=1,self=true]&quot;
+</code></pre>
+
+<p>This policy will match to any person that has at least one organization
+in common with the author of the pull request. The &lsquo;count&rsquo;
+field determines the minimum amount of approvals for a pull request
+to be accepted. The &lsquo;self&rsquo; field determines whether the author
+of a pull request is allowed to approve the pull request.</p>
+
+<h3 id="them-match">Them Match</h3>
+
+<pre><code>match: &quot;them[count=1,self=true]&quot;
+</code></pre>
+
+<p>This policy will match to any person that has at least no organizations
+in common with the author of the pull request. The &lsquo;count&rsquo;
+field determines the minimum amount of approvals for a pull request
+to be accepted. The &lsquo;self&rsquo; field determines whether the author
+of a pull request is allowed to approve the pull request.</p>
+
+<h3 id="org-match">Org Match</h3>
+
+<pre><code>match: &quot;foo[count=1,self=true]&quot;
+</code></pre>
+
+<p>This policy will match against an organization named &ldquo;foo&rdquo; in the
+MAINTAINERS file. The &lsquo;count&rsquo; field determines the minimum
+amount of organizations for a pull request to be accepted.
+The &lsquo;self&rsquo; field determines whether the author
+of a pull request is allowed to approve the pull request.</p>
+
+<h3 id="anonymous-org-match">Anonymous Org Match</h3>
+
+<pre><code>match: &quot;{john,jane,sally}[count=1,self=true]&quot;
+</code></pre>
+
+<p>This policy will match against an an anonymous organization composed of the
+specified people. Anonymous organizations are ignored by the &lsquo;us&rsquo; and &lsquo;them&rsquo;
+groups defined above. The &lsquo;count&rsquo; field determines the minimum amount of
+organizations for a pull request to be accepted. The &lsquo;self&rsquo; field determines
+whether the author of a pull request is allowed to approve the pull request.</p>
+
+<h3 id="and-match">And Match</h3>
+
+<pre><code>match: &quot;foo[count=1,self=true] and bar[count=1,self=true]&quot;
+</code></pre>
+
+<p>This policy allows you to combine two or more policies. All
+of the policies must be met in order for this policy to be true.</p>
+
+<h3 id="or-match">Or Match</h3>
+
+<pre><code>match: &quot;foo[count=1,self=true] or bar[count=1,self=true]&quot;
+</code></pre>
+
+<p>This policy allows you to combine two or more policies. One
+or more of the policies must be met in order for this policy
+to be true.</p>
+
+<h3 id="not-match">Not Match</h3>
+
+<pre><code>match: &quot;not foo[count=1,self=true]&quot;
+</code></pre>
+
+<p>This policy allows you to negate another policy.</p>
+
+<h3 id="true-match">True Match</h3>
+
+<pre><code>match: &quot;true&quot;
+</code></pre>
+
+<p>This policy allows all pull requests. It&rsquo;s very likely that you
+want to use the &ldquo;off&rdquo; approval policy instead of this policy.</p>
+
+<h3 id="false-match">False Match</h3>
+
+<pre><code>match: &quot;false&quot;
+</code></pre>
+
+<p>This policy allows no pull requests.</p>
+
+<h3 id="disable-match">Disable Match</h3>
+
+<pre><code>match: &quot;off&quot;
+</code></pre>
+
+<p>This policy disables the service. Added in version 0.6.10.</p>
+
+<p>This is identical to the approval policy &ldquo;true&rdquo; with the addition that
+it adds a local merge policy to disable automatic merging of branches.</p>
+
+<h3 id="atleast-function">Atleast Function</h3>
+
+<pre><code>match: &quot;atleast(2, foo[count=3,self=false], bar, baz, {jane,john})&quot;
+</code></pre>
+
+<p>This function requires at least N of the specified groups to match
+successfully, where N is the first parameter to the function.</p>
+
+<h3 id="author-function">Author Function</h3>
+
+<pre><code>match: &quot;author(foo or bar or not {jane,john})&quot;
+</code></pre>
+
+<p>This function checks to see who is the author for the pull request. It is used to limit an approval policy to a set of authors. The potential author can be specified using an expression built out of the other matching expression terms. Since a pull request can only have a single author, any expression that can only be satisfied by more than one author, such as specifying <code>foo and bar</code>, or <code>foo[count=2]</code> will create a case that cannot match.</p>
+
+<h2 id="pattern">Pattern</h2>
+
+<pre><code>pattern: &quot;(?i)^checks-out\\s*(?P&lt;version&gt;\\S*)&quot;
+</code></pre>
+
+<p>The regular expression that checks-out matches against the comment on a GitHub
+pull request. The version capture group must be specified if
+the version section of .checks-out is enable.</p>
+
+<p>Pattern matching is performed using Go&rsquo;s regular expressions package. We
+recommended testing custom regular expressions in the <a href="http://play.golang.org/p/nQx_jGsLHz">Go
+playground</a>.</p>
+
+<h2 id="disapproval">Disapproval</h2>
+
+<pre><code>antipattern: null
+antimatch: &quot;all[count=1,self=true]&quot;
+</code></pre>
+
+<p>checks-out has optional support for allowing the reviewer to raise a concern.
+If an &lsquo;antipattern&rsquo; is specified then the disapproval policy is enabled.
+The disapproval policy is specified by the &lsquo;antimatch&rsquo; parameter.
+The antipattern was introduced in version 0.5.17 and the antimatch
+was introduced in version 0.6.8.</p>
+
+<p>Approvals and disapprovals are enforced by the following mechanism. First,
+all the comments in the pull request are scanned for the &lsquo;antipattern&rsquo; regular
+expression. Any matching comments are applied towards the &lsquo;antimatch&rsquo;
+policy. If the antimatch policy becomes true then the pull request is blocked
+from merge. If the antimatch policy is false then the match policy is tested
+as usual. If the match policy becomes true then the pull request can be merged.</p>
+
+<p>If a reviewer enters a disapproval comment followed by an approval comment,
+then the approval comment will cancel out the disapproval comment. The
+disapproval comment is forgotten but the approval comment also applies
+towards the match policy, assuming the reviewer participates in both the
+antimatch policy and the match policy.</p>
+
+<p>The <a href="#commit">commit range</a> configuration applies the same behavior to
+approvals and disapprovals. With the default behavior, &ldquo;head&rdquo;, only comments
+that occur after the timestamp of the HEAD of the branch are used. Therefore
+an objection will be erased after a new commit. Using the behavior &ldquo;all&rdquo; the
+objection will persist and the reviewer must enter another comment with
+the approval string.</p>
+
+<h2 id="author-restriction">Author Restriction</h2>
+
+<pre><code>authormatch: &quot;universe[count=1,self=true]&quot;
+</code></pre>
+
+<p>It is possible to restrict the allowed authors with the authormatch approval
+policy. The default value allows all users to submit pull requests. Using
+the policy &ldquo;all[count=1,self=true]&rdquo; will only all users listed in the
+MAINTAINERS file to submit a pull request. Since a pull request can only have a single author, any expression that can only be satisfied by more than one author, such as specifying <code>foo and bar</code>, or <code>foo[count=2]</code> will create a case that cannot match.</p>
+
+<p>The difference between <code>authormatch</code> and the <code>author</code> function in the <code>match</code> is subtle. <code>author</code> is used to specify that a match rule applies an approval policy to a set of authors. <code>authormatch</code> is used to specify which authors can create pull requests at all.</p>
+
+<h2 id="work-in-progress-pull-requests">Work-In-Progress Pull Requests</h2>
+
+<pre><code>antititle: null
+</code></pre>
+
+<p>Optionally specify a regular expression that checks-out matches against the title
+of a GitHub pull request. If the title matches then block the pull request
+from being merged. A common value is &ldquo;^WIP:&ldquo;. This feature was added in
+version 0.7.6.</p>
+
+<p>Pattern matching is performed using Go&rsquo;s regular expressions package. We
+recommended testing custom regular expressions in the <a href="http://play.golang.org/p/nQx_jGsLHz">Go
+playground</a>.</p>
+
+<h2 id="commit">Commit</h2>
+
+<pre><code>commit:
+{
+  range: head
+  antirange: head
+  tagrange: head
+  ignoreuimerge: false
+}
+</code></pre>
+
+<p>The range options affect the processing of commits on the pull request. The
+range fields can have two possible values: &ldquo;head&rdquo; or &ldquo;all&rdquo;. &ldquo;head&rdquo; will use the
+comments that occur after the timestamp of the HEAD of the branch. &ldquo;all&rdquo; will
+use all the comments on that branch. The &lsquo;range&rsquo; parameter affects approval
+comments, &lsquo;antirange&rsquo; affects disapproval comments, and &lsquo;tagrange&rsquo; affects
+the tagging section. &lsquo;range&rsquo; was introduced in version 0.5.17. &lsquo;antirange&rsquo;
+and &lsquo;tagrange&rsquo; was introduced in version 0.7.7.</p>
+
+<p>&lsquo;ignoreuimerge&rsquo; will ignore merges from upstream that are made through the
+GitHub user interface (by clicking on &ldquo;update branch&rdquo;).</p>
+
+<h2 id="maintainers">Maintainers</h2>
+
+<pre><code>maintainers:
+{
+  path: MAINTAINERS
+  type: text
+}
+</code></pre>
+
+<p>The path to the file that specifies the <a href="../maintainers">project maintainers</a>.
+The type field can be &ldquo;text&rdquo;, &ldquo;hjson&rdquo;, &ldquo;toml&rdquo;, or &ldquo;legacy&rdquo;.</p>
+
+<h2 id="merge">Merge</h2>
+
+<pre><code>merge:
+{
+  enable: false
+  delete: false
+  method: &quot;merge&quot;
+  uptodate: true
+}
+</code></pre>
+
+<p>checks-out has the ability to automatically merge a pull request when the branch is
+mergeable and all status checks (including optional ones) have passed. If
+the delete flag is true then the head branch is deleted after a successful
+merge. The delete flag was introduced in version 0.5.18.</p>
+
+<p>If you enable automatic merges in the global merge section and you have
+an approval policy that is the policy &ldquo;true&rdquo;, then you are
+encouraged to declare local merge section for that policy that is set to false.
+Otherwise checks-out will automatically merge pull requests on those
+branches as soon as they are opened. Instead of using the policy &ldquo;true&rdquo;,
+use the policy &ldquo;off&rdquo; which handles this case automatically.</p>
+
+<p>The parameter &lsquo;method&rsquo; determines the type of merge. It can be &ldquo;merge&rdquo;,
+&ldquo;squash&rdquo; or &ldquo;rebase&rdquo;.</p>
+
+<p>The parameter &lsquo;uptodate&rsquo; determines whether the compare branch must
+be zero commits behind the base branch before performing an automatic
+merge. This parameter is enabled by default. It was introduced in
+version 0.21.0.</p>
+
+<h2 id="tag">Tag</h2>
+
+<pre><code>tag:
+{
+  enable: false
+  algorithm: semver
+  template: &quot;{{.Version}}&quot;
+  increment: &quot;patch&quot;
+  docker: false
+}
+</code></pre>
+
+<p>checks-out has the ability to automatically place a tag on a merge.
+There are three tagging algorithms: &ldquo;semver&rdquo;, &ldquo;timestamp-rfc3339&rdquo;,
+and &ldquo;timestamp-millis&rdquo;. The &lsquo;template&rsquo; field defines the
+Golang <a href="https://golang.org/pkg/text/template/">text/template</a>
+that is used to generate the tag. The &lsquo;increment&rsquo; field is used
+by the semver algorithm and determines which section of the semantic
+version to increment when no explicit version is provided
+by the approver: &lsquo;major&rsquo;, &lsquo;minor&rsquo;, &lsquo;patch&rsquo;, or &lsquo;none&rsquo;.
+The &lsquo;docker&rsquo; field enables stricter validation of the template to comply with
+Docker tag requirements.</p>
+
+<h3 id="semantic-versioning">Semantic Versioning</h3>
+
+<p>The semantic versioning standard is described at <a href="http://semver.org/">http://semver.org/</a>.</p>
+
+<p>Approval comments are used to provide the semantic version for the current pull request. By default, the version is specified after the I approve string:</p>
+
+<pre><code>I approve 1.0.0
+</code></pre>
+
+<p>will tag the merge commit with the version 1.0.0.</p>
+
+<p>If multiple approvers for a pull commit specify a version, the highest version
+specified will be used.</p>
+
+<p>If no approver specifies a version, or if the maximum version specified by an
+approver is less than any previously specified version tag, the version will be
+set to the highest specified version tag with the patch version incremented.</p>
+
+<h3 id="timestamp-versioning">Timestamp Versioning</h3>
+
+<p>There are currently two options for timestamps, one based on the RFC 3339 standard and one specifying milliseconds since the epoch (Jan 1, 1970, 12:00:00AM UTC).</p>
+
+<p>The type &ldquo;timestamp-rfc3339&rdquo; will look like this:</p>
+
+<pre><code>2016-05-16T19.06.26Z
+</code></pre>
+
+<p>(colons aren&rsquo;t legal in git tags, so the colons in the RFC format have been replaced by periods.)</p>
+
+<p>The type &ldquo;timestamp-millis&rdquo; specifies the number of milliseconds since the epoch.</p>
+
+<h2 id="feedback">Feedback</h2>
+
+<pre><code>feedback:
+{
+  type: [&quot;comment&quot;, &quot;review&quot;]
+}
+</code></pre>
+
+<p>The feedback section customizes the processing of approval events. The feedback
+type determines which kinds of events are processed. &ldquo;comment&rdquo; accepts
+pull request comments. &ldquo;review&rdquo; accepts pull request reviews.</p>
+
+<h2 id="comment">Comment</h2>
+
+<pre><code>comment:
+{
+  enable: false
+  targets: []  
+}
+</code></pre>
+
+<p>Allows notifications to be sent to output channels when checks-out performs an
+action. Legal values for the &ldquo;types&rdquo; field are the following:</p>
+
+<ul>
+<li>&ldquo;error&rdquo; Error while processing webhook</li>
+<li>&ldquo;open&rdquo; Pull request is opened</li>
+<li>&ldquo;close&rdquo; Pull request is closed without being merged</li>
+<li>&ldquo;accept&rdquo; Pull request has been closed and merged</li>
+<li>&ldquo;approve&rdquo; An approval comment has been added</li>
+<li>&ldquo;block&rdquo; A disapproval comment has been added</li>
+<li>&ldquo;reset&rdquo; Commit of PR branch has reset previous approvals</li>
+<li>&ldquo;merge&rdquo; Pull request was auto-merged after all status checks passed</li>
+<li>&ldquo;tag&rdquo; Branch was tagged after merge</li>
+<li>&ldquo;delete&rdquo; Branch was auto-deleted after merge</li>
+<li>&ldquo;deploy&rdquo; Deployment was triggered after merge</li>
+<li>&ldquo;author&rdquo; Pull request is blocked because author is not approved</li>
+</ul>
+
+<h3 id="github-comments">GitHub Comments</h3>
+
+<pre><code>{
+  target: github
+  pattern: null
+  types: []
+}
+</code></pre>
+
+<p>If enabled then checks-out will add comments to the pull request. Pattern is an
+optional regular expression that allows comments to be only applied to
+some pull requests based on the title of the request. The types field
+is described above. If types is empty then all types send notifications.
+GitHub comments was introduced in 0.7.9.</p>
+
+<h3 id="slack-comments">Slack Comments</h3>
+
+<pre><code>{
+  target: foobar.slack.com
+  pattern: null
+  types: []
+  names: []
+}
+</code></pre>
+
+<p>If enabled then checks-out will write messages to Slack. Pattern is an
+optional regular expression that allows comments to be only applied to
+some pull requests based on the title of the request. The types field
+is described above. If types is empty then all types send notifications.
+Names is a list of slack channels or users you want to message. Channels are prefixed with #,
+users are prefixed with @. Slack comment support was introduced in 0.7.9.</p>
+
+<p>The Slack integration allows custom servers to be specified.</p>
+
+<p>The target field can be the hostname of the Slack target such as &ldquo;foobar.slack.com&rdquo;.
+If that hostname has been previously registered with the checks-out service then you
+will be able to use it. Otherwise you need to register a <a href="https://api.slack.com/incoming-webhooks">Slack Webhook</a> with the checks-out service. Use the
+/api/user/slack/:hostname endpoint to register the webhook. This is documented
+on the API page.</p>
+
+<h2 id="deploy">Deploy</h2>
+
+<pre><code>deploy:
+{
+  enable: false
+  deployment: DEPLOYMENTS
+}
+</code></pre>
+
+<p>TODO: add documentation</p>
+</section>
+        </div>
+
+        <div class="grid-flex-cell grid-flex-cell-1of4">
+            
+            <nav role='navigation'>
+                <ul class='list-unstyled side-nav'>
+                       
+                    <li>
+                        <a href="/checks-out/overview/" class="">Quick Start</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/maintainers/" class="">Maintainers</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/branches/" class="">Branches</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/customize/" class=" current-item">Customize</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/approvals/" class="">Approval Policies</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/install/" class="">Self Hosting</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/api/" class="">REST API</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/support/" class="">Support</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/faq/" class="">FAQ</a>
+                    </li>
+                      
+                </ul>
+            </nav>
+        </div>
+    </div>
+</body>
+
+</html>
