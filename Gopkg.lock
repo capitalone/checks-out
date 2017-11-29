@@ -200,6 +200,7 @@
   name = "golang.org/x/sys"
   packages = ["unix"]
   revision = "8dbc5d05d6edcc104950cc299a1ce6641235bc86"
+  source = "github.com/golang/sys"
 
 [[projects]]
   name = "google.golang.org/appengine"
@@ -234,6 +235,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "6dbcdc59b97db5f6892517452b193fbedf7a6ed6a22c1bba9a9169249eeae294"
+  inputs-digest = "3e9c29bbba5df186280bea5457aeccdd841a4ffd282da2948b473a733fff3086"
   solver-name = "gps-cdcl"
   solver-version = 1

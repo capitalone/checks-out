@@ -101,3 +101,7 @@
 [[override]]
   name = "golang.org/x/oauth2"
   source = "github.com/golang/oauth2"
+
+[[override]]
+  name = "golang.org/x/sys"
+  source = "github.com/golang/sys"
