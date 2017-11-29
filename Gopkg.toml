@@ -94,10 +94,10 @@
   name = "github.com/stretchr/testify"
   version = "1.1.4"
 
-[[constraint]]
+[[override]]
   name = "golang.org/x/net"
   source = "github.com/golang/net"
 
-[[constraint]]
+[[override]]
   name = "golang.org/x/oauth2"
   source = "github.com/golang/oauth2"

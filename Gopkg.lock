@@ -186,6 +186,7 @@
   name = "golang.org/x/net"
   packages = ["context","context/ctxhttp"]
   revision = "aabf50738bcdd9b207582cbe796b59ed65d56680"
+  source = "github.com/golang/net"
 
 [[projects]]
   branch = "master"
@@ -233,6 +234,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "73ac7332056421eba4a43f309ec293fadf6b08e26287db30c63e6efc815b6d6f"
+  inputs-digest = "6dbcdc59b97db5f6892517452b193fbedf7a6ed6a22c1bba9a9169249eeae294"
   solver-name = "gps-cdcl"
   solver-version = 1
