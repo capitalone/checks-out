@@ -96,6 +96,8 @@
 
 [[constraint]]
   name = "golang.org/x/net"
+  source = "github.com/golang/net"
 
 [[constraint]]
   name = "golang.org/x/oauth2"
+  source = "github.com/golang/oauth2"

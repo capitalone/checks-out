@@ -192,6 +192,7 @@
   name = "golang.org/x/oauth2"
   packages = [".","internal"]
   revision = "bb50c06baba3d0c76f9d125c0719093e315b5b44"
+  source = "github.com/golang/oauth2"
 
 [[projects]]
   branch = "master"
@@ -232,6 +233,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "6e25377586b3abdf482da930d3b7fffd7a3767dbe6d37733dd7f3f4cec379cf0"
+  inputs-digest = "73ac7332056421eba4a43f309ec293fadf6b08e26287db30c63e6efc815b6d6f"
   solver-name = "gps-cdcl"
   solver-version = 1
