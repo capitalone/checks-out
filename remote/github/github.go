@@ -1148,12 +1148,12 @@ func getIssue(ctx context.Context, client *github.Client, r *model.Repo, number 
 	return result, nil
 }
 
-func (g *Github) MergePR(ctx context.Context, u *model.User, r *model.Repo, pullRequest model.PullRequest, approvers []*model.Person, message string, mergeMethod string) (*string, error) {
+func (g *Github) MergePR(ctx context.Context, u *model.User, r *model.Repo, pullRequest model.PullRequest, approvers []*model.Person, message string, mergeMethod string) (string, error) {
 	client := setupClient(ctx, g.API, u)
 	return mergePR(ctx, client, r, pullRequest, approvers, message, mergeMethod)
 }
 
-func mergePR(ctx context.Context, client *github.Client, r *model.Repo, pullRequest model.PullRequest, approvers []*model.Person, message string, mergeMethod string) (*string, error) {
+func mergePR(ctx context.Context, client *github.Client, r *model.Repo, pullRequest model.PullRequest, approvers []*model.Person, message string, mergeMethod string) (string, error) {
 	log.Debugf("incoming message: %v", message)
 	msg := message
 	if len(msg) > 0 {
@@ -1182,13 +1182,13 @@ func mergePR(ctx context.Context, client *github.Client, r *model.Repo, pullRequ
 	options.MergeMethod = mergeMethod
 	result, resp, err := client.PullRequests.Merge(ctx, r.Owner, r.Name, pullRequest.Number, msg, &options)
 	if err != nil {
-		return nil, createError(resp, err)
+		return "", createError(resp, err)
 	}
 
 	if !(*result.Merged) {
-		return nil, errors.New(*result.Message)
+		return "", errors.New(*result.Message)
 	}
-	return result.SHA, nil
+	return result.GetSHA(), nil
 }
 
 func (g *Github) CompareBranches(ctx context.Context, u *model.User, repo *model.Repo, base string, head string, owner string) (model.BranchCompare, error) {
@@ -1249,16 +1249,16 @@ func listTags(ctx context.Context, client *github.Client, r *model.Repo) ([]mode
 	return out, nil
 }
 
-func (g *Github) Tag(ctx context.Context, u *model.User, r *model.Repo, tag *string, sha *string) error {
+func (g *Github) Tag(ctx context.Context, u *model.User, r *model.Repo, tag string, sha string) error {
 	client := setupClient(ctx, g.API, u)
 	return doTag(ctx, client, r, tag, sha)
 }
 
-func doTag(ctx context.Context, client *github.Client, r *model.Repo, tag *string, sha *string) error {
+func doTag(ctx context.Context, client *github.Client, r *model.Repo, tag string, sha string) error {
 	t := time.Now()
 	gittag, resp, err := client.Git.CreateTag(ctx, r.Owner, r.Name, &github.Tag{
-		Tag:     tag,
-		SHA:     sha,
+		Tag:     github.String(tag),
+		SHA:     github.String(sha),
 		Message: github.String(fmt.Sprintf("Tagged by %s", envvars.Env.Branding.ShortName)),
 		Tagger: &github.CommitAuthor{
 			Date:  &t,
@@ -1266,7 +1266,7 @@ func doTag(ctx context.Context, client *github.Client, r *model.Repo, tag *strin
 			Email: github.String(envvars.Env.Github.Email),
 		},
 		Object: &github.GitObject{
-			SHA:  sha,
+			SHA:  github.String(sha),
 			Type: github.String("commit"),
 		},
 	})
@@ -1275,7 +1275,7 @@ func doTag(ctx context.Context, client *github.Client, r *model.Repo, tag *strin
 		return createError(resp, err)
 	}
 	_, resp, err = client.Git.CreateRef(ctx, r.Owner, r.Name, &github.Reference{
-		Ref: github.String("refs/tags/" + *tag),
+		Ref: github.String("refs/tags/" + tag),
 		Object: &github.GitObject{
 			SHA: gittag.SHA,
 		},

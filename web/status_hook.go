@@ -29,10 +29,10 @@ import (
 )
 
 type StatusResponse struct {
-	SHA  *string `json:"sha,omitempty"`
-	Tag  *string `json:"tag,omitempty"`
-	Err  string  `json:"error,omitempty"`
-	Info string  `json:"info,omitempty"`
+	SHA  string `json:"sha,omitempty"`
+	Tag  string `json:"tag,omitempty"`
+	Err  string `json:"error,omitempty"`
+	Info string `json:"info,omitempty"`
 }
 
 func generateError(msg string, err error, v model.PullRequest, slug string,
@@ -167,9 +167,9 @@ func (hook *StatusHook) Process(c context.Context) (interface{}, error) {
 
 			result.Tag = tag
 
-			if tag != nil {
+			if tag != "" {
 				mw.Messages = append(mw.Messages, notifier.MessageInfo{
-					Message: fmt.Sprintf("Tag %s has been added", *tag),
+					Message: fmt.Sprintf("Tag %s has been added", tag),
 					Type:    model.CommentTag,
 				})
 			}
