@@ -42,7 +42,7 @@ import (
 type datastore struct {
 	*sql.DB
 	Migrations set.Set
-	curDB string
+	curDB      string
 }
 
 var once sync.Once
@@ -102,7 +102,7 @@ func pingDatabase(db *sql.DB) (err error) {
 		if err == nil {
 			return
 		}
-		logrus.Infof("database ping failed. retry in 1s")
+		logrus.Infof("database ping failed. retry in 1s. %s", err)
 		time.Sleep(time.Second)
 	}
 	return
@@ -145,7 +145,7 @@ func setupMeddler(driver string) {
 }
 
 const (
-	POSTGRES  = "postgres"
-	MYSQL  = "mysql"
-	SQLITE  = "sqlite3"
+	POSTGRES = "postgres"
+	MYSQL    = "mysql"
+	SQLITE   = "sqlite3"
 )

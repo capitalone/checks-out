@@ -43,6 +43,17 @@ var orgRepoName = fmt.Sprintf("%s-configuration", envvars.Env.Branding.Name)
 
 const MaintainersTemplateName = "template.MAINTAINERS"
 
+type OrgLazyLoad struct {
+	Input  set.Set             `json:"input"`
+	People set.Set             `json:"people"`
+	Err    error               `json:"error"`
+	Init   bool                `json:"-"`
+	Ctx    context.Context     `json:"-"`
+	User   *model.User         `json:"-"`
+	Caps   *model.Capabilities `json:"-"`
+	Repo   *model.Repo         `json:"-"`
+}
+
 func findConfig(c context.Context, user *model.User, caps *model.Capabilities, repo *model.Repo) (*model.Config, error) {
 	var rcfile []byte
 	var exterr, err error
@@ -104,7 +115,6 @@ func GetConfigAndMaintainers(c context.Context, user *model.User, caps *model.Ca
 	if err != nil {
 		return nil, nil, err
 	}
-	populatePersonToOrg(snapshot)
 	return config, snapshot, err
 }
 
@@ -180,11 +190,28 @@ func createSnapshot(c context.Context, user *model.User, caps *model.Capabilitie
 	return snapshot, err
 }
 
+// orgLazyLoadCandidate returns true if this github team is eligible
+// for lazy expansion. The special name "_" is introduced
+// when the "github-team repo-self" is found in the MAINTAINERS
+// file. If "github-team repo-self" is not found then we must use eager
+// evaluation of the GitHub teams in order to populate the
+// model.MaintainerSnapshot.People field.
+func orgLazyLoadCandidate(people set.Set, orgs map[string]*model.OrgSerde) bool {
+	if _, ok := orgs["_"]; !ok {
+		return false
+	}
+	if len(people) != 1 {
+		return false
+	}
+	team, _ := ParseTeamName(people.Keys()[0])
+	return len(team) > 0
+}
+
 func maintainerToSnapshot(c context.Context, u *model.User, caps *model.Capabilities, r *model.Repo, m *model.Maintainer) (*model.MaintainerSnapshot, error) {
 	var errs error
 	s := new(model.MaintainerSnapshot)
 	s.People = map[string]*model.Person{}
-	s.Org = map[string]*model.Org{}
+	s.Org = map[string]model.Org{}
 	for k, v := range m.RawPeople {
 		k = strings.ToLower(k)
 		s.People[k] = v
@@ -195,19 +222,32 @@ func maintainerToSnapshot(c context.Context, u *model.User, caps *model.Capabili
 			msg := fmt.Errorf("%s cannot be both a team and a person", k)
 			errs = multierror.Append(errs, badRequest(msg))
 		}
-		org := new(model.Org)
-		org.People = set.Empty()
-		s.Org[k] = org
-		for login := range v.People {
-			lst, err := memberExpansion(c, u, caps, r, login)
-			if err != nil {
-				msg := fmt.Sprintf("Attempting to expand %s", login)
-				errs = multierror.Append(errs, exterror.Append(err, msg))
-			} else {
-				if lst != nil {
-					addMembers(s, lst, org)
+		if orgLazyLoadCandidate(v.People, m.RawOrg) {
+			s.Org[k] = &OrgLazyLoad{
+				Input: v.People,
+				Init:  false,
+				Ctx:   c,
+				User:  u,
+				Caps:  caps,
+				Repo:  r,
+			}
+		} else {
+			org := set.Empty()
+			s.Org[k] = &model.OrgSerde{
+				People: org,
+			}
+			for login := range v.People {
+				lst, err := memberExpansion(c, u, caps, r, login)
+				if err != nil {
+					msg := fmt.Sprintf("Attempting to expand %s", login)
+					errs = multierror.Append(errs, exterror.Append(err, msg))
 				} else {
-					org.People.Add(strings.ToLower(login))
+					if lst != nil {
+						addToPeople(lst, s)
+						addToOrg(lst, org)
+					} else {
+						org.Add(strings.ToLower(login))
+					}
 				}
 			}
 		}
@@ -269,31 +309,43 @@ func memberExpansion(c context.Context, u *model.User, caps *model.Capabilities,
 	return nil, nil
 }
 
-func addMembers(ms *model.MaintainerSnapshot, lst []*model.Person, org *model.Org) {
+func addToPeople(lst []*model.Person, ms *model.MaintainerSnapshot) {
 	for _, m := range lst {
 		login := strings.ToLower(m.Login)
 		if _, ok := ms.People[login]; !ok {
 			ms.People[login] = m
 		}
-		org.People.Add(login)
 	}
 }
 
-func populatePersonToOrg(m *model.MaintainerSnapshot) {
-	m.PersonToOrg = make(map[string]set.Set)
-	//key is org name, value is org
-	for k, v := range m.Org {
-		//value is name of person in the org
-		for name := range v.People {
-			if _, ok := m.People[name]; !ok {
-				continue
+func addToOrg(lst []*model.Person, org set.Set) {
+	for _, m := range lst {
+		login := strings.ToLower(m.Login)
+		org.Add(login)
+	}
+}
+
+func (o *OrgLazyLoad) GetPeople() (set.Set, error) {
+	var errs error
+	if o.Init {
+		return o.People, o.Err
+	}
+	org := set.Empty()
+	for login := range o.Input {
+		lst, err := memberExpansion(o.Ctx, o.User, o.Caps, o.Repo, login)
+		if err != nil {
+			msg := fmt.Sprintf("Attempting to expand %s", login)
+			errs = multierror.Append(errs, exterror.Append(err, msg))
+		} else {
+			if lst != nil {
+				addToOrg(lst, org)
+			} else {
+				org.Add(strings.ToLower(login))
 			}
-			orgs, ok := m.PersonToOrg[name]
-			if !ok {
-				orgs = set.Empty()
-				m.PersonToOrg[name] = orgs
-			}
-			orgs.Add(k)
 		}
 	}
+	o.People = org
+	o.Err = errs
+	o.Init = true
+	return o.People, o.Err
 }
