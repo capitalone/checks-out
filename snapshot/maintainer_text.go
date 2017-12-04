@@ -71,6 +71,7 @@ func parseMaintainerText(c context.Context, user *model.User, data []byte, r *mo
 		}
 		if team, org0 := ParseTeamName(item); len(team) > 0 {
 			if team == SelfTeam {
+				eagerLoad := "github-org " + org0
 				org := org0
 				if org0 == "" {
 					if !r.Org {
@@ -78,11 +79,12 @@ func parseMaintainerText(c context.Context, user *model.User, data []byte, r *mo
 							r.Owner, r.Name)
 						return nil, badRequest(err)
 					}
-					err := addOrg(m, "github-org repo-self", "_")
-					if err != nil {
-						return nil, err
-					}
 					org = r.Owner
+					eagerLoad = "github-org repo-self"
+				}
+				err := addOrg(m, eagerLoad, "_"+org0)
+				if err != nil {
+					return nil, err
 				}
 				teams, err := remote.ListTeams(c, user, org)
 				if err != nil {
