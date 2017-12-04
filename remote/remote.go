@@ -115,7 +115,7 @@ type Remote interface {
 	CreatePR(c context.Context, u *model.User, r *model.Repo, title, head, base, body string) (int, error)
 
 	// MergePR merges the named pull request from the remote system
-	MergePR(c context.Context, u *model.User, r *model.Repo, pullRequest model.PullRequest, approvers []*model.Person, message string, mergeMethod string) (*string, error)
+	MergePR(c context.Context, u *model.User, r *model.Repo, pullRequest model.PullRequest, approvers []*model.Person, message string, mergeMethod string) (string, error)
 
 	// CompareBranches compares two branches for changes
 	CompareBranches(c context.Context, u *model.User, repo *model.Repo, base string, head string, owner string) (model.BranchCompare, error)
@@ -127,7 +127,7 @@ type Remote interface {
 	ListTags(c context.Context, u *model.User, r *model.Repo) ([]model.Tag, error)
 
 	// Tag applies a tag with the specified string to the specified sha
-	Tag(c context.Context, u *model.User, r *model.Repo, tag *string, sha *string) error
+	Tag(c context.Context, u *model.User, r *model.Repo, tag string, sha string) error
 
 	// GetPullRequest returns the pull request associated with a pull request number
 	GetPullRequest(c context.Context, u *model.User, r *model.Repo, number int) (model.PullRequest, error)
@@ -274,7 +274,7 @@ func CreatePR(c context.Context, u *model.User, r *model.Repo, title, head, base
 	return FromContext(c).CreatePR(c, u, r, title, head, base, body)
 }
 
-func MergePR(c context.Context, u *model.User, r *model.Repo, pullRequest model.PullRequest, approvers []*model.Person, message string, mergeMethod string) (*string, error) {
+func MergePR(c context.Context, u *model.User, r *model.Repo, pullRequest model.PullRequest, approvers []*model.Person, message string, mergeMethod string) (string, error) {
 	return FromContext(c).MergePR(c, u, r, pullRequest, approvers, message, mergeMethod)
 }
 
@@ -290,7 +290,7 @@ func ListTags(c context.Context, u *model.User, r *model.Repo) ([]model.Tag, err
 	return FromContext(c).ListTags(c, u, r)
 }
 
-func Tag(c context.Context, u *model.User, r *model.Repo, tag *string, sha *string) error {
+func Tag(c context.Context, u *model.User, r *model.Repo, tag string, sha string) error {
 	return FromContext(c).Tag(c, u, r, tag, sha)
 }
 
