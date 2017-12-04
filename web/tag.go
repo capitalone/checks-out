@@ -25,14 +25,15 @@ import (
 	"strings"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
-	version "github.com/hashicorp/go-version"
 	"github.com/capitalone/checks-out/model"
 	"github.com/capitalone/checks-out/remote"
+
+	log "github.com/Sirupsen/logrus"
+	version "github.com/hashicorp/go-version"
 )
 
 func tagIfEnabled(c context.Context, user *model.User, hook *StatusHook,
-	req *model.ApprovalRequest, policy *model.ApprovalPolicy, SHA *string) (*string, error) {
+	req *model.ApprovalRequest, policy *model.ApprovalPolicy, SHA string) (string, error) {
 
 	var tagConfig *model.TagConfig
 
@@ -45,11 +46,11 @@ func tagIfEnabled(c context.Context, user *model.User, hook *StatusHook,
 	if tagConfig.Enable {
 		return doTag(c, user, hook, req, policy, SHA)
 	}
-	return nil, nil
+	return "", nil
 }
 
 func doTag(c context.Context, user *model.User, hook *StatusHook,
-	req *model.ApprovalRequest, policy *model.ApprovalPolicy, SHA *string) (*string, error) {
+	req *model.ApprovalRequest, policy *model.ApprovalPolicy, SHA string) (string, error) {
 	var tagConfig *model.TagConfig
 	var vers string
 
@@ -70,18 +71,18 @@ func doTag(c context.Context, user *model.User, hook *StatusHook,
 		vers, err = handleSemver(c, user, hook, req, policy)
 	}
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	tag, err := tagConfig.GenerateTag(model.TemplateTag{Version: vers})
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	log.Debugf("Tagging merge from PR with tag: %s", tag)
-	err = remote.Tag(c, user, req.Repository, &tag, SHA)
+	err = remote.Tag(c, user, req.Repository, tag, SHA)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-	return &tag, nil
+	return tag, nil
 }
 
 const modifiedRFC3339 = "2006-01-02T15.04.05Z"

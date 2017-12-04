@@ -191,20 +191,20 @@ func createSnapshot(c context.Context, user *model.User, caps *model.Capabilitie
 }
 
 // orgLazyLoadCandidate returns true if this github team is eligible
-// for lazy expansion. The special name "_" is introduced
+// for lazy expansion. The special name "_" + orgname is introduced
 // when the "github-team repo-self" is found in the MAINTAINERS
-// file. If "github-team repo-self" is not found then we must use eager
-// evaluation of the GitHub teams in order to populate the
-// model.MaintainerSnapshot.People field.
+// file. The people of the organization are fetched eagerly
+// so that the teams of the organization can be fetched lazily.
 func orgLazyLoadCandidate(people set.Set, orgs map[string]*model.OrgSerde) bool {
-	if _, ok := orgs["_"]; !ok {
-		return false
-	}
 	if len(people) != 1 {
 		return false
 	}
-	team, _ := ParseTeamName(people.Keys()[0])
-	return len(team) > 0
+	team, org := ParseTeamName(people.Keys()[0])
+	if len(team) == 0 {
+		return false
+	}
+	_, ok := orgs["_"+org]
+	return ok
 }
 
 func maintainerToSnapshot(c context.Context, u *model.User, caps *model.Capabilities, r *model.Repo, m *model.Maintainer) (*model.MaintainerSnapshot, error) {
