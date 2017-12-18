@@ -485,6 +485,122 @@ func (g *Github) SetHook(ctx context.Context, user *model.User, repo *model.Repo
 	return g.setHook(ctx, client, user, repo, link)
 }
 
+// createProtectionRequest takes the GitHub protection status returned by
+// GET /repos/:owner/:repo/branches/:branch/protection and converts it into
+// a format suitable for PUT /repos/:owner/:repo/branches/:branch/protection
+// (GitHub please fix your API)
+func createProtectionRequest(input *github.Protection) *github.ProtectionRequest {
+	output := &github.ProtectionRequest{
+		RequiredStatusChecks:       nil,
+		EnforceAdmins:              false,
+		RequiredPullRequestReviews: nil,
+		Restrictions:               nil,
+	}
+	if input == nil {
+		return output
+	}
+	output.RequiredStatusChecks = input.RequiredStatusChecks
+	if input.EnforceAdmins != nil {
+		output.EnforceAdmins = input.EnforceAdmins.Enabled
+	}
+	if input.RequiredPullRequestReviews != nil {
+		inReviews := input.RequiredPullRequestReviews
+		outReviews := &github.PullRequestReviewsEnforcementRequest{
+			DismissalRestrictionsRequest: nil,
+			DismissStaleReviews:          inReviews.DismissStaleReviews,
+			RequireCodeOwnerReviews:      inReviews.RequireCodeOwnerReviews,
+		}
+		inDismissal := inReviews.DismissalRestrictions
+		if len(inDismissal.Users) > 0 || len(inDismissal.Teams) > 0 {
+			outDismissal := &github.DismissalRestrictionsRequest{
+				Users: []string{},
+				Teams: []string{},
+			}
+			for _, user := range inDismissal.Users {
+				outDismissal.Users = append(outDismissal.Users, user.GetLogin())
+			}
+			for _, team := range inDismissal.Teams {
+				outDismissal.Teams = append(outDismissal.Teams, team.GetSlug())
+			}
+			outReviews.DismissalRestrictionsRequest = outDismissal
+		}
+		output.RequiredPullRequestReviews = outReviews
+	}
+	if input.Restrictions != nil {
+		inRestrict := input.Restrictions
+		outRestrict := &github.BranchRestrictionsRequest{
+			Users: []string{},
+			Teams: []string{},
+		}
+		for _, user := range inRestrict.Users {
+			outRestrict.Users = append(outRestrict.Users, user.GetLogin())
+		}
+		for _, team := range inRestrict.Teams {
+			outRestrict.Teams = append(outRestrict.Teams, team.GetSlug())
+		}
+		output.Restrictions = outRestrict
+	}
+	return output
+}
+
+func addBranchProtection(ctx context.Context, client *github.Client, owner, repo, branch string) error {
+	protect, resp, err := client.Repositories.GetBranchProtection(ctx, owner, repo, branch)
+	if err != nil && resp.StatusCode != http.StatusNotFound {
+		return createError(resp, err)
+	}
+	preq := createProtectionRequest(protect)
+	if preq.RequiredStatusChecks == nil {
+		preq.RequiredStatusChecks = &github.RequiredStatusChecks{
+			Strict:   true,
+			Contexts: []string{},
+		}
+	}
+	for _, ctx := range preq.RequiredStatusChecks.Contexts {
+		if ctx == model.ServiceName {
+			return nil
+		}
+	}
+	preq.RequiredStatusChecks.Contexts = append(preq.RequiredStatusChecks.Contexts, model.ServiceName)
+	_, resp, err = client.Repositories.UpdateBranchProtection(ctx, owner, repo, branch, preq)
+	if err != nil {
+		return createError(resp, err)
+	}
+	return nil
+}
+
+func removeBranchProtection(ctx context.Context, client *github.Client, owner, repo, branch string) error {
+	protect, resp, err := client.Repositories.GetBranchProtection(ctx, owner, repo, branch)
+	if resp.StatusCode == http.StatusNotFound {
+		return nil
+	}
+	if err != nil {
+		return createError(resp, err)
+	}
+	preq := createProtectionRequest(protect)
+	if preq.RequiredStatusChecks == nil {
+		return nil
+	}
+	success := false
+	ctxs := preq.RequiredStatusChecks.Contexts
+	for i, ctx := range ctxs {
+		if ctx == model.ServiceName {
+			success = true
+			ctxs[i] = ctxs[len(ctxs)-1]
+			ctxs = ctxs[:len(ctxs)-1]
+			break
+		}
+	}
+	if !success {
+		return nil
+	}
+	preq.RequiredStatusChecks.Contexts = ctxs
+	_, resp, err = client.Repositories.UpdateBranchProtection(ctx, owner, repo, branch, preq)
+	if err != nil {
+		return createError(resp, err)
+	}
+	return nil
+}
+
 func (g *Github) setHook(ctx context.Context, client *github.Client, user *model.User, repo *model.Repo, link string) error {
 	old, err := getHook(ctx, client, repo.Owner, repo.Name, link)
 	if err == nil && old != nil {
@@ -503,17 +619,14 @@ func (g *Github) setHook(ctx context.Context, client *github.Client, user *model
 	}
 
 	_, resp, err = client.Repositories.GetBranch(ctx, repo.Owner, repo.Name, r.GetDefaultBranch())
+	if resp.StatusCode == http.StatusNotFound {
+		return nil
+	}
 	if err != nil {
-		if resp.StatusCode == http.StatusNotFound {
-			return nil
-		}
 		return createError(resp, err)
 	}
 
-	c := NewClientToken(g.API, user.Token)
-	in := []string{model.ServiceName}
-
-	return c.AddBranchProtect(repo.Owner, repo.Name, r.GetDefaultBranch(), in)
+	return addBranchProtection(ctx, client, repo.Owner, repo.Name, r.GetDefaultBranch())
 }
 
 func (g *Github) DelHook(ctx context.Context, user *model.User, repo *model.Repo, link string) error {
@@ -538,10 +651,15 @@ func (g *Github) delHook(ctx context.Context, client *github.Client, user *model
 		return createError(resp, err)
 	}
 
-	c := NewClientToken(g.API, user.Token)
-	in := []string{model.ServiceName}
+	_, resp, err = client.Repositories.GetBranch(ctx, repo.Owner, repo.Name, r.GetDefaultBranch())
+	if resp.StatusCode == http.StatusNotFound {
+		return nil
+	}
+	if err != nil {
+		return createError(resp, err)
+	}
 
-	return c.RemoveBranchProtect(repo.Owner, repo.Name, r.GetDefaultBranch(), in)
+	return removeBranchProtection(ctx, client, repo.Owner, repo.Name, r.GetDefaultBranch())
 }
 
 func (g *Github) SetOrgHook(ctx context.Context, user *model.User, org *model.OrgDb, link string) error {
@@ -1030,12 +1148,12 @@ func getIssue(ctx context.Context, client *github.Client, r *model.Repo, number 
 	return result, nil
 }
 
-func (g *Github) MergePR(ctx context.Context, u *model.User, r *model.Repo, pullRequest model.PullRequest, approvers []*model.Person, message string, mergeMethod string) (*string, error) {
+func (g *Github) MergePR(ctx context.Context, u *model.User, r *model.Repo, pullRequest model.PullRequest, approvers []*model.Person, message string, mergeMethod string) (string, error) {
 	client := setupClient(ctx, g.API, u)
 	return mergePR(ctx, client, r, pullRequest, approvers, message, mergeMethod)
 }
 
-func mergePR(ctx context.Context, client *github.Client, r *model.Repo, pullRequest model.PullRequest, approvers []*model.Person, message string, mergeMethod string) (*string, error) {
+func mergePR(ctx context.Context, client *github.Client, r *model.Repo, pullRequest model.PullRequest, approvers []*model.Person, message string, mergeMethod string) (string, error) {
 	log.Debugf("incoming message: %v", message)
 	msg := message
 	if len(msg) > 0 {
@@ -1064,13 +1182,13 @@ func mergePR(ctx context.Context, client *github.Client, r *model.Repo, pullRequ
 	options.MergeMethod = mergeMethod
 	result, resp, err := client.PullRequests.Merge(ctx, r.Owner, r.Name, pullRequest.Number, msg, &options)
 	if err != nil {
-		return nil, createError(resp, err)
+		return "", createError(resp, err)
 	}
 
 	if !(*result.Merged) {
-		return nil, errors.New(*result.Message)
+		return "", errors.New(*result.Message)
 	}
-	return result.SHA, nil
+	return result.GetSHA(), nil
 }
 
 func (g *Github) CompareBranches(ctx context.Context, u *model.User, repo *model.Repo, base string, head string, owner string) (model.BranchCompare, error) {
@@ -1131,16 +1249,16 @@ func listTags(ctx context.Context, client *github.Client, r *model.Repo) ([]mode
 	return out, nil
 }
 
-func (g *Github) Tag(ctx context.Context, u *model.User, r *model.Repo, tag *string, sha *string) error {
+func (g *Github) Tag(ctx context.Context, u *model.User, r *model.Repo, tag string, sha string) error {
 	client := setupClient(ctx, g.API, u)
 	return doTag(ctx, client, r, tag, sha)
 }
 
-func doTag(ctx context.Context, client *github.Client, r *model.Repo, tag *string, sha *string) error {
+func doTag(ctx context.Context, client *github.Client, r *model.Repo, tag string, sha string) error {
 	t := time.Now()
 	gittag, resp, err := client.Git.CreateTag(ctx, r.Owner, r.Name, &github.Tag{
-		Tag:     tag,
-		SHA:     sha,
+		Tag:     github.String(tag),
+		SHA:     github.String(sha),
 		Message: github.String(fmt.Sprintf("Tagged by %s", envvars.Env.Branding.ShortName)),
 		Tagger: &github.CommitAuthor{
 			Date:  &t,
@@ -1148,7 +1266,7 @@ func doTag(ctx context.Context, client *github.Client, r *model.Repo, tag *strin
 			Email: github.String(envvars.Env.Github.Email),
 		},
 		Object: &github.GitObject{
-			SHA:  sha,
+			SHA:  github.String(sha),
 			Type: github.String("commit"),
 		},
 	})
@@ -1157,7 +1275,7 @@ func doTag(ctx context.Context, client *github.Client, r *model.Repo, tag *strin
 		return createError(resp, err)
 	}
 	_, resp, err = client.Git.CreateRef(ctx, r.Owner, r.Name, &github.Reference{
-		Ref: github.String("refs/tags/" + *tag),
+		Ref: github.String("refs/tags/" + tag),
 		Object: &github.GitObject{
 			SHA: gittag.SHA,
 		},
