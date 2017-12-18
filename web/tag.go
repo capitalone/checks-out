@@ -26,7 +26,7 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
-	version "github.com/hashicorp/go-version"
+	"github.com/hashicorp/go-version"
 	"github.com/capitalone/checks-out/model"
 	"github.com/capitalone/checks-out/remote"
 )
@@ -64,6 +64,12 @@ func doTag(c context.Context, user *model.User, hook *StatusHook,
 		vers, err = handleTimestamp(tagConfig)
 	} else if tagConfig.Alg == "semver" {
 		vers, err = handleSemver(c, user, hook, req, policy)
+	} else if tagConfig.Alg == "explicit" {
+		vers = handleExplicit(req, policy)
+		//if no version was found, just return
+		if vers == "" {
+			return nil, nil
+		}
 	} else {
 		log.Warnf("Repo %s should have had a valid tag algorithm configured -- using semver",
 			req.Repository.Name)
@@ -126,6 +132,11 @@ func increment(segments []int, tag *model.TagConfig) {
 	default:
 		log.Errorf("Unknown semver increment %d", tag.Increment)
 	}
+}
+
+func handleExplicit(req *model.ApprovalRequest, policy *model.ApprovalPolicy) string {
+	foundVersion := getLastVersionComment(req, policy)
+	return foundVersion
 }
 
 func handleSemver(c context.Context, user *model.User, hook *StatusHook, req *model.ApprovalRequest, policy *model.ApprovalPolicy) (string, error) {
@@ -233,6 +244,47 @@ func getMaxVersionComment(request *model.ApprovalRequest, policy *model.Approval
 		})
 
 	return maxVersion
+}
+
+// getLastVersionComment is a helper function that analyzes the list of comments
+// and returns the last version found in a comment. if no matching comment is found,
+// the function returns empty string.
+func getLastVersionComment(request *model.ApprovalRequest, policy *model.ApprovalPolicy) string {
+	lastVersion := ""
+	var matcher *regexp.Regexp
+	if policy.Pattern != nil {
+		matcher = policy.Pattern.Regex
+	} else {
+		matcher = request.Config.Pattern.Regex
+	}
+	if matcher == nil {
+		return ""
+	}
+	index := getGroupIndex(matcher, "version")
+	if index == 0 {
+		return ""
+	}
+	model.Approve(request, policy,
+		func(f model.Feedback, op model.ApprovalOp) {
+			if op != model.Approval {
+				return
+			}
+			body := f.GetBody()
+			if len(body) == 0 {
+				return
+			}
+			// verify the comment matches the approval pattern
+			match := matcher.FindStringSubmatch(body)
+			if len(match) > index {
+				//has a version
+				curVersion := match[index]
+				if curVersion != "" {
+					lastVersion = curVersion
+				}
+			}
+		})
+
+	return lastVersion
 }
 
 func getCommitComment(request *model.ApprovalRequest, policy *model.ApprovalPolicy) string {
