@@ -29,7 +29,9 @@ import (
 	"time"
 
 	"github.com/capitalone/checks-out/model"
+	"github.com/capitalone/checks-out/notifier"
 	"github.com/capitalone/checks-out/remote"
+	"github.com/capitalone/checks-out/set"
 	"github.com/capitalone/checks-out/strings/lowercase"
 	"github.com/capitalone/checks-out/strings/rxserde"
 
@@ -696,5 +698,39 @@ func TestGetCommitComment(t *testing.T) {
 	comment := getCommitComment(request, model.DefaultApprovalPolicy())
 	if comment != "Hi there" {
 		t.Error("Expected Hi there, got", comment)
+	}
+}
+
+func TestEligibleForDeletion(t *testing.T) {
+	config := model.NonEmptyConfig()
+	pr := &model.PullRequest{
+		Branch: model.Branch{
+			CompareOwner: "foo",
+			CompareName:  "baz",
+		},
+	}
+	request := &model.ApprovalRequest{
+		Config:      config,
+		PullRequest: pr,
+		Repository: &model.Repo{
+			Owner: "bar",
+		},
+	}
+	mw := &notifier.MessageWrapper{}
+	if eligibleForDeletion(request, mw) {
+		t.Error("branch belongs to another owner")
+	}
+	request.Repository.Owner = "foo"
+	if eligibleForDeletion(request, mw) {
+		t.Error("default policy should not be eligible for deletion")
+	}
+	config.Approvals[0].Match.Matcher = &model.DisableMatch{}
+	if !eligibleForDeletion(request, mw) {
+		t.Error("off policy should be eligible for deletion")
+	}
+	config.Approvals = append(config.Approvals, model.DefaultApprovalPolicy())
+	config.Approvals[0].Scope.Branches = set.New("baz")
+	if eligibleForDeletion(request, mw) {
+		t.Error("branch match should not be eligible for deletion")
 	}
 }

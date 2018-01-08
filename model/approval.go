@@ -21,6 +21,7 @@ package model
 import (
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"regexp"
 	"sort"
 	"strings"
@@ -450,4 +451,8 @@ func (req *ApprovalRequest) IsTitleMatch() bool {
 		return false
 	}
 	return regExp.MatchString(req.PullRequest.Title)
+}
+
+func (a *ApprovalScope) Empty() bool {
+	return reflect.DeepEqual(a, DefaultApprovalScope())
 }
