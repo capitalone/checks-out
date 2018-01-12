@@ -88,6 +88,9 @@ func createReviewHook(body []byte) (Hook, error) {
 		return nil, err
 	}
 
+	log.Info("repository %s pr %d pull_request_review state %s",
+		data.Repo.GetFullName(), data.PullRequest.GetNumber(),
+		data.PullRequest.GetState())
 	// don't process reviews on closed pull requests
 	if data.PullRequest.GetState() == "closed" {
 		log.Debugf("PR %s is closed -- not processing comments for it any more", data.PullRequest.Title)
@@ -126,6 +129,9 @@ func createCommentHook(body []byte) (Hook, error) {
 		return nil, nil
 	}
 
+	log.Info("repository %s pr %d issue_comment state %s",
+		data.Repo.GetFullName(), data.Issue.GetNumber(),
+		data.Issue.GetState())
 	// don't process comments on closed pull requests
 	if data.Issue.GetState() == "closed" {
 		log.Debugf("PR %s is closed -- not processing comments for it any more", data.Issue.Title)
@@ -160,6 +166,9 @@ func createStatusHook(body []byte) (Hook, error) {
 		return nil, err
 	}
 
+	log.Info("repository %s status commit %s",
+		data.Repo.GetFullName(),
+		data.GetSHA())
 	log.Debug(data)
 
 	hook := &StatusHook{
@@ -189,6 +198,11 @@ func createPRHook(body []byte) (Hook, error) {
 	}
 
 	log.Debug(data)
+
+	log.Info("repository %s pr %d pull_request action %s state %s",
+		data.Repo.GetFullName(), data.PullRequest.GetNumber(),
+		data.GetAction(),
+		data.PullRequest.GetState())
 
 	mergeable := true
 	if data.PullRequest.Mergeable != nil {
