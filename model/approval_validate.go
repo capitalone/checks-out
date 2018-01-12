@@ -33,9 +33,7 @@ func validateApprovals(approvals []*ApprovalPolicy) error {
 		return errors.New("No approval policies specified")
 	}
 	tailScope := approvals[len(approvals)-1].Scope
-	for _, m := range tailScope.NonFinal() {
-		errs = multierror.Append(errs, errors.New(m))
-	}
+	errs = multierror.Append(errs, tailScope.ValidateFinal())
 	for _, approval := range approvals {
 		errs = multierror.Append(errs, approval.Validate())
 	}
@@ -43,24 +41,24 @@ func validateApprovals(approvals []*ApprovalPolicy) error {
 	return errs
 }
 
-func (a *ApprovalScope) NonFinal() []string {
-	var msgs []string
+func (a *ApprovalScope) ValidateFinal() error {
+	var errs error
 	if len(a.Paths) > 0 {
-		msgs = append(msgs, "Final scope must have no paths")
+		errs = multierror.Append(errs, errors.New("Final scope must have no paths"))
 	}
 	if len(a.Branches) > 0 {
-		msgs = append(msgs, "Final scope must have no branches")
+		errs = multierror.Append(errs, errors.New("Final scope must have no branches"))
 	}
 	if len(a.PathRegexp) > 0 {
-		msgs = append(msgs, "Final scope must have no path regexp")
+		errs = multierror.Append(errs, errors.New("Final scope must have no path regexp"))
 	}
 	if len(a.BaseRegexp) > 0 {
-		msgs = append(msgs, "Final scope must have no base branch regular expressions")
+		errs = multierror.Append(errs, errors.New("Final scope must have no base branch regular expressions"))
 	}
 	if len(a.CompareRegexp) > 0 {
-		msgs = append(msgs, "Final scope must have no compare branch regular expressions")
+		errs = multierror.Append(errs, errors.New("Final scope must have no compare branch regular expressions"))
 	}
-	return msgs
+	return errs
 }
 
 func (a *ApprovalPolicy) Validate() error {

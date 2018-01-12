@@ -222,7 +222,7 @@ func eligibleForDeletion(req *model.ApprovalRequest, mw *notifier.MessageWrapper
 	}
 	cfg := req.Config
 	for _, p := range cfg.Approvals {
-		if p.Scope.NonFinal() == nil {
+		if p.Scope.ValidateFinal() == nil {
 			if p.Match.Matcher.GetType() != "off" {
 				mw.Messages = append(mw.Messages, notifier.MessageInfo{
 					Message: fmt.Sprintf(
