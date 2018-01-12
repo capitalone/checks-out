@@ -38,4 +38,8 @@ func TestTagValidateDocker(t *testing.T) {
 	if cfg.Compile() == nil {
 		t.Error("+ character should not pass validation")
 	}
+	cfg = TagConfig{TemplateRaw: `{{ .Version }}`, Docker: true}
+	if cfg.Compile() != nil {
+		t.Error("This should work")
+	}
 }
