@@ -88,7 +88,7 @@ func createReviewHook(body []byte) (Hook, error) {
 		return nil, err
 	}
 
-	log.Info("repository %s pr %d pull_request_review state %s",
+	log.Infof("repository %s pr %d pull_request_review state %s",
 		data.Repo.GetFullName(), data.PullRequest.GetNumber(),
 		data.PullRequest.GetState())
 	// don't process reviews on closed pull requests
@@ -129,7 +129,7 @@ func createCommentHook(body []byte) (Hook, error) {
 		return nil, nil
 	}
 
-	log.Info("repository %s pr %d issue_comment state %s",
+	log.Infof("repository %s pr %d issue_comment state %s",
 		data.Repo.GetFullName(), data.Issue.GetNumber(),
 		data.Issue.GetState())
 	// don't process comments on closed pull requests
@@ -166,7 +166,7 @@ func createStatusHook(body []byte) (Hook, error) {
 		return nil, err
 	}
 
-	log.Info("repository %s status commit %s",
+	log.Infof("repository %s status commit %s",
 		data.Repo.GetFullName(),
 		data.GetSHA())
 	log.Debug(data)
@@ -199,7 +199,7 @@ func createPRHook(body []byte) (Hook, error) {
 
 	log.Debug(data)
 
-	log.Info("repository %s pr %d pull_request action %s state %s",
+	log.Infof("repository %s pr %d pull_request action %s state %s",
 		data.Repo.GetFullName(), data.PullRequest.GetNumber(),
 		data.GetAction(),
 		data.PullRequest.GetState())
