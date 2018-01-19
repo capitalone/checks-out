@@ -1093,6 +1093,32 @@ func getPullRequestFiles(ctx context.Context, client *github.Client, r *model.Re
 	return res, nil
 }
 
+func (g *Github) GetPullRequestCommits(ctx context.Context, u *model.User, r *model.Repo, number int) ([]model.Commit, error) {
+	client := setupClient(ctx, g.API, u)
+	return getPullRequestCommits(ctx, client, r, number)
+}
+
+func getPullRequestCommits(ctx context.Context, client *github.Client, r *model.Repo, number int) ([]model.Commit, error) {
+	var commits []*github.RepositoryCommit
+	resp, err := buildCompleteList(func(opts *github.ListOptions) (*github.Response, error) {
+		newCommits, resp, err := client.PullRequests.ListCommits(ctx, r.Owner, r.Name, number, opts)
+		commits = append(commits, newCommits...)
+		return resp, err
+	})
+	if err != nil {
+		return nil, createError(resp, err)
+	}
+	res := []model.Commit{}
+	for _, c := range commits {
+		res = append(res, model.Commit{
+			Author:  lowercase.Create(c.Author.GetLogin()),
+			Message: c.Commit.GetMessage(),
+			SHA:     c.GetSHA(),
+		})
+	}
+	return res, nil
+}
+
 func (g *Github) GetPullRequestsForCommit(ctx context.Context, u *model.User, r *model.Repo, sha *string) ([]model.PullRequest, error) {
 	client := setupClient(ctx, g.API, u)
 	return getPullRequestsForCommit(ctx, client, r, sha)

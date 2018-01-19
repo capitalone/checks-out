@@ -135,6 +135,9 @@ type Remote interface {
 	// GetPullRequestFiles returns the changed files associated with a pull request number
 	GetPullRequestFiles(c context.Context, u *model.User, r *model.Repo, number int) ([]model.CommitFile, error)
 
+	// GetPullRequestCommits returns the commits associated with a pull request number
+	GetPullRequestCommits(c context.Context, u *model.User, r *model.Repo, number int) ([]model.Commit, error)
+
 	// GetPullRequestsForCommit returns all pull requests associated with a commit SHA
 	GetPullRequestsForCommit(c context.Context, u *model.User, r *model.Repo, sha *string) ([]model.PullRequest, error)
 
@@ -300,6 +303,10 @@ func GetPullRequest(c context.Context, u *model.User, r *model.Repo, number int)
 
 func GetPullRequestFiles(c context.Context, u *model.User, r *model.Repo, number int) ([]model.CommitFile, error) {
 	return FromContext(c).GetPullRequestFiles(c, u, r, number)
+}
+
+func GetPullRequestCommits(c context.Context, u *model.User, r *model.Repo, number int) ([]model.Commit, error) {
+	return FromContext(c).GetPullRequestCommits(c, u, r, number)
 }
 
 func GetPullRequestsForCommit(c context.Context, u *model.User, r *model.Repo, sha *string) ([]model.PullRequest, error) {

@@ -43,6 +43,7 @@ type ApprovalRequest struct {
 	ApprovalComments    []Feedback
 	DisapprovalComments []Feedback
 	Files               []CommitFile
+	Commits             []Commit
 }
 
 type Feedback interface {

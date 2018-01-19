@@ -65,7 +65,8 @@ type MergeConfig struct {
 }
 
 type FeedbackConfig struct {
-	Types []FeedbackType `json:"types,omitempty"`
+	Types        []FeedbackType `json:"types,omitempty"`
+	AuthorAffirm bool           `json:"authoraffirm"`
 }
 
 type CommentConfig struct {
@@ -88,9 +89,9 @@ type DeployConfig struct {
 }
 
 const (
-	maintainers  = "MAINTAINERS"
-	maintType    = "text"
-	deployment   = "DEPLOYMENTS"
+	maintainers = "MAINTAINERS"
+	maintType   = "text"
+	deployment  = "DEPLOYMENTS"
 )
 
 func DefaultConfig() *Config {

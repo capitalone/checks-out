@@ -23,7 +23,8 @@ import "encoding/json"
 
 func DefaultFeedback() FeedbackConfig {
 	return FeedbackConfig{
-		Types: []FeedbackType{CommentType, ReviewType},
+		Types:        []FeedbackType{CommentType, ReviewType},
+		AuthorAffirm: true,
 	}
 }
 
