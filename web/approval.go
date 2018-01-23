@@ -246,6 +246,8 @@ func authorApproved(request *model.ApprovalRequest) bool {
 	return false
 }
 
+var systemAccounts = set.New("GitHub", "GitHub Enterprise")
+
 func authorAffirm(request *model.ApprovalRequest, policy *model.ApprovalPolicy) bool {
 	var fbConfig *model.FeedbackConfig
 	if policy.Feedback == nil {
@@ -257,6 +259,9 @@ func authorAffirm(request *model.ApprovalRequest, policy *model.ApprovalPolicy) 
 		return true
 	}
 	for _, c := range request.Commits {
+		if systemAccounts.Contains(c.Committer) {
+			continue
+		}
 		if c.Author != request.PullRequest.Author {
 			return authorApproved(request)
 		}

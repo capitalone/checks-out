@@ -1111,9 +1111,10 @@ func getPullRequestCommits(ctx context.Context, client *github.Client, r *model.
 	res := []model.Commit{}
 	for _, c := range commits {
 		res = append(res, model.Commit{
-			Author:  lowercase.Create(c.Author.GetLogin()),
-			Message: c.Commit.GetMessage(),
-			SHA:     c.GetSHA(),
+			Author:    lowercase.Create(c.Author.GetLogin()),
+			Committer: c.Commit.Committer.GetName(),
+			Message:   c.Commit.GetMessage(),
+			SHA:       c.GetSHA(),
 		})
 	}
 	return res, nil
