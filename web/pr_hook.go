@@ -22,12 +22,13 @@ import (
 	"context"
 	"fmt"
 
-	log "github.com/Sirupsen/logrus"
-	multierror "github.com/mspiegel/go-multierror"
 	"github.com/capitalone/checks-out/model"
 	"github.com/capitalone/checks-out/notifier"
 	"github.com/capitalone/checks-out/remote"
 	"github.com/capitalone/checks-out/set"
+
+	log "github.com/Sirupsen/logrus"
+	multierror "github.com/mspiegel/go-multierror"
 )
 
 type ApprovalOutput struct {
@@ -53,7 +54,7 @@ func doPRHookAndNotify(c context.Context, hook *PRHook) (*ApprovalOutput, error)
 	if !actionWhiteList.Contains(hook.Action) {
 		return nil, nil
 	}
-	params, err := GetHookParameters(c, hook.Repo.Slug, true)
+	params, err := GetHookParameters(c, hook.HookCommon, hook.Repo.Slug)
 	if err != nil {
 		return nil, err
 	}

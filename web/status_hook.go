@@ -48,7 +48,7 @@ func (hook *StatusHook) Process(c context.Context) (interface{}, error) {
 		return nil, nil
 	}
 
-	params, err := GetHookParameters(c, hook.Repo.Slug, true)
+	params, err := GetHookParameters(c, hook.HookCommon, hook.Repo.Slug)
 	if err != nil {
 		return nil, err
 	}

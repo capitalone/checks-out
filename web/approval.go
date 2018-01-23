@@ -86,6 +86,8 @@ func approve(c context.Context, params HookParams, id int, setStatus bool) (*App
 
 const authorAffirmMsg = "Multiple committers detected on PR branch. PR author must approve pull request. PR author must review the commits from the other committers."
 
+var affirmMsgActions = set.New("opened", "reopened", "synchronized")
+
 func approvePullRequest(c context.Context, params HookParams, id int, pullRequest *model.PullRequest, setStatus bool) (*ApprovalInfo, error) {
 	user := params.User
 	repo := params.Repo
@@ -106,9 +108,11 @@ func approvePullRequest(c context.Context, params HookParams, id int, pullReques
 
 	if setStatus {
 		if !approval.AuthorAffirmed {
-			err = remote.WriteComment(c, user, repo, pullRequest.Number, authorAffirmMsg)
-			if err != nil {
-				return nil, err
+			if params.Event == "pull_request" && affirmMsgActions.Contains(params.Action) {
+				err = remote.WriteComment(c, user, repo, pullRequest.Number, authorAffirmMsg)
+				if err != nil {
+					return nil, err
+				}
 			}
 		}
 		status, desc := generateStatus(approval)
