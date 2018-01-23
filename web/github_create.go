@@ -67,6 +67,9 @@ func createHook(c context.Context, r *http.Request) (Hook, context.Context, erro
 	case "repository":
 		hook, err = createRepoHook(r, body)
 	}
+	if hook != nil {
+		hook.SetEvent(event)
+	}
 	c2 := usage.AddEventToContext(c, event)
 	return hook, c2, err
 }
@@ -211,6 +214,9 @@ func createPRHook(body []byte) (Hook, error) {
 
 	hook := &PRHook{
 		ApprovalHook: ApprovalHook{
+			HookCommon: HookCommon{
+				ActionType: data.GetAction(),
+			},
 			Issue: &model.Issue{
 				Title:  data.PullRequest.GetTitle(),
 				Number: data.PullRequest.GetNumber(),
@@ -242,7 +248,6 @@ func createPRHook(body []byte) (Hook, error) {
 			},
 			Body: data.PullRequest.GetBody(),
 		},
-		Action: data.GetAction(),
 	}
 
 	return hook, nil
@@ -260,7 +265,9 @@ func createRepoHook(r *http.Request, body []byte) (Hook, error) {
 	log.Debug(data)
 
 	hook := &RepoHook{
-		Action:  data.GetAction(),
+		HookCommon: HookCommon{
+			ActionType: data.GetAction(),
+		},
 		Name:    data.Repo.GetName(),
 		Owner:   data.Repo.Owner.GetLogin(),
 		BaseURL: httputil.GetURL(r),

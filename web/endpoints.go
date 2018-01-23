@@ -39,7 +39,7 @@ func ApprovalStatus(c *gin.Context) {
 		return
 	}
 
-	params, err := GetHookParameters(c, path.Join(owner, name), false)
+	params, err := GetHookParameters(c, path.Join(owner, name), false, "", "")
 	if err != nil {
 		c.Error(err)
 		return

@@ -25,7 +25,7 @@ import (
 )
 
 func doApprovalHook(c context.Context, hook *ApprovalHook) (*ApprovalOutput, error) {
-	params, err := GetHookParameters(c, hook.Repo.Slug, true)
+	params, err := GetHookParameters(c, hook.Repo.Slug, true, hook.Event(), hook.Action())
 	if err != nil {
 		return nil, err
 	}

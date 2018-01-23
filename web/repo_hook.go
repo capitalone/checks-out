@@ -47,12 +47,12 @@ func doRepoHook(c context.Context, hook *RepoHook) (*RepoOutput, error) {
 	}
 
 	repoOutput := &RepoOutput{
-		Action: hook.Action,
+		Action: hook.Action(),
 		Owner:  hook.Owner,
 		Name:   hook.Name,
 	}
 
-	switch hook.Action {
+	switch hook.Action() {
 	case "created":
 		api.TurnOnRepoQuiet(c, user, hook.Owner, hook.Name, hook.BaseURL)
 	case "deleted":
