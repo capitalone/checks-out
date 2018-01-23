@@ -51,7 +51,7 @@ func (hook *PRHook) Process(c context.Context) (interface{}, error) {
 }
 
 func doPRHookAndNotify(c context.Context, hook *PRHook) (*ApprovalOutput, error) {
-	if !actionWhiteList.Contains(hook.Action()) {
+	if !actionWhiteList.Contains(hook.Action) {
 		return nil, nil
 	}
 	params, err := GetHookParameters(c, hook.HookCommon, hook.Repo.Slug)
@@ -67,7 +67,7 @@ func doPRHookAndNotify(c context.Context, hook *PRHook) (*ApprovalOutput, error)
 }
 
 func doPRHook(c context.Context, hook *PRHook, params HookParams) (*ApprovalOutput, *notifier.MessageWrapper, error) {
-	switch hook.Action() {
+	switch hook.Action {
 	case "closed":
 		mw, err := prClosed(c, hook, params)
 		return nil, mw, err
@@ -169,7 +169,7 @@ func handleNotification(c context.Context, prHook *PRHook, params HookParams, ai
 		return mw
 	}
 	var mi notifier.MessageInfo
-	switch prHook.Action() {
+	switch prHook.Action {
 	case "opened":
 		desc := policyDescription(ai)
 		mi.Message = "opened"

@@ -28,13 +28,11 @@ import (
 type Hook interface {
 	Process(c context.Context) (interface{}, error)
 	SetEvent(event string)
-	Event() string
-	Action() string
 }
 
 type HookCommon struct {
-	EventType  string
-	ActionType string
+	Event  string
+	Action string
 }
 
 type ApprovalHook struct {
@@ -103,13 +101,5 @@ func ProcessHook(c *gin.Context) {
 }
 
 func (h *HookCommon) SetEvent(event string) {
-	h.EventType = event
-}
-
-func (h *HookCommon) Event() string {
-	return h.EventType
-}
-
-func (h *HookCommon) Action() string {
-	return h.ActionType
+	h.Event = event
 }

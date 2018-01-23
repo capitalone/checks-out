@@ -38,8 +38,8 @@ func GetHookParameters(c context.Context, h HookCommon, slug string) (HookParams
 	if err != nil {
 		return HookParams{}, err
 	}
-	result.Event = h.Event()
-	result.Action = h.Action()
+	result.Event = h.Event
+	result.Action = h.Action
 	return result, nil
 }
 

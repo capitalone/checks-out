@@ -215,7 +215,7 @@ func createPRHook(body []byte) (Hook, error) {
 	hook := &PRHook{
 		ApprovalHook: ApprovalHook{
 			HookCommon: HookCommon{
-				ActionType: data.GetAction(),
+				Action: data.GetAction(),
 			},
 			Issue: &model.Issue{
 				Title:  data.PullRequest.GetTitle(),
@@ -266,7 +266,7 @@ func createRepoHook(r *http.Request, body []byte) (Hook, error) {
 
 	hook := &RepoHook{
 		HookCommon: HookCommon{
-			ActionType: data.GetAction(),
+			Action: data.GetAction(),
 		},
 		Name:    data.Repo.GetName(),
 		Owner:   data.Repo.Owner.GetLogin(),
