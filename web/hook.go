@@ -21,15 +21,22 @@ package web
 import (
 	"context"
 
-	"github.com/gin-gonic/gin"
 	"github.com/capitalone/checks-out/model"
+	"github.com/gin-gonic/gin"
 )
 
 type Hook interface {
 	Process(c context.Context) (interface{}, error)
+	SetEvent(event string)
+}
+
+type HookCommon struct {
+	Event  string
+	Action string
 }
 
 type ApprovalHook struct {
+	HookCommon
 	Repo  *model.Repo
 	Issue *model.Issue
 }
@@ -46,17 +53,17 @@ type ReviewHook struct {
 type PRHook struct {
 	ApprovalHook
 	PullRequest *model.PullRequest
-	Action      string
 }
 
 type RepoHook struct {
+	HookCommon
 	Name    string
 	Owner   string
-	Action  string
 	BaseURL string
 }
 
 type StatusHook struct {
+	HookCommon
 	SHA    string
 	Status *model.CommitStatus
 	Repo   *model.Repo
@@ -68,6 +75,8 @@ type HookParams struct {
 	Cap      *model.Capabilities
 	Config   *model.Config
 	Snapshot *model.MaintainerSnapshot
+	Event    string
+	Action   string
 }
 
 func ProcessHook(c *gin.Context) {
@@ -89,4 +98,8 @@ func ProcessHook(c *gin.Context) {
 
 		}
 	}
+}
+
+func (h *HookCommon) SetEvent(event string) {
+	h.Event = event
 }

@@ -33,7 +33,7 @@ import (
 func parseMaintainerText(c context.Context, user *model.User, data []byte, r *model.Repo) (*model.Maintainer, error) {
 	m := new(model.Maintainer)
 	m.RawPeople = map[string]*model.Person{}
-	m.RawOrg = map[string]*model.Org{}
+	m.RawOrg = map[string]*model.OrgSerde{}
 
 	buf := bytes.NewBuffer(data)
 	reader := bufio.NewReader(buf)
@@ -71,6 +71,7 @@ func parseMaintainerText(c context.Context, user *model.User, data []byte, r *mo
 		}
 		if team, org0 := ParseTeamName(item); len(team) > 0 {
 			if team == SelfTeam {
+				eagerLoad := "github-org " + org0
 				org := org0
 				if org0 == "" {
 					if !r.Org {
@@ -78,11 +79,12 @@ func parseMaintainerText(c context.Context, user *model.User, data []byte, r *mo
 							r.Owner, r.Name)
 						return nil, badRequest(err)
 					}
-					err := addOrg(m, "github-org repo-self", "_")
-					if err != nil {
-						return nil, err
-					}
 					org = r.Owner
+					eagerLoad = "github-org repo-self"
+				}
+				err := addOrg(m, eagerLoad, "_"+org0)
+				if err != nil {
+					return nil, err
 				}
 				teams, err := remote.ListTeams(c, user, org)
 				if err != nil {
@@ -131,7 +133,7 @@ func parseMaintainerText(c context.Context, user *model.User, data []byte, r *mo
 
 func addOrg(m *model.Maintainer, item string, name string) error {
 	name = strings.ToLower(name)
-	o := &model.Org{People: map[string]bool{item: true}}
+	o := &model.OrgSerde{People: map[string]bool{item: true}}
 	if _, ok := m.RawOrg[name]; ok {
 		err := fmt.Errorf("Duplicate organization detected %s", name)
 		return badRequest(err)

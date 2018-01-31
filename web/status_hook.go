@@ -29,10 +29,10 @@ import (
 )
 
 type StatusResponse struct {
-	SHA  *string `json:"sha,omitempty"`
-	Tag  *string `json:"tag,omitempty"`
-	Err  string  `json:"error,omitempty"`
-	Info string  `json:"info,omitempty"`
+	SHA  string `json:"sha,omitempty"`
+	Tag  string `json:"tag,omitempty"`
+	Err  string `json:"error,omitempty"`
+	Info string `json:"info,omitempty"`
 }
 
 func generateError(msg string, err error, v model.PullRequest, slug string,
@@ -48,7 +48,7 @@ func (hook *StatusHook) Process(c context.Context) (interface{}, error) {
 		return nil, nil
 	}
 
-	params, err := GetHookParameters(c, hook.Repo.Slug, true)
+	params, err := GetHookParameters(c, hook.HookCommon, hook.Repo.Slug)
 	if err != nil {
 		return nil, err
 	}
@@ -167,14 +167,14 @@ func (hook *StatusHook) Process(c context.Context) (interface{}, error) {
 
 			result.Tag = tag
 
-			if tag != nil {
+			if tag != "" {
 				mw.Messages = append(mw.Messages, notifier.MessageInfo{
-					Message: fmt.Sprintf("Tag %s has been added", *tag),
+					Message: fmt.Sprintf("Tag %s has been added", tag),
 					Type:    model.CommentTag,
 				})
 			}
 
-			if mergeConfig.Delete && req.PullRequest.Branch.CompareOwner == hook.Repo.Owner {
+			if mergeConfig.Delete && eligibleForDeletion(req, mw) {
 				err = doMergeDelete(c, user, hook, req)
 				if err != nil {
 					generateError("Unable to delete merged branch", err, v, hook.Repo.Slug, &result, mw)
@@ -206,6 +206,51 @@ func (hook *StatusHook) Process(c context.Context) (interface{}, error) {
 
 func sendMessage(c context.Context, config *model.Config, mw *notifier.MessageWrapper) {
 	notifier.SendMessage(c, config, *mw)
+}
+
+const msgBlockDeletion = "Deletion of the merged branch %s has been blocked. "
+
+func eligibleForDeletion(req *model.ApprovalRequest, mw *notifier.MessageWrapper) bool {
+	if req.PullRequest.Branch.CompareOwner != req.Repository.Owner {
+		mw.Messages = append(mw.Messages, notifier.MessageInfo{
+			Message: fmt.Sprintf(
+				msgBlockDeletion+"It belongs to another owner",
+				req.PullRequest.Branch.CompareName),
+			Type: model.CommentDelete,
+		})
+		return false
+	}
+	cfg := req.Config
+	for _, p := range cfg.Approvals {
+		if p.Scope.ValidateFinal() == nil {
+			if p.Match.Matcher.GetType() != "off" {
+				mw.Messages = append(mw.Messages, notifier.MessageInfo{
+					Message: fmt.Sprintf(
+						msgBlockDeletion+"Approval policy %s has a match that is not 'off'",
+						req.PullRequest.Branch.CompareName, p.Name),
+					Type: model.CommentDelete,
+				})
+				return false
+			}
+			return true
+		}
+		if p.Scope.Branches.Contains(req.PullRequest.Branch.CompareName) {
+			mw.Messages = append(mw.Messages, notifier.MessageInfo{
+				Message: fmt.Sprintf(
+					msgBlockDeletion+"It is mentioned in approval policy %s",
+					req.PullRequest.Branch.CompareName, p.Name),
+				Type: model.CommentDelete,
+			})
+			return false
+		}
+	}
+	mw.Messages = append(mw.Messages, notifier.MessageInfo{
+		Message: fmt.Sprintf(
+			msgBlockDeletion+"Unable to find default approval policy",
+			req.PullRequest.Branch.CompareName),
+		Type: model.CommentDelete,
+	})
+	return false
 }
 
 func doDeployment(c context.Context, user *model.User, config *model.Config, hook *StatusHook, baseName string) error {

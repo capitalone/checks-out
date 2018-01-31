@@ -26,10 +26,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/go-github/github"
 	"github.com/capitalone/checks-out/envvars"
 	"github.com/capitalone/checks-out/exterror"
 	"github.com/capitalone/checks-out/model"
+
+	"github.com/google/go-github/github"
 	"golang.org/x/oauth2"
 )
 
@@ -312,7 +313,7 @@ func testTags(t *testing.T, client *github.Client, repo *github.Repository, bran
 	if len(tags) != 0 {
 		t.Error("Expected zero tags", len(tags))
 	}
-	err = doTag(ctx, client, r, github.String("foo"), branch.Object.SHA)
+	err = doTag(ctx, client, r, "foo", branch.Object.GetSHA())
 	if err != nil {
 		t.Error("Unable to create tags", err)
 	}

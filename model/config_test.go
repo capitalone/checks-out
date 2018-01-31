@@ -237,6 +237,7 @@ func TestOldConfigConvert(t *testing.T) {
       "comment"
       "review"
     ]
+    authoraffirm: true
   }
   audit:
   {
