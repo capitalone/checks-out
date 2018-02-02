@@ -30,6 +30,7 @@ import (
 	"github.com/capitalone/checks-out/model"
 	"github.com/capitalone/checks-out/remote"
 	"github.com/capitalone/checks-out/set"
+	"github.com/capitalone/checks-out/strings/lowercase"
 
 	log "github.com/Sirupsen/logrus"
 )
@@ -84,7 +85,10 @@ func approve(c context.Context, params HookParams, id int, setStatus bool) (*App
 	return approvePullRequest(c, params, id, &pullRequest, setStatus)
 }
 
-const authorAffirmMsg = "Multiple committers detected on PR branch. PR author must approve pull request. PR author must review the commits from the other committers."
+const authorAffirmMsg = "Multiple committers detected on PR branch. " +
+	"Either someone outside of the committers or the PR author must approve the pull request. " +
+	"The PR author approval is to review the commits by the other committers. " +
+	"The PR author can only approve using a pull request comment (GitHub Reviews will not work)."
 
 var affirmMsgActions = set.New("opened", "reopened", "synchronized")
 
@@ -108,7 +112,7 @@ func approvePullRequest(c context.Context, params HookParams, id int, pullReques
 
 	if setStatus {
 		if !approval.AuthorAffirmed {
-			if params.Event == "pull_request" && affirmMsgActions.Contains(params.Action) {
+			if params.Approval != nil && params.Approval.IsApproval(&request) {
 				err = remote.WriteComment(c, user, repo, pullRequest.Number, authorAffirmMsg)
 				if err != nil {
 					return nil, err
@@ -259,7 +263,7 @@ func authorAffirm(request *model.ApprovalRequest, policy *model.ApprovalPolicy) 
 		return true
 	}
 	for _, c := range request.Commits {
-		if systemAccounts.Contains(c.Committer) {
+		if len(c.Parents) == 2 && systemAccounts.Contains(c.Committer) {
 			continue
 		}
 		if c.Author != request.PullRequest.Author {
@@ -269,13 +273,23 @@ func authorAffirm(request *model.ApprovalRequest, policy *model.ApprovalPolicy) 
 	return true
 }
 
+func removeAuthor(author lowercase.String, req *model.ApprovalRequest) {
+	var filter []model.Feedback
+	for _, fb := range req.ApprovalComments {
+		if fb.GetAuthor() != author {
+			filter = append(filter, fb)
+		}
+	}
+	req.ApprovalComments = filter
+}
+
 func calculateApprovalInfo(request *model.ApprovalRequest, policy *model.ApprovalPolicy, audit bool) (*ApprovalInfo, error) {
 	approvers := set.Empty()
 	disapprovers := set.Empty()
 	validAuthor := false
 	validTitle := false
 	validAudit := audit
-	authorAffirm := authorAffirm(request, policy)
+	authAffirm := false
 	approved, err := model.Approve(request, policy,
 		func(f model.Feedback, op model.ApprovalOp) {
 			author := f.GetAuthor().String()
@@ -297,7 +311,32 @@ func calculateApprovalInfo(request *model.ApprovalRequest, policy *model.Approva
 	if err != nil {
 		return nil, err
 	}
-	approved = approved && audit && authorAffirm
+	if !approved {
+		// only after sufficient approvals are received
+		// test the author affirm feature
+		authAffirm = true
+	} else {
+		authAffirm = authorAffirm(request, policy)
+		if !authAffirm {
+			clone := &(*request)
+			for _, c := range request.Commits {
+				removeAuthor(c.Author, clone)
+			}
+			approvers = set.Empty()
+			authAffirm, err = model.Approve(clone, policy,
+				func(f model.Feedback, op model.ApprovalOp) {
+					author := f.GetAuthor().String()
+					switch op {
+					case model.Approval:
+						approvers.Add(author)
+					}
+				})
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+	approved = approved && audit && authAffirm
 
 	ai := ApprovalInfo{
 		Policy:         policy,
@@ -305,7 +344,7 @@ func calculateApprovalInfo(request *model.ApprovalRequest, policy *model.Approva
 		AuthorApproved: validAuthor,
 		TitleApproved:  validTitle,
 		AuditApproved:  validAudit,
-		AuthorAffirmed: authorAffirm,
+		AuthorAffirmed: authAffirm,
 		Approvers:      approvers,
 		Disapprovers:   disapprovers,
 		CurCommentInfo: CurCommentInfo{
@@ -355,7 +394,7 @@ func generateStatus(info *ApprovalInfo) (string, string) {
 		}
 	} else if !info.AuthorAffirmed {
 		status = "error"
-		desc = "multiple committers. author must approve PR"
+		desc = "PR author or non-commit author must approve"
 	} else if !info.AuditApproved {
 		status = "error"
 		desc = "audit chain must be manually approved"
