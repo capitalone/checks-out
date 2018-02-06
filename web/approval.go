@@ -317,12 +317,12 @@ func calculateApprovalInfo(request *model.ApprovalRequest, policy *model.Approva
 	} else {
 		authAffirm = authorAffirm(request, policy)
 		if !authAffirm {
-			clone := &(*request)
+			clone := *request
 			for _, c := range request.Commits {
-				removeAuthor(c.Author, clone)
+				removeAuthor(c.Author, &clone)
 			}
 			approvers = set.Empty()
-			authAffirm, err = model.Approve(clone, policy,
+			authAffirm, err = model.Approve(&clone, policy,
 				func(f model.Feedback, op model.ApprovalOp) {
 					author := f.GetAuthor().String()
 					switch op {
