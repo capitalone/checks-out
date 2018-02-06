@@ -87,7 +87,7 @@ func TestGenerateStatus(t *testing.T) {
 			AuthorAffirmed: false,
 		}: {
 			status: "error",
-			desc:   "PR author or non-commit author must approve",
+			desc:   "non-committer or PR author must approve",
 		},
 
 		&ApprovalInfo{

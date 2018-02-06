@@ -87,8 +87,8 @@ func approve(c context.Context, params HookParams, id int, setStatus bool) (*App
 
 const authorAffirmMsg = "Multiple committers detected on PR branch. " +
 	"Either someone outside of the committers or the PR author must approve the pull request. " +
-	"The PR author approval is to review the commits by the other committers. " +
-	"The PR author can only approve using a pull request comment (GitHub Reviews will not work)."
+	"The PR author can approve to indicate they have reviewed the other commits in the PR. " +
+	"The PR author can approve with a comment on the PR (GitHub Reviews will not work)."
 
 var affirmMsgActions = set.New("opened", "reopened", "synchronized")
 
@@ -394,7 +394,7 @@ func generateStatus(info *ApprovalInfo) (string, string) {
 		}
 	} else if !info.AuthorAffirmed {
 		status = "error"
-		desc = "PR author or non-commit author must approve"
+		desc = "non-committer or PR author must approve"
 	} else if !info.AuditApproved {
 		status = "error"
 		desc = "audit chain must be manually approved"
