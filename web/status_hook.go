@@ -210,6 +210,16 @@ func sendMessage(c context.Context, config *model.Config, mw *notifier.MessageWr
 
 const msgBlockDeletion = "Deletion of the merged branch %s has been blocked. "
 
+func finalPolicyEligible(p *model.ApprovalPolicy) bool {
+	if p.Match.Matcher.GetType() == "off" {
+		return true
+	}
+	if p.Merge != nil && !p.Merge.Delete {
+		return true
+	}
+	return false
+}
+
 func eligibleForDeletion(req *model.ApprovalRequest, mw *notifier.MessageWrapper) bool {
 	if req.PullRequest.Branch.CompareOwner != req.Repository.Owner {
 		mw.Messages = append(mw.Messages, notifier.MessageInfo{
@@ -223,10 +233,12 @@ func eligibleForDeletion(req *model.ApprovalRequest, mw *notifier.MessageWrapper
 	cfg := req.Config
 	for _, p := range cfg.Approvals {
 		if p.Scope.ValidateFinal() == nil {
-			if p.Match.Matcher.GetType() != "off" {
+			if !finalPolicyEligible(p) {
 				mw.Messages = append(mw.Messages, notifier.MessageInfo{
 					Message: fmt.Sprintf(
-						msgBlockDeletion+"Approval policy %s has a match that is not 'off'",
+						msgBlockDeletion+
+							"Approval policy %s must either have match policy "+
+							"'off' or merge deletion disabled",
 						req.PullRequest.Branch.CompareName, p.Name),
 					Type: model.CommentDelete,
 				})
