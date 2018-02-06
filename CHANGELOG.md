@@ -3,6 +3,21 @@ at 4cbae5. Checks-out uses [semantic versioning](http://semver.org/). The
 Checks-out configuration format is incompatible with the LGTM configuration
 format but the legacy format can be parsed.
 
+# 0.25.0
+
+* Add 'authoraffirm' feature when multiple committers on pull request.
+Pull request author must approve the pull request when there are committers
+on the pull request other than the pull request author. This is
+enabled by default.
+* Enhanced logging of GitHub webhook events
+* Lazy loading of teams for github-team repo-self. Teams are only loaded
+when they are needed by the approval policy in the .checks-out file.
+This will fix the triggering of GitHub rate limiters for organizations
+with many teams.
+* github-team repo-self [orgname] support. It is now possible to load
+all the teams from another organization.
+* Fix docker tag validation
+
 # 0.23.0
 
 * Improved error message when configuration or MAINTAINERS file is missing.
