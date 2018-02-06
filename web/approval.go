@@ -85,10 +85,9 @@ func approve(c context.Context, params HookParams, id int, setStatus bool) (*App
 	return approvePullRequest(c, params, id, &pullRequest, setStatus)
 }
 
-const authorAffirmMsg = "Multiple committers detected on PR branch. " +
-	"Either someone outside of the committers or the PR author must approve the pull request. " +
-	"The PR author can approve to indicate they have reviewed the other commits in the PR. " +
-	"The PR author can approve with a comment on the PR (GitHub Reviews will not work)."
+const authorAffirmMsg = "Someone besides the committers and the PR author should approve the pull request. " +
+	"If this is not possible, the PR author can approve to indicate they have reviewed the other commits in the PR. " +
+	"The PR author must approve with a comment directly on the PR (GitHub Reviews comments will not work)."
 
 var affirmMsgActions = set.New("opened", "reopened", "synchronized")
 
