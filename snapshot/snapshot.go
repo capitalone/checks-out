@@ -70,7 +70,11 @@ func findConfig(c context.Context, user *model.User, caps *model.Capabilities, r
 	// look for legacy file
 	rcfile, err = remote.GetContents(c, user, repo, ".lgtm")
 	if err == nil {
-		return model.ParseOldConfig(rcfile)
+		cfg, err = model.ParseOldConfig(rcfile)
+		if err != nil {
+			return nil, badRequest(err)
+		}
+		return cfg, nil
 	}
 	// look for template configuration file in org repository
 	if !repo.Org || len(orgRepoName) == 0 {
