@@ -113,6 +113,7 @@ func createReviewHook(body []byte) (Hook, error) {
 				Slug:  data.Repo.GetFullName(),
 			},
 		},
+		State: lowercase.Create(data.Review.GetState()),
 	}
 
 	return hook, nil
