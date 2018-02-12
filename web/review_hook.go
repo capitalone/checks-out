@@ -25,7 +25,7 @@ import (
 )
 
 func (hook *ReviewHook) Process(c context.Context) (interface{}, error) {
-	approvalOutput, e1 := doApprovalHook(c, &hook.ApprovalHook)
+	approvalOutput, e1 := doApprovalHook(c, &hook.ApprovalHook, hook)
 	if e1 != nil {
 		e2 := sendErrorStatus(c, &hook.ApprovalHook, e1)
 		e1 = multierror.Append(e1, e2)
