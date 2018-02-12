@@ -728,6 +728,13 @@ func TestEligibleForDeletion(t *testing.T) {
 	if !eligibleForDeletion(request, mw) {
 		t.Error("off policy should be eligible for deletion")
 	}
+	config.Approvals[0] = model.DefaultApprovalPolicy()
+	config.Approvals[0].Merge = &model.MergeConfig{
+		Delete: false,
+	}
+	if !eligibleForDeletion(request, mw) {
+		t.Error("disable deletion should allow other branches to be deleted")
+	}
 	config.Approvals = append(config.Approvals, model.DefaultApprovalPolicy())
 	config.Approvals[0].Scope.Branches = set.New("baz")
 	if eligibleForDeletion(request, mw) {

@@ -3,6 +3,20 @@ at 4cbae5. Checks-out uses [semantic versioning](http://semver.org/). The
 Checks-out configuration format is incompatible with the LGTM configuration
 format but the legacy format can be parsed.
 
+# 0.26.0
+
+* Reduce scope of 'authoraffirm' feature. Themessage will only appear
+when the pull request has multiple committers AND there are approvers
+who are also committers. If the approvers are not committers then no
+error message appears. When the error message appears, we have changed
+the wording of the message posted to the pull request.
+* Improvement to branch deletion protected that was added in 0.25.0.
+If deletion of the compare branch is enabled then the final approval
+policy in the policy array must either have a match of "off" or have
+deletion disabled in the policy.
+* Fix several 500-level http responses that should be 400-level
+responses.
+
 # 0.25.0
 
 * Add 'authoraffirm' feature when multiple committers on pull request.

@@ -7,4 +7,5 @@ type Commit struct {
 	Committer string
 	Message   string
 	SHA       string
+	Parents   []string
 }

@@ -22,12 +22,17 @@ import (
 	"context"
 
 	"github.com/capitalone/checks-out/model"
+	"github.com/capitalone/checks-out/strings/lowercase"
 	"github.com/gin-gonic/gin"
 )
 
 type Hook interface {
 	Process(c context.Context) (interface{}, error)
 	SetEvent(event string)
+}
+
+type IsApprover interface {
+	IsApproval(req *model.ApprovalRequest) bool
 }
 
 type HookCommon struct {
@@ -48,6 +53,7 @@ type CommentHook struct {
 
 type ReviewHook struct {
 	ApprovalHook
+	State lowercase.String
 }
 
 type PRHook struct {
@@ -77,6 +83,7 @@ type HookParams struct {
 	Snapshot *model.MaintainerSnapshot
 	Event    string
 	Action   string
+	Approval IsApprover
 }
 
 func ProcessHook(c *gin.Context) {
@@ -98,6 +105,20 @@ func ProcessHook(c *gin.Context) {
 
 		}
 	}
+}
+
+func (h *CommentHook) IsApproval(req *model.ApprovalRequest) bool {
+	c := model.Comment{
+		Body: h.Comment,
+	}
+	return c.IsApproval(req)
+}
+
+func (h *ReviewHook) IsApproval(req *model.ApprovalRequest) bool {
+	r := model.Review{
+		State: h.State,
+	}
+	return r.IsApproval(req)
 }
 
 func (h *HookCommon) SetEvent(event string) {
