@@ -55,17 +55,26 @@ type OrgLazyLoad struct {
 }
 
 func findConfig(c context.Context, user *model.User, caps *model.Capabilities, repo *model.Repo) (*model.Config, error) {
+	var cfg *model.Config
 	var rcfile []byte
 	var exterr, err error
 	// look for configuration file in current repository
 	rcfile, exterr = remote.GetContents(c, user, repo, configFileName)
 	if exterr == nil {
-		return model.ParseConfig(rcfile, caps)
+		cfg, err = model.ParseConfig(rcfile, caps)
+		if err != nil {
+			return nil, badRequest(err)
+		}
+		return cfg, nil
 	}
 	// look for legacy file
 	rcfile, err = remote.GetContents(c, user, repo, ".lgtm")
 	if err == nil {
-		return model.ParseOldConfig(rcfile)
+		cfg, err = model.ParseOldConfig(rcfile)
+		if err != nil {
+			return nil, badRequest(err)
+		}
+		return cfg, nil
 	}
 	// look for template configuration file in org repository
 	if !repo.Org || len(orgRepoName) == 0 {
@@ -82,10 +91,14 @@ func findConfig(c context.Context, user *model.User, caps *model.Capabilities, r
 		return nil, multierror.Append(exterr, err)
 	}
 	rcfile, err = remote.GetContents(c, user, &orgRepo, ConfigTemplateName)
-	if err == nil {
-		return model.ParseConfig(rcfile, caps)
+	if err != nil {
+		return nil, multierror.Append(exterr, err)
 	}
-	return nil, multierror.Append(exterr, err)
+	cfg, err = model.ParseConfig(rcfile, caps)
+	if err != nil {
+		return nil, badRequest(err)
+	}
+	return cfg, nil
 }
 
 func GetConfig(c context.Context, user *model.User, caps *model.Capabilities, repo *model.Repo) (*model.Config, error) {

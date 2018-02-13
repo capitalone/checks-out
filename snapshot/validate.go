@@ -28,14 +28,14 @@ func validateSnapshot(config *model.Config, snapshot *model.MaintainerSnapshot) 
 	var errs error
 	for _, approval := range config.Approvals {
 		err := approval.Match.Validate(snapshot)
-		errs = multierror.Append(errs, err)
+		errs = multierror.Append(errs, badRequest(err))
 		if approval.AntiMatch != nil {
 			err := approval.AntiMatch.Validate(snapshot)
-			errs = multierror.Append(errs, err)
+			errs = multierror.Append(errs, badRequest(err))
 		}
 		if approval.AuthorMatch != nil {
 			err := approval.AuthorMatch.Validate(snapshot)
-			errs = multierror.Append(errs, err)
+			errs = multierror.Append(errs, badRequest(err))
 		}
 	}
 	return errs

@@ -25,5 +25,8 @@ import (
 )
 
 func badRequest(err error) error {
+	if err == nil {
+		return nil
+	}
 	return exterror.Create(http.StatusBadRequest, err)
 }
