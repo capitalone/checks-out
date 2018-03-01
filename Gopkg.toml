@@ -96,16 +96,16 @@
 
 [[override]]
   name = "golang.org/x/net"
-  source = "github.com/golang/net"
+  source = "https://github.com/golang/net.git"
 
 [[override]]
   name = "golang.org/x/oauth2"
-  source = "github.com/golang/oauth2"
+  source = "https://github.com/golang/oauth2.git"
 
 [[override]]
   name = "golang.org/x/sys"
-  source = "github.com/golang/sys"
+  source = "https://github.com/golang/sys.git"
 
 [[override]]
   name = "google.golang.org/appengine"
-  source = "github.com/golang/appengine"
+  source = "https://github.com/golang/appengine.git"
