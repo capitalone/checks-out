@@ -24,7 +24,6 @@ import (
 	"github.com/capitalone/checks-out/envvars"
 	"github.com/capitalone/checks-out/hjson"
 	"github.com/capitalone/checks-out/strings/rxserde"
-
 	"github.com/mspiegel/go-multierror"
 	"github.com/pelletier/go-toml"
 )
@@ -101,6 +100,7 @@ func DefaultConfig() *Config {
 	c.Maintainers.Path = maintainers
 	c.Maintainers.Type = maintType
 	c.Deployment.Path = deployment
+	c.Commit = DefaultCommit()
 	c.Feedback = DefaultFeedback()
 	c.Merge = DefaultMerge()
 	c.Tag = DefaultTag()
