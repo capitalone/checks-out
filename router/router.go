@@ -20,6 +20,7 @@ package router
 
 import (
 	"net/http"
+	"net/http/pprof"
 	"time"
 
 	"github.com/Sirupsen/logrus"
@@ -100,6 +101,11 @@ func Load() http.Handler {
 	if sunlight {
 		e.GET("/api/repos", api.GetAllRepos)
 		e.GET("/version", web.Version)
+		e.GET("/debug/pprof/", gin.WrapF(pprof.Index))
+		e.GET("/debug/pprof/cmdline", gin.WrapF(pprof.Cmdline))
+		e.GET("/debug/pprof/profile", gin.WrapF(pprof.Profile))
+		e.GET("/debug/pprof/symbol", gin.WrapF(pprof.Symbol))
+		e.GET("/debug/pprof/trace", gin.WrapF(pprof.Trace))
 	}
 	e.GET("/api/count", api.GetAllReposCount)
 
