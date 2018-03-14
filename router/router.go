@@ -20,6 +20,8 @@ package router
 
 import (
 	"net/http"
+	"net/http/pprof"
+	rpprof "runtime/pprof"
 	"time"
 
 	"github.com/Sirupsen/logrus"
@@ -100,6 +102,10 @@ func Load() http.Handler {
 	if sunlight {
 		e.GET("/api/repos", api.GetAllRepos)
 		e.GET("/version", web.Version)
+		e.GET("/debug/pprof/", gin.WrapF(pprof.Index))
+		for _, p := range rpprof.Profiles() {
+			e.GET("/debug/pprof/"+p.Name(), gin.WrapH(pprof.Handler(p.Name())))
+		}
 	}
 	e.GET("/api/count", api.GetAllReposCount)
 
