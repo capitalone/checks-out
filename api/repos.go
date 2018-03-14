@@ -36,7 +36,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-// GetAllReposCount gets the count of all repositories managed by Meow.
+// GetAllReposCount gets the count of all repositories managed by Checks-Out.
 func GetAllReposCount(c *gin.Context) {
 	repos, err := store.GetAllRepos(c)
 	if err != nil {
@@ -47,7 +47,7 @@ func GetAllReposCount(c *gin.Context) {
 	c.String(200, "%d", len(repos))
 }
 
-// GetAllRepos gets all public repositories managed by Meow.
+// GetAllRepos gets all public repositories managed by Checks-Out.
 func GetAllRepos(c *gin.Context) {
 	repos, err := store.GetAllRepos(c)
 	if err != nil {
