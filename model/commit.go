@@ -9,3 +9,12 @@ type Commit struct {
 	SHA       string
 	Parents   []string
 }
+
+func DefaultCommit() CommitConfig {
+	return CommitConfig{
+		Range:         Head,
+		AntiRange:     Head,
+		TagRange:      Head,
+		IgnoreUIMerge: true,
+	}
+}
