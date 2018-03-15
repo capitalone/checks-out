@@ -57,7 +57,6 @@ var data Usage
 
 func init() {
 	data = createUsage()
-	Start()
 }
 
 func createUsage() Usage {

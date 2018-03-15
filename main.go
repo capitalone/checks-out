@@ -32,6 +32,7 @@ import (
 	"github.com/capitalone/checks-out/remote"
 	"github.com/capitalone/checks-out/router"
 	"github.com/capitalone/checks-out/store/datastore"
+	"github.com/capitalone/checks-out/usage"
 	"github.com/capitalone/checks-out/version"
 
 	"github.com/Sirupsen/logrus"
@@ -67,6 +68,7 @@ func startService() {
 	setLogLevel(envvars.Env.Monitor.LogLevel)
 
 	logstats.Start()
+	usage.Start()
 
 	r := remote.Get()
 	ds := datastore.Get()
