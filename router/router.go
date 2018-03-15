@@ -103,6 +103,10 @@ func Load() http.Handler {
 		e.GET("/api/repos", api.GetAllRepos)
 		e.GET("/version", web.Version)
 		e.GET("/debug/pprof/", gin.WrapF(pprof.Index))
+		e.GET("/debug/pprof/cmdline", gin.WrapF(pprof.Cmdline))
+		e.GET("/debug/pprof/profile", gin.WrapF(pprof.Profile))
+		e.GET("/debug/pprof/symbol", gin.WrapF(pprof.Symbol))
+		e.GET("/debug/pprof/trace", gin.WrapF(pprof.Trace))
 		for _, p := range rpprof.Profiles() {
 			e.GET("/debug/pprof/"+p.Name(), gin.WrapH(pprof.Handler(p.Name())))
 		}
