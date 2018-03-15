@@ -5,7 +5,7 @@ format but the legacy format can be parsed.
 
 # 0.26.0
 
-* Reduce scope of 'authoraffirm' feature. Themessage will only appear
+* Reduce scope of 'authoraffirm' feature. The message will only appear
 when the pull request has multiple committers AND there are approvers
 who are also committers. If the approvers are not committers then no
 error message appears. When the error message appears, we have changed
