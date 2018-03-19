@@ -35,7 +35,7 @@ import (
 	"github.com/capitalone/checks-out/strings/lowercase"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/google/go-github/github"
+	"github.com/mspiegel/go-github/github"
 	multierror "github.com/mspiegel/go-multierror"
 	"golang.org/x/oauth2"
 )
@@ -512,15 +512,17 @@ func createProtectionRequest(input *github.Protection) *github.ProtectionRequest
 		}
 		inDismissal := inReviews.DismissalRestrictions
 		if len(inDismissal.Users) > 0 || len(inDismissal.Teams) > 0 {
-			outDismissal := &github.DismissalRestrictionsRequest{
-				Users: []string{},
-				Teams: []string{},
-			}
+			users := []string{}
+			teams := []string{}
 			for _, user := range inDismissal.Users {
-				outDismissal.Users = append(outDismissal.Users, user.GetLogin())
+				users = append(users, user.GetLogin())
 			}
 			for _, team := range inDismissal.Teams {
-				outDismissal.Teams = append(outDismissal.Teams, team.GetSlug())
+				teams = append(teams, team.GetSlug())
+			}
+			outDismissal := &github.DismissalRestrictionsRequest{
+				Users: &users,
+				Teams: &teams,
 			}
 			outReviews.DismissalRestrictionsRequest = outDismissal
 		}
@@ -816,7 +818,7 @@ func getAllReviews(ctx context.Context, client *github.Client, r *model.Repo, nu
 	if err != nil {
 		return nil, createError(resp, err)
 	}
-	// error checking to handle https://github.com/google/go-github/issues/540
+	// error checking to handle https://github.com/mspiegel/go-github/issues/540
 	if resp.StatusCode != http.StatusOK {
 		err = fmt.Errorf("Unable to retrieve PR reviews for %s %d", r.Slug, num)
 		return nil, createError(resp, err)

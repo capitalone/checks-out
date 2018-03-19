@@ -45,9 +45,6 @@
   version = "1.2.0"
 
 [[constraint]]
-  name = "github.com/google/go-github"
-
-[[constraint]]
   name = "github.com/hashicorp/go-version"
 
 [[constraint]]
@@ -109,3 +106,7 @@
 [[override]]
   name = "google.golang.org/appengine"
   source = "github.com/golang/appengine"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/mspiegel/go-github"

@@ -33,7 +33,7 @@ import (
 	"github.com/capitalone/checks-out/usage"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/google/go-github/github"
+	"github.com/mspiegel/go-github/github"
 )
 
 // TODO: move this into its own package when
