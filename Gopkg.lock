@@ -39,7 +39,11 @@
 
 [[projects]]
   name = "github.com/gin-gonic/gin"
-  packages = [".","binding","render"]
+  packages = [
+    ".",
+    "binding",
+    "render"
+  ]
   revision = "d459835d2b077e44f7c9b453505ee29881d5d12d"
   version = "v1.2"
 
@@ -54,12 +58,6 @@
   name = "github.com/golang/protobuf"
   packages = ["proto"]
   revision = "130e6b02ab059e7b717a096f397c5b60111cae74"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/google/go-github"
-  packages = ["github"]
-  revision = "464f5a91396a85da262abcac0b0a0aaf5b8f3c02"
 
 [[projects]]
   branch = "master"
@@ -93,7 +91,10 @@
 
 [[projects]]
   name = "github.com/joho/godotenv"
-  packages = [".","autoload"]
+  packages = [
+    ".",
+    "autoload"
+  ]
   revision = "a79fa1e548e2c689c241d10173efd51e5d689d5b"
   version = "v1.2.0"
 
@@ -106,7 +107,10 @@
 [[projects]]
   branch = "master"
   name = "github.com/lib/pq"
-  packages = [".","oid"]
+  packages = [
+    ".",
+    "oid"
+  ]
   revision = "456514e2defec52e0cd37f90ccf17ec8b28295e2"
 
 [[projects]]
@@ -126,6 +130,12 @@
   packages = ["."]
   revision = "ca5e3819723d8eeaf170ad510e7da1d6d2e94a08"
   version = "v1.2.0"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/mspiegel/go-github"
+  packages = ["github"]
+  revision = "c1b36dad58baa3ef8b5e9a9a42a8dc247b262ee4"
 
 [[projects]]
   branch = "master"
@@ -154,7 +164,10 @@
 [[projects]]
   branch = "master"
   name = "github.com/rubenv/sql-migrate"
-  packages = [".","sqlparse"]
+  packages = [
+    ".",
+    "sqlparse"
+  ]
   revision = "79fe99e24311fa42469fb2ca23eb3f8f065e6155"
 
 [[projects]]
@@ -171,7 +184,10 @@
 
 [[projects]]
   name = "github.com/stretchr/testify"
-  packages = ["assert","mock"]
+  packages = [
+    "assert",
+    "mock"
+  ]
   revision = "69483b4bd14f5845b5a1e55bca19e954e827f1d0"
   version = "v1.1.4"
 
@@ -184,14 +200,20 @@
 [[projects]]
   branch = "master"
   name = "golang.org/x/net"
-  packages = ["context","context/ctxhttp"]
+  packages = [
+    "context",
+    "context/ctxhttp"
+  ]
   revision = "aabf50738bcdd9b207582cbe796b59ed65d56680"
   source = "github.com/golang/net"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/oauth2"
-  packages = [".","internal"]
+  packages = [
+    ".",
+    "internal"
+  ]
   revision = "bb50c06baba3d0c76f9d125c0719093e315b5b44"
   source = "github.com/golang/oauth2"
 
@@ -204,7 +226,15 @@
 
 [[projects]]
   name = "google.golang.org/appengine"
-  packages = ["internal","internal/base","internal/datastore","internal/log","internal/remote_api","internal/urlfetch","urlfetch"]
+  packages = [
+    "internal",
+    "internal/base",
+    "internal/datastore",
+    "internal/log",
+    "internal/remote_api",
+    "internal/urlfetch",
+    "urlfetch"
+  ]
   revision = "150dc57a1b433e64154302bdc40b6bb8aefa313a"
   source = "github.com/golang/appengine"
   version = "v1.0.0"
@@ -224,7 +254,13 @@
 [[projects]]
   branch = "v2"
   name = "gopkg.in/mgo.v2"
-  packages = [".","bson","internal/json","internal/sasl","internal/scram"]
+  packages = [
+    ".",
+    "bson",
+    "internal/json",
+    "internal/sasl",
+    "internal/scram"
+  ]
   revision = "3f83fa5005286a7fe593b055f0d7771a7dce4655"
 
 [[projects]]
@@ -236,6 +272,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "3fbdbca37fb5208da80d2ce2e1fb73b619ba3f4b52ad8c3cf380a06ed23ff8bf"
+  inputs-digest = "351009f13a508a7ef5ba67d601ff3f40762d41c4eb041160f1b379eb8a821b81"
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -34,7 +34,7 @@ import (
 	gh "github.com/capitalone/checks-out/remote/github"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/google/go-github/github"
+	"github.com/mspiegel/go-github/github"
 	"golang.org/x/oauth2"
 )
 

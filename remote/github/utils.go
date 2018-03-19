@@ -29,13 +29,13 @@ import (
 	"github.com/capitalone/checks-out/model"
 	"github.com/capitalone/checks-out/usage"
 
-	"github.com/google/go-github/github"
+	"github.com/mspiegel/go-github/github"
 	"golang.org/x/oauth2"
 )
 
 const (
-	gitHubSubstring = "github.com/google/go-github/"
-	gitHubCaller    = "github.com/google/go-github/github.(*Client).Do"
+	gitHubSubstring = "github.com/mspiegel/go-github/"
+	gitHubCaller    = "github.com/mspiegel/go-github/github.(*Client).Do"
 )
 
 type UserTransport struct {

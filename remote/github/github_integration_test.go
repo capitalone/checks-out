@@ -30,7 +30,7 @@ import (
 	"github.com/capitalone/checks-out/exterror"
 	"github.com/capitalone/checks-out/model"
 
-	"github.com/google/go-github/github"
+	"github.com/mspiegel/go-github/github"
 	"golang.org/x/oauth2"
 )
 

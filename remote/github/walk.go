@@ -25,7 +25,7 @@ import (
 	"github.com/capitalone/checks-out/model"
 	"github.com/capitalone/checks-out/set"
 
-	"github.com/google/go-github/github"
+	"github.com/mspiegel/go-github/github"
 )
 
 var systemAccounts = set.New("GitHub", "GitHub Enterprise")
