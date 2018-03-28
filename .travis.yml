@@ -8,5 +8,6 @@ install:
   - export PATH=$GOPATH/bin:$PATH
   - rm -rf vendor
   - dep ensure
+  - dep status
 
 script: make test
