@@ -669,7 +669,7 @@ func (g *Github) SetOrgHook(ctx context.Context, user *model.User, org *model.Or
 
 	old, err := getOrgHook(ctx, client, org.Owner, link)
 	if err == nil && old != nil {
-		client.Organizations.DeleteHook(ctx, org.Owner, int(old.GetID()))
+		client.Organizations.DeleteHook(ctx, org.Owner, old.GetID())
 	}
 
 	_, err = createOrgHook(ctx, client, org.Owner, link)
@@ -690,7 +690,7 @@ func (g *Github) DelOrgHook(ctx context.Context, user *model.User, org *model.Or
 	} else if hook == nil {
 		return nil
 	}
-	resp, err := client.Organizations.DeleteHook(ctx, org.Owner, int(hook.GetID()))
+	resp, err := client.Organizations.DeleteHook(ctx, org.Owner, hook.GetID())
 	if err != nil {
 		return createError(resp, err)
 	}
