@@ -1,6 +1,6 @@
 language: go
 go:
-  - 1.x.x
+  - "1.x.x"
 
 install:
   - go get -u github.com/golang/dep
