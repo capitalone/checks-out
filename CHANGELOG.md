@@ -3,6 +3,10 @@ at 4cbae5. Checks-out uses [semantic versioning](http://semver.org/). The
 Checks-out configuration format is incompatible with the LGTM configuration
 format but the legacy format can be parsed.
 
+# 0.27.0
+
+* Change default behavior of 'ignoreuimerge' from false to true.
+
 # 0.26.0
 
 * Reduce scope of 'authoraffirm' feature. The message will only appear
