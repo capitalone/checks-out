@@ -279,7 +279,7 @@ func getTeamMembers(ctx context.Context, client *github.Client, org string, team
 	if err != nil {
 		return nil, err
 	}
-	var id *int
+	var id *int64
 	for _, t := range teams {
 		if strings.EqualFold(t.GetSlug(), team) {
 			id = t.ID
@@ -512,15 +512,17 @@ func createProtectionRequest(input *github.Protection) *github.ProtectionRequest
 		}
 		inDismissal := inReviews.DismissalRestrictions
 		if len(inDismissal.Users) > 0 || len(inDismissal.Teams) > 0 {
-			outDismissal := &github.DismissalRestrictionsRequest{
-				Users: []string{},
-				Teams: []string{},
-			}
+			users := []string{}
+			teams := []string{}
 			for _, user := range inDismissal.Users {
-				outDismissal.Users = append(outDismissal.Users, user.GetLogin())
+				users = append(users, user.GetLogin())
 			}
 			for _, team := range inDismissal.Teams {
-				outDismissal.Teams = append(outDismissal.Teams, team.GetSlug())
+				teams = append(teams, team.GetSlug())
+			}
+			outDismissal := &github.DismissalRestrictionsRequest{
+				Users: &users,
+				Teams: &teams,
 			}
 			outReviews.DismissalRestrictionsRequest = outDismissal
 		}
