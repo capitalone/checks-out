@@ -61,15 +61,19 @@ test-cover-html:
 fmt:
 	for FILE in $(NOVENDOR_FILES); do go fmt $$FILE; done;
 
-vet:
+vet: get-modules
 	@echo 'Running go tool vet -shadow'
 	@for FILE in $(NOVENDOR_FILES); do go tool vet -shadow $$FILE || exit 1; done;
 
-lint:
+lint: get-modules
 	for FILE in $(NOVENDOR_FILES); do golint $$FILE; done;
 
 clean:
 	rm -f checks-out report.out
+
+get-modules:
+	go mod download
+	go mod verify
 
 test-mysql:
 	DB_DRIVER="mysql" DB_SOURCE="root@tcp(127.0.0.1:3306)/test?parseTime=true" go test -v -cover github.com/capitalone/checks-out/store/datastore
