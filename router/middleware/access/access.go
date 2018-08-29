@@ -34,7 +34,7 @@ func OwnerAdmin(c *gin.Context) {
 
 	perm, err := remote.GetOrgPerm(c, user, owner)
 	if err != nil {
-		log.Warnf("Cannot find org %s/%s. %s", owner, err)
+		log.Warnf("Cannot find org %s. %s", owner, err)
 		c.String(404, "Not Found")
 		c.Abort()
 		return

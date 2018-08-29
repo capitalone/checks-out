@@ -96,7 +96,7 @@ func createReviewHook(body []byte) (Hook, error) {
 		data.PullRequest.GetState())
 	// don't process reviews on closed pull requests
 	if data.PullRequest.GetState() == "closed" {
-		log.Debugf("PR %s is closed -- not processing comments for it any more", data.PullRequest.Title)
+		log.Debugf("PR %s is closed -- not processing comments for it any more", *(data.PullRequest.Title))
 		return nil, nil
 	}
 
@@ -138,7 +138,7 @@ func createCommentHook(body []byte) (Hook, error) {
 		data.Issue.GetState())
 	// don't process comments on closed pull requests
 	if data.Issue.GetState() == "closed" {
-		log.Debugf("PR %s is closed -- not processing comments for it any more", data.Issue.Title)
+		log.Debugf("PR %s is closed -- not processing comments for it any more", *(data.Issue.Title))
 		return nil, nil
 	}
 
