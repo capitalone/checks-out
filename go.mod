@@ -1,0 +1,42 @@
+module github.com/capitalone/checks-out
+
+require (
+	github.com/Sirupsen/logrus v0.11.5
+	github.com/davecgh/go-spew v1.1.0
+	github.com/dgrijalva/jwt-go v3.1.0+incompatible
+	github.com/elazarl/go-bindata-assetfs v1.0.0
+	github.com/franela/goblin v0.0.0-20170821161553-b962efd4bb2a
+	github.com/gin-contrib/sse v0.0.0-20170109093832-22d885f9ecc7
+	github.com/gin-gonic/gin v0.0.0-20170702092826-d459835d2b07
+	github.com/go-sql-driver/mysql v1.3.0
+	github.com/golang/protobuf v0.0.0-20170920220647-130e6b02ab05
+	github.com/google/go-github v0.0.0-20180723152927-e1be32f26e66
+	github.com/google/go-querystring v0.0.0-20170111101155-53e6ce116135
+	github.com/hashicorp/errwrap v0.0.0-20141028054710-7554cd9344ce
+	github.com/hashicorp/go-version v0.0.0-20170914154128-fc61389e27c7
+	github.com/hjson/hjson-go v0.2.3
+	github.com/ianschenck/envflag v0.0.0-20140720210342-9111d830d133
+	github.com/joho/godotenv v1.2.0
+	github.com/koding/cache v0.0.0-20161222233015-e8a81b0b3f20
+	github.com/lib/pq v0.0.0-20171019223007-456514e2defe
+	github.com/mattn/go-isatty v0.0.3
+	github.com/mattn/go-jsonpointer v0.0.0-20170427002117-a39417dc2a77
+	github.com/mattn/go-sqlite3 v1.2.0
+	github.com/mspiegel/go-multierror v0.0.0-20170309222903-065aa648c994
+	github.com/pelletier/go-toml v1.0.1
+	github.com/pkg/errors v0.8.0
+	github.com/pmezard/go-difflib v1.0.0
+	github.com/rubenv/sql-migrate v0.0.0-20170824124545-79fe99e24311
+	github.com/russross/meddler v0.0.0-20170319163028-9515f6b01c15
+	github.com/stretchr/objx v0.0.0-20150928122152-1a9d0bb9f541
+	github.com/stretchr/testify v1.1.4
+	github.com/ugorji/go v0.0.0-20171019201919-bdcc60b419d1
+	golang.org/x/net v0.0.0-20171019164906-aabf50738bcd
+	golang.org/x/oauth2 v0.0.0-20170928010508-bb50c06baba3
+	golang.org/x/sys v0.0.0-20171017063910-8dbc5d05d6ed
+	google.golang.org/appengine v1.0.0
+	gopkg.in/go-playground/validator.v8 v8.18.2
+	gopkg.in/gorp.v1 v1.7.1
+	gopkg.in/mgo.v2 v2.0.0-20160818020120-3f83fa500528
+	gopkg.in/yaml.v2 v2.0.0-20170812160011-eb3733d160e7
+)
