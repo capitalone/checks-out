@@ -73,7 +73,7 @@ func Login(c *gin.Context) {
 	} else if err == sql.ErrNoRows {
 		err = validateUserAccess(c, tmpuser)
 		if err != nil {
-			log.Warnf("cannot create account for user. %s", tmpuser.Login, err)
+			log.Warnf("cannot create account for user %s. %s", tmpuser.Login, err)
 			c.Redirect(303, "/login?error=no_access_error")
 			return
 		}
