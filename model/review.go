@@ -25,7 +25,7 @@ import (
 )
 
 type Review struct {
-	ID          int
+	ID          int64
 	Author      lowercase.String
 	Body        string
 	SubmittedAt time.Time
