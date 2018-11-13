@@ -22,7 +22,7 @@ be populated with the default values for that section.
 
 For example here are all the default values of the .checks-out file:
 
-```
+```json
 approvals:
 [
   {
@@ -95,7 +95,7 @@ the file. Here is a valid .checks-out file where we are changing
 the number of approvers from 1 to 2 and the remaining properties
 use the default values:
 
-```
+```json
 approvals:
 [
   {
@@ -147,13 +147,15 @@ when the request is opened. The comment will describe which approval policy
 is being applied to the pull request.
 
 ## Policy Scope
-```
+
+```json
 scope:
 {
   branches: []
   paths: []
 }
 ```
+
 If the 'branches' array is non-empty then the policy is limited
 to the specified branches. In GitHub terminology this is a list of base
 branches. The base branch is where the changes should be applied.
@@ -170,7 +172,8 @@ expression `**.java`. To match against recursively against all files
 in a subdirectory use `foo/bar/**`.
 
 ## Policy Name
-```
+
+```json
 name: ""
 ```
 
@@ -180,9 +183,11 @@ identified by it's 1-based offset into the policy array. If the name is
 nonempty then no two policies can have the same name.
 
 ## Policy Match
-```
+
+```json
 match: "all[count=1,self=true]"
 ```
+
 The policy match algorithms are specified with a domain-specific language (DSL).
 The DSL is based around the concept of organization approvals. Boolean operators
 can be used to combine organizations. Parenthesis may be used to defined
@@ -190,18 +195,22 @@ precedence of operations. There are several predefined organizations: "all",
 "universe", "us", and "them".
 
 ### All Match
-```
+
+```json
 match: "all[count=1,self=true]"
 ```
+
 This matches against anyone in the MAINTAINERS file. The 'count'
 field determines the minimum amount of approvals for a pull request
 to be accepted. The 'self' field determines whether the author
 of a pull request is allowed to approve the pull request.
 
 ### Universe Match
-```
+
+```json
 match: "universe[count=1,self=true]"
 ```
+
 This is a variation of "all" matching where anyone with an account
 on this GitHub instance can approve the pull request. The 'count'
 field determines the minimum amount of approvals for a pull request
@@ -209,9 +218,11 @@ to be accepted. The 'self' field determines whether the author
 of a pull request is allowed to approve the pull request.
 
 ### Us Match
-```
+
+```json
 match: "us[count=1,self=true]"
 ```
+
 This policy will match to any person that has at least one organization
 in common with the author of the pull request. The 'count'
 field determines the minimum amount of approvals for a pull request
@@ -219,9 +230,11 @@ to be accepted. The 'self' field determines whether the author
 of a pull request is allowed to approve the pull request.
 
 ### Them Match
-```
+
+```json
 match: "them[count=1,self=true]"
 ```
+
 This policy will match to any person that has at least no organizations
 in common with the author of the pull request. The 'count'
 field determines the minimum amount of approvals for a pull request
@@ -229,7 +242,8 @@ to be accepted. The 'self' field determines whether the author
 of a pull request is allowed to approve the pull request.
 
 ### Org Match
-```
+
+```json
 match: "foo[count=1,self=true]"
 ```
 
@@ -240,7 +254,8 @@ The 'self' field determines whether the author
 of a pull request is allowed to approve the pull request.
 
 ### Anonymous Org Match
-```
+
+```json
 match: "{john,jane,sally}[count=1,self=true]"
 ```
 
@@ -251,66 +266,83 @@ organizations for a pull request to be accepted. The 'self' field determines
 whether the author of a pull request is allowed to approve the pull request.
 
 ### And Match
-```
+
+```json
 match: "foo[count=1,self=true] and bar[count=1,self=true]"
 ```
+
 This policy allows you to combine two or more policies. All
 of the policies must be met in order for this policy to be true.
 
 ### Or Match
-```
+
+```json
 match: "foo[count=1,self=true] or bar[count=1,self=true]"
 ```
+
 This policy allows you to combine two or more policies. One
 or more of the policies must be met in order for this policy
 to be true.
 
 ### Not Match
-```
+
+```json
 match: "not foo[count=1,self=true]"
 ```
+
 This policy allows you to negate another policy.
 
 ### True Match
-```
+
+```json
 match: "true"
 ```
+
 This policy allows all pull requests. It's very likely that you
 want to use the "off" approval policy instead of this policy.
 
 ### False Match
-```
+
+```json
 match: "false"
 ```
+
 This policy allows no pull requests.
 
 ### Disable Match
-```
+
+```json
 match: "off"
 ```
+
 This policy disables the service. Added in version 0.6.10.
 
 This is identical to the approval policy "true" with the addition that
 it adds a local merge policy to disable automatic merging of branches.
 
 ### Atleast Function
-```
+
+```json
 match: "atleast(2, foo[count=3,self=false], bar, baz, {jane,john})"
 ```
+
 This function requires at least N of the specified groups to match
 successfully, where N is the first parameter to the function.
 
 ### Author Function
-```
+
+```json
 match: "author(foo or bar or not {jane,john})"
 ```
+
 This function checks to see who is the author for the pull request. It is used to limit an approval policy to a set of authors. The potential author can be specified using an expression built out of the other matching expression terms. Since a pull request can only have a single author, any expression that can only be satisfied by more than one author, such as specifying `foo and bar`, or `foo[count=2]` will create a case that cannot match.
 
-
 ## Pattern
-```
+
+```json
 pattern: "(?i)^checks-out\\s*(?P<version>\\S*)"
 ```
+
 The regular expression that checks-out matches against the comment on a GitHub
 pull request. The version capture group must be specified if
 the version section of .checks-out is enable.
@@ -320,10 +352,12 @@ recommended testing custom regular expressions in the [Go
 playground](http://play.golang.org/p/nQx_jGsLHz).
 
 ## Disapproval
-```
+
+```json
 antipattern: null
 antimatch: "all[count=1,self=true]"
 ```
+
 checks-out has optional support for allowing the reviewer to raise a concern.
 If an 'antipattern' is specified then the disapproval policy is enabled.
 The disapproval policy is specified by the 'antimatch' parameter.
@@ -351,7 +385,8 @@ objection will persist and the reviewer must enter another comment with
 the approval string.
 
 ## Author Restriction
-```
+
+```json
 authormatch: "universe[count=1,self=true]"
 ```
 
@@ -363,9 +398,11 @@ MAINTAINERS file to submit a pull request. Since a pull request can only have a 
 The difference between `authormatch` and the `author` function in the `match` is subtle. `author` is used to specify that a match rule applies an approval policy to a set of authors. `authormatch` is used to specify which authors can create pull requests at all.
 
 ## Work-In-Progress Pull Requests
-```
+
+```json
 antititle: null
 ```
+
 Optionally specify a regular expression that checks-out matches against the title
 of a GitHub pull request. If the title matches then block the pull request
 from being merged. A common value is "^WIP:". This feature was added in
@@ -376,7 +413,8 @@ recommended testing custom regular expressions in the [Go
 playground](http://play.golang.org/p/nQx_jGsLHz).
 
 ## Commit
-```
+
+```json
 commit:
 {
   range: head
@@ -385,6 +423,7 @@ commit:
   ignoreuimerge: false
 }
 ```
+
 The range options affect the processing of commits on the pull request. The
 range fields can have two possible values: "head" or "all". "head" will use the
 comments that occur after the timestamp of the HEAD of the branch. "all" will
@@ -397,18 +436,21 @@ and 'tagrange' was introduced in version 0.7.7.
 GitHub user interface (by clicking on "update branch").
 
 ## Maintainers
-```
+
+```json
 maintainers:
 {
   path: MAINTAINERS
   type: text
 }
 ```
+
 The path to the file that specifies the [project maintainers](../maintainers).
 The type field can be "text", "hjson", "toml", or "legacy".
 
 ## Merge
-```
+
+```json
 merge:
 {
   enable: false
@@ -417,10 +459,36 @@ merge:
   uptodate: true
 }
 ```
+
 checks-out has the ability to automatically merge a pull request when the branch is
 mergeable and all status checks (including optional ones) have passed. If
 the delete flag is true then the head branch is deleted after a successful
-merge. The delete flag was introduced in version 0.5.18.
+merge. The delete flag was introduced in version 0.5.18. This only works if defined
+inside a scoped block of approval policy, example provided:
+
+```json
+approvals:
+[
+  {
+    name: "dev"
+    scope:
+    {
+      branches: [ "develop", "qa", "release" ]
+    }
+    match: "all[count=1,self=true]"
+    merge:
+    {
+      enable: true
+      delete: true
+      method: "merge"
+      uptodate: true
+    }
+]
+```
+
+The final approval policy must also have no scope and be: `match: "off"`
+
+This is to prevent random branch deletions and means that delete is explicitly opt-in.
 
 If you enable automatic merges in the global merge section and you have
 an approval policy that is the policy "true", then you are
@@ -438,7 +506,8 @@ merge. This parameter is enabled by default. It was introduced in
 version 0.21.0.
 
 ## Tag
-```
+
+```json
 tag:
 {
   enable: false
@@ -448,6 +517,7 @@ tag:
   docker: false
 }
 ```
+
 checks-out has the ability to automatically place a tag on a merge.
 There are three tagging algorithms: "semver", "timestamp-rfc3339",
 and "timestamp-millis". The 'template' field defines the
@@ -465,7 +535,7 @@ The semantic versioning standard is described at <http://semver.org/>.
 
 Approval comments are used to provide the semantic version for the current pull request. By default, the version is specified after the I approve string:
 
-```
+```comment
 I approve 1.0.0
 ```
 
@@ -483,15 +553,18 @@ set to the highest specified version tag with the patch version incremented.
 There are currently two options for timestamps, one based on the RFC 3339 standard and one specifying milliseconds since the epoch (Jan 1, 1970, 12:00:00AM UTC).
 
 The type "timestamp-rfc3339" will look like this:
-```
+
+```comment
 2016-05-16T19.06.26Z
 ```
+
 (colons aren't legal in git tags, so the colons in the RFC format have been replaced by periods.)
 
 The type "timestamp-millis" specifies the number of milliseconds since the epoch.
 
 ## Feedback
-```
+
+```json
 feedback:
 {
   type: ["comment", "review"]
@@ -503,13 +576,15 @@ type determines which kinds of events are processed. "comment" accepts
 pull request comments. "review" accepts pull request reviews.
 
 ## Comment
-```
+
+```json
 comment:
 {
   enable: false
   targets: []  
 }
 ```
+
 Allows notifications to be sent to output channels when checks-out performs an
 action. Legal values for the "types" field are the following:
 
@@ -527,7 +602,8 @@ action. Legal values for the "types" field are the following:
 * "author" Pull request is blocked because author is not approved
 
 ### GitHub Comments
-```
+
+```json
 {
   target: github
   pattern: null
@@ -542,7 +618,8 @@ is described above. If types is empty then all types send notifications.
 GitHub comments was introduced in 0.7.9.
 
 ### Slack Comments
-```
+
+```json
 {
   target: foobar.slack.com
   pattern: null
@@ -562,16 +639,18 @@ The Slack integration allows custom servers to be specified.
 
 The target field can be the hostname of the Slack target such as "foobar.slack.com".
 If that hostname has been previously registered with the checks-out service then you
-will be able to use it. Otherwise you need to register a [Slack Webhook] (https://api.slack.com/incoming-webhooks) with the checks-out service. Use the
+will be able to use it. Otherwise you need to register a [Slack Webhook](https://api.slack.com/incoming-webhooks) with the checks-out service. Use the
 /api/user/slack/:hostname endpoint to register the webhook. This is documented
 on the API page.
 
 ## Deploy
-```
+
+```json
 deploy:
 {
   enable: false
   deployment: DEPLOYMENTS
 }
 ```
+
 TODO: add documentation
