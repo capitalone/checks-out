@@ -20,7 +20,7 @@ You can customize many options using a .checks-out file in your repository. Plea
 The simplest way to configure checks-out is to create a .checks-out file the
 default branch of your GitHub repository with the contents:
 
-```
+```json
 approvals:
 [
   {
@@ -33,7 +33,7 @@ approvals:
 
 Create a MAINTAINERS file in the default branch with the contents:
 
-```
+```json
 github-org repo-self
 ```
 
