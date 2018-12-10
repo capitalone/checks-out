@@ -22,7 +22,7 @@ The text format can be any of the following types.
 
 Username, separated by newline:
 
-```
+```json
 foo
 bar
 baz
@@ -30,7 +30,7 @@ baz
 
 Username and email address, separated by newline:
 
-```
+```json
 foo <foo@mail.com>
 bar <bar@mail.com>
 baz <baz@mail.com>
@@ -38,7 +38,7 @@ baz <baz@mail.com>
 
 FullName, email address and username, separated by newline:
 
-```
+```json
 Fooshure Jones <foo@mail.com> (@foo)
 Bar None <bar@mail.com> (@bar)
 Bazinga Smith <baz@mail.com> (@baz)
@@ -48,7 +48,7 @@ Directives for importing GitHub organizations and GitHub teams.
 These directives populate both the 'people' and 'org' fields
 with the correct values (see below).
 
-```
+```json
 github-org foo # loads organization foo
 github-team bar # loads team bar within the organization of the repository
 github-team bar foo # loads team bar from organization foo
@@ -57,7 +57,8 @@ github-team repo-self # loads all the teams of the repository
 ```
 
 In the examples above the groups are automatically assigned the following names:
-```
+
+```json
 foo
 bar
 foo-bar
@@ -75,7 +76,7 @@ The github-org and github-team directives can be used in the 'group' section
 but not in the 'people' section. These directives will populate the correct
 values into the 'people' section.
 
-```
+```json
 {
   people:
   {

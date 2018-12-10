@@ -10,7 +10,7 @@ toc = true
 Here are some templates you can use to write the approval policy section
 of your .checks-out configuration.
 
-```
+```json
 match: "all[count=1,self=false]"
 ```
 
@@ -21,7 +21,7 @@ will expand to everyone within the organization of the GitHub repository.
 self=false forbids the author of the pull request to approve their own
 request. If you want self-approval then use "all[count=1,self=true]"
 
-```
+```json
 match: "sharks[count=1,self=false] and jets[count=1,self=false]"
 ```
 
@@ -33,7 +33,7 @@ do not require a second reviewer. In general, the teams work best when
 they are non-overlapping. But the next example takes advantage of
 overlapping groups.
 
-```
+```json
 match: "all[count=2,self=false] and reviewers[count=1,self=false]"
 ```
 
