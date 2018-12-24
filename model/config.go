@@ -24,7 +24,6 @@ import (
 	"github.com/capitalone/checks-out/envvars"
 	"github.com/capitalone/checks-out/hjson"
 	"github.com/capitalone/checks-out/strings/rxserde"
-
 	"github.com/mspiegel/go-multierror"
 	"github.com/pelletier/go-toml"
 )
@@ -65,7 +64,8 @@ type MergeConfig struct {
 }
 
 type FeedbackConfig struct {
-	Types []FeedbackType `json:"types,omitempty"`
+	Types        []FeedbackType `json:"types,omitempty"`
+	AuthorAffirm bool           `json:"authoraffirm"`
 }
 
 type CommentConfig struct {
@@ -88,9 +88,9 @@ type DeployConfig struct {
 }
 
 const (
-	maintainers  = "MAINTAINERS"
-	maintType    = "text"
-	deployment   = "DEPLOYMENTS"
+	maintainers = "MAINTAINERS"
+	maintType   = "text"
+	deployment  = "DEPLOYMENTS"
 )
 
 func DefaultConfig() *Config {
@@ -100,6 +100,7 @@ func DefaultConfig() *Config {
 	c.Maintainers.Path = maintainers
 	c.Maintainers.Type = maintType
 	c.Deployment.Path = deployment
+	c.Commit = DefaultCommit()
 	c.Feedback = DefaultFeedback()
 	c.Merge = DefaultMerge()
 	c.Tag = DefaultTag()

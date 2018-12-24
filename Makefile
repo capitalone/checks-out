@@ -16,9 +16,6 @@ NOVENDOR_FILES := $(shell find . -name "*.go" | grep -v /vendor/ | grep -v /mock
 
 all: build
 
-update-deps:
-	glide update -s -u -v
-
 gen: gen-assets gen-migration
 
 gen-assets:

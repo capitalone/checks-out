@@ -39,6 +39,16 @@ func getPullRequestFiles(c context.Context, user *model.User, repo *model.Repo, 
 	return files, nil
 }
 
+func getPullRequestCommits(c context.Context, user *model.User, repo *model.Repo, num int) ([]model.Commit, error) {
+	commits, err := remote.GetPullRequestCommits(c, user, repo, num)
+	if err != nil {
+		msg := fmt.Sprintf("Error retrieving commits for %s pr %d", repo.Slug, num)
+		err = exterror.Append(err, msg)
+		return nil, err
+	}
+	return commits, nil
+}
+
 func getFeedback(c context.Context,
 	user *model.User,
 	request *model.ApprovalRequest,

@@ -218,6 +218,13 @@ func TestOldConfigConvert(t *testing.T) {
     }
   ]
   pattern: "LOOKGOOD"
+  commit:
+  {
+    range: "head"
+    antirange: "head"
+    tagrange: "head"
+    ignoreuimerge: true
+  }
   maintainers:
   {
     path: MAINTAINERS
@@ -237,6 +244,7 @@ func TestOldConfigConvert(t *testing.T) {
       "comment"
       "review"
     ]
+    authoraffirm: true
   }
   audit:
   {

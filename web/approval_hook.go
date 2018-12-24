@@ -24,11 +24,12 @@ import (
 	"github.com/capitalone/checks-out/notifier"
 )
 
-func doApprovalHook(c context.Context, hook *ApprovalHook) (*ApprovalOutput, error) {
-	params, err := GetHookParameters(c, hook.Repo.Slug, true)
+func doApprovalHook(c context.Context, hook *ApprovalHook, isApp IsApprover) (*ApprovalOutput, error) {
+	params, err := GetHookParameters(c, hook.HookCommon, hook.Repo.Slug)
 	if err != nil {
 		return nil, err
 	}
+	params.Approval = isApp
 	approvalInfo, err := approve(c, params, hook.Issue.Number, true)
 
 	if err != nil {

@@ -43,6 +43,7 @@ type ApprovalRequest struct {
 	ApprovalComments    []Feedback
 	DisapprovalComments []Feedback
 	Files               []CommitFile
+	Commits             []Commit
 }
 
 type Feedback interface {
@@ -59,25 +60,32 @@ type Processor func(Feedback, ApprovalOp)
 // MatchAction decides whether to invoke the Processor
 type MatchAction func(*ApprovalRequest, Feedback, set.Set, Processor)
 
-func Approve(request *ApprovalRequest, policy *ApprovalPolicy, p Processor) bool {
+func Approve(request *ApprovalRequest, policy *ApprovalPolicy, p Processor) (bool, error) {
 	authorRequest := *request
 	authorComment := Comment{Author: request.PullRequest.Author}
 	authorRequest.ApprovalComments = []Feedback{&authorComment}
 
 	if titleAction(&authorRequest, &authorComment, p) {
-		return false
+		return false, nil
 	}
 
-	if !policy.AuthorMatch.Match(&authorRequest, p, authorLimitAction, authorRequest.ApprovalComments) {
-		return false
+	inner, err := policy.AuthorMatch.Match(&authorRequest, p, authorLimitAction, authorRequest.ApprovalComments)
+	if err != nil {
+		return false, err
+	}
+	if !inner {
+		return false, nil
 	}
 
-	if policy.AntiMatch.Match(request, p, antiMatch, request.DisapprovalComments) {
-		return false
+	inner, err = policy.AntiMatch.Match(request, p, antiMatch, request.DisapprovalComments)
+	if err != nil {
+		return false, err
+	}
+	if inner {
+		return false, nil
 	}
 
-	success := policy.Match.Match(request, p, approvalAction, request.ApprovalComments)
-	return success
+	return policy.Match.Match(request, p, approvalAction, request.ApprovalComments)
 }
 
 // ApprovalPolicy combines an approval scope (that determines
@@ -142,7 +150,7 @@ type MatcherHolder struct {
 
 // Matcher determines whether the match is successful)
 type Matcher interface {
-	Match(req *ApprovalRequest, proc Processor, a MatchAction, feedback []Feedback) bool
+	Match(req *ApprovalRequest, proc Processor, a MatchAction, feedback []Feedback) (bool, error)
 	GetType() string
 	Validate(m *MaintainerSnapshot) error
 }

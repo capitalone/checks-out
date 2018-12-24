@@ -64,16 +64,6 @@ func (c *Client) SetClient(client *http.Client) {
 	c.client = client
 }
 
-func (c *Client) AddBranchProtect(owner, name, branch string, ctxs []string) error {
-	uri := fmt.Sprintf(pathBranch, c.base, owner, name, branch)
-	return c.post(uri, ctxs, nil)
-}
-
-func (c *Client) RemoveBranchProtect(owner, name, branch string, ctxs []string) error {
-	uri := fmt.Sprintf(pathBranch, c.base, owner, name, branch)
-	return c.delete(uri, ctxs, nil)
-}
-
 //
 // http request helper functions
 //

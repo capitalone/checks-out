@@ -46,6 +46,7 @@
 
 [[constraint]]
   name = "github.com/google/go-github"
+  branch = "master"
 
 [[constraint]]
   name = "github.com/hashicorp/go-version"
@@ -94,8 +95,18 @@
   name = "github.com/stretchr/testify"
   version = "1.1.4"
 
-[[constraint]]
+[[override]]
   name = "golang.org/x/net"
+  source = "github.com/golang/net"
 
-[[constraint]]
+[[override]]
   name = "golang.org/x/oauth2"
+  source = "github.com/golang/oauth2"
+
+[[override]]
+  name = "golang.org/x/sys"
+  source = "github.com/golang/sys"
+
+[[override]]
+  name = "google.golang.org/appengine"
+  source = "github.com/golang/appengine"

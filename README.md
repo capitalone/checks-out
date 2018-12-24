@@ -8,7 +8,7 @@ can indicate their approval by commenting on the pull request and including
 with GitHub Reviews. An accepted GitHub Review is counted as an approval.
 GitHub Review that requests additional changes blocks the pull request from merging.
 
-Read the [online documentation](https://capitalone.github.com/checks-out/docs) to find out more about Checks-Out.
+Read the [online documentation](https://capitalone.github.io/checks-out) to find out more about Checks-Out.
 
 ### Development
 
@@ -64,7 +64,7 @@ approvals:
 
 #### MAINTAINERS file
 
-Each repository managed by Meow should have a MAINTAINERS file that specifies
+Each repository managed by Checks-Out should have a MAINTAINERS file that specifies
 who is allowed to approve pull requests. The format of the file
 is described in the maintainers section of the online
 documentation. Here is a sample MAINTAINERS file to get you started:

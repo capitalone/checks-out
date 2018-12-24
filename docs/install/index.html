@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html ng-app="app" lang="en">
+
+<head>
+    <title>Self Hosting · checks-out</title>
+
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1" name="viewport" />
+    <meta content="ie=edge" http-equiv="x-ua-compatible" />
+    <meta name="Description" content="" />
+
+    <link href="//fonts.googleapis.com/css?family=Roboto:400,300" rel="stylesheet" type="text/css">
+    <link href="//fonts.googleapis.com/css?family=Roboto+Mono" rel="stylesheet" type="text/css">
+    <link href="//cdnjs.cloudflare.com/ajax/libs/octicons/3.3.0/octicons.css" rel="stylesheet">
+    <link href="/checks-out/style.css" rel="stylesheet">
+    <link href="/checks-out/docs.css" rel="stylesheet">
+
+</head>
+
+<body>
+    <div class="navbar navbar-homepage" style="-padding-bottom:0px;">
+        <div class="container cf">
+            <a href="http://www.capitalone.io/checks-out/" class="navbar-brand"></a>
+            <ul class="navbar-nav navbar-right">
+            </ul>
+        </div>
+    </div>
+    <div class="grid-flex-container container">
+
+        <div class="grid-flex-cell">
+            <h1>Self Hosting</h1>
+             <nav id="TableOfContents">
+<ul>
+<li><a href="#requirements">Requirements</a></li>
+<li><a href="#configuration">Configuration</a></li>
+<li><a href="#environment-variables-for-checks-out">Environment Variables for checks-out</a>
+<ul>
+<li><a href="#server-configuration">Server configuration</a>
+<ul>
+<li><a href="#server-ip-address-and-port">Server IP Address and Port</a></li>
+<li><a href="#server-ssl-certificate">Server SSL Certificate</a></li>
+<li><a href="#server-ssl-key">Server SSL Key</a></li>
+</ul></li>
+<li><a href="#database-configuration">Database configuration</a>
+<ul>
+<li><a href="#database-driver">Database Driver</a></li>
+<li><a href="#database-datasource">Database Datasource</a></li>
+</ul></li>
+<li><a href="#slack-integration">Slack integration</a></li>
+<li><a href="#github-integration">Github integration</a>
+<ul>
+<li><a href="#email-address-to-use-for-github">Email Address To Use for Github</a></li>
+<li><a href="#url-for-github-api">URL for Github API</a></li>
+<li><a href="#github-oauth2-client-id">Github OAuth2 Client ID</a></li>
+<li><a href="#github-oauth2-secret">Github OAuth2 Secret</a></li>
+<li><a href="#github-scope-to-use">Github Scope To Use</a></li>
+<li><a href="#github-rate-limiting">Github rate limiting</a></li>
+<li><a href="#github-testing-only-settings">Github testing-only settings</a>
+<ul>
+<li><a href="#enable-github-integration-tests">Enable Github Integration Tests</a></li>
+<li><a href="#github-integration-tests-oauth2-token">Github Integration Tests OAuth2 Token</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#logging-debug">Logging/Debug</a>
+<ul>
+<li><a href="#debug-logging">Debug Logging</a></li>
+<li><a href="#checks-out-sunlight">Checks-out Sunlight</a></li>
+<li><a href="#blacklist-user-agents-from-logging">Blacklist User Agents from Logging</a></li>
+<li><a href="#how-frequently-to-log-operational-statistics">How Frequently To Log Operational Statistics</a></li>
+</ul></li>
+<li><a href="#caching">Caching</a>
+<ul>
+<li><a href="#response-caching">Response caching</a></li>
+<li><a href="#github-repo-artifact-caching">Github Repo Artifact Caching</a></li>
+</ul></li>
+<li><a href="#account-creation-control">Account Creation Control</a>
+<ul>
+<li><a href="#limit-user-access">Limit User Access</a></li>
+<li><a href="#limit-organizational-access">Limit Organizational Access</a></li>
+</ul></li>
+<li><a href="#miscellaneous-properties">Miscellaneous Properties</a>
+<ul>
+<li><a href="#documentation-location">Documentation Location</a></li>
+<li><a href="#slack-integration-1">Slack Integration</a></li>
+<li><a href="#admin-management">Admin management</a></li>
+<li><a href="#template-repo-name">Template Repo Name</a></li>
+</ul></li>
+<li><a href="#legacy-properties">Legacy Properties</a></li>
+</ul></li>
+<li><a href="#registration">Registration</a></li>
+<li><a href="#reverse-proxies">Reverse Proxies</a></li>
+</ul>
+</nav> 
+            <section>
+
+<h1 id="requirements">Requirements</h1>
+
+<p>checks-out ships as a single binary file. If you are planning on integrating
+with GitHub Enterprise it requires version 2.4 or higher.</p>
+
+<h1 id="configuration">Configuration</h1>
+
+<p>This is a full list of configuration options. Please note that many of these
+options use default configuration value that should work for the majority of
+installations.</p>
+
+<h1 id="environment-variables-for-checks-out">Environment Variables for checks-out</h1>
+
+<p>This document contains information about all the environment variables that can or
+must be defined for checks-out to function.</p>
+
+<h2 id="server-configuration">Server configuration</h2>
+
+<h3 id="server-ip-address-and-port">Server IP Address and Port</h3>
+
+<ul>
+<li>Format: <code>SERVER_ADDR=&quot;_ip_address_:_port_&quot;</code> but more specifically see the documentation for golang&rsquo;s <code>http.ListenAndServe</code> and <code>http.ListanAndServeTLS</code></li>
+<li>Default: <code>:8000</code>, which means port 8000 on all interfaces</li>
+<li>Required: No</li>
+</ul>
+
+<p>See <a href="https://golang.org/pkg/net/http/#ListenAndServe">https://golang.org/pkg/net/http/#ListenAndServe</a> for detailed documentation on the format.</p>
+
+<h3 id="server-ssl-certificate">Server SSL Certificate</h3>
+
+<ul>
+<li>Format: <code>SERVER_CERT=&quot;_full_path_and_filename_of_ssl_server_cert_file_&quot;</code></li>
+<li>Default: None</li>
+<li>Required: No</li>
+</ul>
+
+<p>If SERVER_CERT is not specified, checks-out runs without SSL.  See <a href="https://golang.org/pkg/net/http/#ListenAndServeTLS">https://golang.org/pkg/net/http/#ListenAndServeTLS</a>
+for detailed documentation on the format.</p>
+
+<h3 id="server-ssl-key">Server SSL Key</h3>
+
+<ul>
+<li>Format: <code>SERVER_KEY=&quot;_full_path_and_filename_of_ssl_server_key_file_&quot;</code></li>
+<li>Default: None</li>
+<li>Required: <em>Only if <code>SERVER_CERT</code> is also specified</em></li>
+</ul>
+
+<p>If SERVER_CERT is specified, then SERVER_KEY must be specified as well.  See <a href="https://golang.org/pkg/net/http/#ListenAndServeTLS">https://golang.org/pkg/net/http/#ListenAndServeTLS</a> for detailed documentation on the format.</p>
+
+<h2 id="database-configuration">Database configuration</h2>
+
+<h3 id="database-driver">Database Driver</h3>
+
+<ul>
+<li>Format: <code>DB_DRIVER=sqlite3|postgres|mysql</code></li>
+<li>Default: None</li>
+<li>Required: Yes</li>
+</ul>
+
+<h3 id="database-datasource">Database Datasource</h3>
+
+<ul>
+<li>Format: <code>DB_SOURCE=&quot;_db_driver_specific_datasource_spec_&quot;</code></li>
+<li>Default: None</li>
+<li>Required: Yes</li>
+</ul>
+
+<p>Please refer to the datasource specifications for the sqlite3, lib/pq, and mysql drivers for their respective
+specifications for this environment variable.</p>
+
+<h2 id="slack-integration">Slack integration</h2>
+
+<ul>
+<li>Format: <code>SLACK_TARGET_URL=&quot;_slack_integration_url&quot;</code></li>
+<li>Default: None</li>
+<li>Required: No</li>
+</ul>
+
+<p>If the <code>SLACK_TARGET_URL</code> is not defined, then no logging into slack will happen, however it will also
+currently cause logging that Slack is not configured to get generated every time a slackable event happens.</p>
+
+<h2 id="github-integration">Github integration</h2>
+
+<h3 id="email-address-to-use-for-github">Email Address To Use for Github</h3>
+
+<ul>
+<li>Format: <code>GITHUB_EMAIL=&quot;_valid_email_address_&quot;</code></li>
+<li>Default: None</li>
+<li>Required: Yes</li>
+</ul>
+
+<p>Email address for git commits.</p>
+
+<h3 id="url-for-github-api">URL for Github API</h3>
+
+<ul>
+<li>Format: <code>GITHUB_URL=&quot;_protocol_plus_hostname_plus_path_prefix_of_url_&quot;</code></li>
+<li>Default: <code>https://github.com</code></li>
+<li>Required: No, defaults to <code>https://github.com</code> which is fine unless you are using your own enterprise github</li>
+</ul>
+
+<h3 id="github-oauth2-client-id">Github OAuth2 Client ID</h3>
+
+<ul>
+<li>Format: <code>GITHUB_CLIENT=&quot;_your_OAuth2_client_id_&quot;</code></li>
+<li>Default: None</li>
+<li>Required: Yes.  You must supply the github OAuth2 client ID issued by the github server you are connecting to (github.com or enterprise-hosted github server)</li>
+</ul>
+
+<h3 id="github-oauth2-secret">Github OAuth2 Secret</h3>
+
+<ul>
+<li>Format: <code>GITHUB_SECRET=&quot;_your_OAuth2_secret_&quot;</code></li>
+<li>Default: None</li>
+<li>Required: Yes.  You must supply the github OAuth2 secret issued by the github server you are connecting to (github.com or enterprise-hosted github server)</li>
+</ul>
+
+<h3 id="github-scope-to-use">Github Scope To Use</h3>
+
+<ul>
+<li>Format: <code>GITHUB_SCOPE=&quot;_valid_github_scope_specification_&quot;</code>.  Please see github documentation for specifics on the specification format</li>
+<li>Default: <code>read:org,repo:status,admin:repo_hook,admin:org_hook</code></li>
+<li>Required: No</li>
+</ul>
+
+<p>Permissions granted to checks-out by Github. The minimum
+required permissions are the default ones.</p>
+
+<h3 id="github-rate-limiting">Github rate limiting</h3>
+
+<ul>
+<li>Format: <code>GITHUB_BATCH_PER_SECOND=int</code></li>
+<li>Default: 10</li>
+<li>Required: no</li>
+</ul>
+
+<p>GitHub batch access rate limiter. For certain calls that might happen in rapid succession, this limits how
+fast those calls are made to the server. The value is in Hertz; the default value of 10 means that you cannot
+send more than 10 calls a second to Github.</p>
+
+<h3 id="github-testing-only-settings">Github testing-only settings</h3>
+
+<h4 id="enable-github-integration-tests">Enable Github Integration Tests</h4>
+
+<ul>
+<li>Format: <code>GITHUB_TEST_ENABLE=true|false</code></li>
+<li>Default: False</li>
+<li>Required: No</li>
+</ul>
+
+<p>Enable Github integration tests to run</p>
+
+<h4 id="github-integration-tests-oauth2-token">Github Integration Tests OAuth2 Token</h4>
+
+<ul>
+<li>Format: <code>GITHUB_TEST_TOKEN=__OAUTH2_TOKEN_TO_USE</code></li>
+<li>Default: None</li>
+<li>Required: _only if GITHUB_TEST<em>ENABLE is true</em></li>
+</ul>
+
+<p>This is an OAuth2 token to be sent to the github endpoint for github integration test API requests</p>
+
+<h2 id="logging-debug">Logging/Debug</h2>
+
+<h3 id="debug-logging">Debug Logging</h3>
+
+<ul>
+<li>Format: <code>LOG_LEVEL=debug|info|warn|error|fatal|panic</code></li>
+<li>Default: info</li>
+<li>Required: No</li>
+</ul>
+
+<p>Specifies the default logging level used in checks-out.</p>
+
+<h3 id="checks-out-sunlight">Checks-out Sunlight</h3>
+
+<ul>
+<li>Format: <code>CHECKS_OUT_SUNLIGHT=true|false</code></li>
+<li>Default: false</li>
+<li>Required: No</li>
+</ul>
+
+<p>If set to true, exposes endpoints and data that might not be suitable for a live site.  Specifically,
+the following behaviors are enabled:</p>
+
+<ul>
+<li><code>/api/repos</code> endpoint is available that will show all repositories managed under checks-out</li>
+<li><code>/version</code> endpoint is available that will show the checks-out version</li>
+<li>Outputs stack trace information over HTTP when errors happen</li>
+<li>Puts the <code>X-CHECKS-OUT-VERSION</code> HTTP header with the checks-out version in every response</li>
+</ul>
+
+<h3 id="blacklist-user-agents-from-logging">Blacklist User Agents from Logging</h3>
+
+<ul>
+<li>Format: <code>BLACKLIST_USER_AGENTS=user_agent1[]:user_agent2...:user_agent_N]</code></li>
+<li>Default: false</li>
+<li>Required: No</li>
+</ul>
+
+<p>Specify a colon-separated list of user agent strings for the middleware that does request logging
+to skip logging on.  This allows suppressing logging of user agents like the health checker from aws
+that are generally operational noise.</p>
+
+<h3 id="how-frequently-to-log-operational-statistics">How Frequently To Log Operational Statistics</h3>
+
+<ul>
+<li>Format: <code>LOG_STATS_PERIOD=_valid_time.ParseDuration()_string_</code></li>
+<li>Default: 0 (Do not periodically log)</li>
+<li>Required: No</li>
+</ul>
+
+<p>Specify a time duration in a valid format understood by the
+<a href="https://golang.org/pkg/time/#ParseDuration">time.ParseDuraction() method</a> to periodically log activity
+of checks-out such as number of commits, approvers, and disapprovers in the specified time period.</p>
+
+<h2 id="caching">Caching</h2>
+
+<h3 id="response-caching">Response caching</h3>
+
+<ul>
+<li>Format: <code>CACHE_TTL=_time_specified_in_time.Duration_format_</code></li>
+<li>Default: 15 minutes</li>
+<li>Required: No</li>
+</ul>
+
+<p>Determines the length of time the gin middleware will cache.  Default is 15 minutes.</p>
+
+<h3 id="github-repo-artifact-caching">Github Repo Artifact Caching</h3>
+
+<ul>
+<li>Format: <code>LONG_CACHE_TTL=_time_specified_in_time.Duration_format_</code></li>
+<li>Default: 24 hours</li>
+<li>Required: No</li>
+</ul>
+
+<p>Determines the length of time checks-out will cache github artifacts like user information,
+organization members, and team members in memory before going back to the server.  Default
+is 24 hours.</p>
+
+<h2 id="account-creation-control">Account Creation Control</h2>
+
+<h3 id="limit-user-access">Limit User Access</h3>
+
+<ul>
+<li>Format: <code>LIMIT_USERS=true|false</code></li>
+<li>Default: false</li>
+<li>Required: No</li>
+</ul>
+
+<p>If enabled, only users listed in the <code>limit_users</code> table in the database are
+allowed to create accounts. Any existing accounts will still function, even
+if the user&rsquo;s name is not in the <code>limit_users</code> table.</p>
+
+<h3 id="limit-organizational-access">Limit Organizational Access</h3>
+
+<ul>
+<li>Format: <code>LIMIT_ORGS=true|false</code></li>
+<li>Default: false</li>
+<li>Required: No</li>
+</ul>
+
+<p>If enabled, only users in the organizations listed in the <code>limit_orgs</code> table
+in the database are allowed to create accounts. Any existing accounts will
+still function, even if the user is not any of the orgs named in the
+<code>limit_orgs</code> table.</p>
+
+<p>If both <code>LIMIT_ORGS</code> and <code>LIMIT_USERS</code> are set to <code>true</code> then a user can
+either be explicitly named in <code>limit_users</code> or can belong to an org named
+in <code>limit_orgs</code>.</p>
+
+<h2 id="miscellaneous-properties">Miscellaneous Properties</h2>
+
+<h3 id="documentation-location">Documentation Location</h3>
+
+<ul>
+<li>Format: <code>CHECKS_OUT_DOCS_URL=_URL_for_docs_no_closing_slash_</code></li>
+<li>Default: <code>https://www.capitalone.io/checks-out</code></li>
+<li>Required: No</li>
+</ul>
+
+<p>Provides the base URL for links to the documentation in the UI.</p>
+
+<h3 id="slack-integration-1">Slack Integration</h3>
+
+<ul>
+<li>Format: <code>SLACK_TARGET_URL=url</code></li>
+<li>Default: none</li>
+<li>Required: no</li>
+</ul>
+
+<p>Provides the default Slack notification url. This is the URL that&rsquo;s used by defaut for slack integration when the
+target specified in the .checks-out file is &ldquo;slack&rdquo;.</p>
+
+<h3 id="admin-management">Admin management</h3>
+
+<ul>
+<li>Format: <code>GITHUB_ADMIN_ORG=_github_org_name_</code></li>
+<li>Default: none</li>
+<li>Required: no</li>
+</ul>
+
+<p>Specifies the Github organization whose members have admin privleges in checks-out. If this is not specified,
+there are no admin users in checks-out. Admin users have access to certain REST API endpoints that other users
+do not.</p>
+
+<h3 id="template-repo-name">Template Repo Name</h3>
+
+<ul>
+<li>Format: <code>ORG_REPOSITORY_NAME=_name_for_template_repo_per_org_</code></li>
+<li>Default: checks-out-configuration</li>
+<li>Required: No</li>
+</ul>
+
+<p>Org management repo name. This is the name of the repo in an org that is used to hold the default .checks-out and
+MAINTAINERS files for all repos in the org.</p>
+
+<h2 id="legacy-properties">Legacy Properties</h2>
+
+<p>The following environment variables exist to provide system-wide defaults for repos that are still using a
+.lgtm file. They are considered obsolete</p>
+
+<ul>
+<li>Format: <code>CHECKS_OUT_APPROVALS=_number_of_approvals_</code></li>
+<li>Default: 2</li>
+<li>Required: No</li>
+</ul>
+
+<p>Legacy default number of approvals</p>
+
+<ul>
+<li>Format: <code>CHECKS_OUT_PATTERN=_regex_for_approval_comments_</code></li>
+<li>Default: (?i)LGTM</li>
+<li>Required: No</li>
+</ul>
+
+<p>Legacy matching pattern</p>
+
+<ul>
+<li>Format: <code>CHECKS_OUT_SELF_APPROVAL_OFF=true|false</code></li>
+<li>Default: false</li>
+<li>Required: No</li>
+</ul>
+
+<p>Legacy self-approval behavior. Set to true to disable self-approvals.</p>
+
+<h1 id="registration">Registration</h1>
+
+<p>Register your application with GitHub (or GitHub Enterprise) to create your client
+id and secret. It is very import that the redirect URL matches your http(s) scheme
+and hostname exactly with <code>/login</code> as the path.</p>
+
+<p>Please use this screenshot for reference:</p>
+
+<p><img src="/checks-out/images/app_registration.png" alt="github registration" /></p>
+
+<h1 id="reverse-proxies">Reverse Proxies</h1>
+
+<p>If you are running behind a reverse proxy please ensure the <code>X-Forwarded-For</code>
+and <code>X-Forwarded-Proto</code> variables are configured.</p>
+
+<p>This is an example nginx configuration:</p>
+
+<pre><code class="language-nginx">location / {
+    proxy_set_header X-Forwarded-For $remote_addr;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header Host $http_host;
+	proxy_pass http://127.0.0.1:8000;
+}
+</code></pre>
+
+<p>This is an example caddy server configuration:</p>
+
+<pre><code class="language-nginx">checks-out.mycomopany.com {
+        proxy / localhost:8000 {
+                proxy_header X-Forwarded-Proto {scheme}
+                proxy_header X-Forwarded-For {host}
+                proxy_header Host {host}
+        }
+}
+</code></pre>
+
+<p>Note that when running behind a reverse proxy you should change the recommended
+port mappings from <code>--publish=80:8000</code> to something like <code>--publish=8000:8000</code>.</p>
+</section>
+        </div>
+
+        <div class="grid-flex-cell grid-flex-cell-1of4">
+            
+            <nav role='navigation'>
+                <ul class='list-unstyled side-nav'>
+                       
+                    <li>
+                        <a href="/checks-out/overview/" class="">Quick Start</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/maintainers/" class="">Maintainers</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/branches/" class="">Branches</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/customize/" class="">Customize</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/approvals/" class="">Approval Policies</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/install/" class=" current-item">Self Hosting</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/api/" class="">REST API</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/support/" class="">Support</a>
+                    </li>
+                      
+                    <li>
+                        <a href="/checks-out/faq/" class="">FAQ</a>
+                    </li>
+                      
+                </ul>
+            </nav>
+        </div>
+    </div>
+</body>
+
+</html>

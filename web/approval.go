@@ -25,12 +25,14 @@ import (
 	"strconv"
 	"strings"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/capitalone/checks-out/envvars"
 	"github.com/capitalone/checks-out/logstats"
 	"github.com/capitalone/checks-out/model"
 	"github.com/capitalone/checks-out/remote"
 	"github.com/capitalone/checks-out/set"
+	"github.com/capitalone/checks-out/strings/lowercase"
+
+	log "github.com/Sirupsen/logrus"
 )
 
 // https://help.github.com/articles/closing-issues-via-commit-messages/
@@ -56,7 +58,8 @@ type CurCommentInfo struct {
 type ApprovalInfo struct {
 	Policy         *model.ApprovalPolicy
 	Approved       bool
-	AuthorApproved bool
+	AuthorApproved bool // is the author allowed to submit the pull request
+	AuthorAffirmed bool // has the author affirmed ownership of the pull request
 	TitleApproved  bool
 	AuditApproved  bool
 	Approvers      set.Set
@@ -82,6 +85,12 @@ func approve(c context.Context, params HookParams, id int, setStatus bool) (*App
 	return approvePullRequest(c, params, id, &pullRequest, setStatus)
 }
 
+const authorAffirmMsg = "Someone besides the committers and the PR author should approve the pull request. " +
+	"If this is not possible, the PR author can approve to indicate they have reviewed the other commits in the PR. " +
+	"The PR author must approve with a comment directly on the PR (GitHub Reviews comments will not work)."
+
+var affirmMsgActions = set.New("opened", "reopened", "synchronized")
+
 func approvePullRequest(c context.Context, params HookParams, id int, pullRequest *model.PullRequest, setStatus bool) (*ApprovalInfo, error) {
 	user := params.User
 	repo := params.Repo
@@ -101,6 +110,14 @@ func approvePullRequest(c context.Context, params HookParams, id int, pullReques
 	}
 
 	if setStatus {
+		if !approval.AuthorAffirmed {
+			if params.Approval != nil && params.Approval.IsApproval(&request) {
+				err = remote.WriteComment(c, user, repo, pullRequest.Number, authorAffirmMsg)
+				if err != nil {
+					return nil, err
+				}
+			}
+		}
 		status, desc := generateStatus(approval)
 
 		err = remote.SetStatus(c, user, repo, pullRequest.Branch.CompareSHA, model.ServiceName, status, desc)
@@ -191,7 +208,12 @@ func buildApprovers(c context.Context,
 	if err != nil {
 		return nil, err
 	}
+	commits, err := getPullRequestCommits(c, user, repo, pr.Number)
+	if err != nil {
+		return nil, err
+	}
 	request.Files = files
+	request.Commits = commits
 	policy := model.FindApprovalPolicy(request)
 	feedback, err := getFeedbackRanges(c, user, request, policy)
 	if err != nil {
@@ -204,7 +226,7 @@ func buildApprovers(c context.Context,
 	if err != nil {
 		return nil, err
 	}
-	return calculateApprovalInfo(request, policy, audit), nil
+	return calculateApprovalInfo(request, policy, audit)
 }
 
 func calculateAuditInfo(c context.Context, user *model.User, request *model.ApprovalRequest) (bool, error) {
@@ -218,13 +240,56 @@ func calculateAuditInfo(c context.Context, user *model.User, request *model.Appr
 	return validAudit, err
 }
 
-func calculateApprovalInfo(request *model.ApprovalRequest, policy *model.ApprovalPolicy, audit bool) *ApprovalInfo {
+func authorApproved(request *model.ApprovalRequest) bool {
+	for _, f := range request.ApprovalComments {
+		if f.GetAuthor() == request.PullRequest.Author && f.IsApproval(request) {
+			return true
+		}
+	}
+	return false
+}
+
+var systemAccounts = set.New("GitHub", "GitHub Enterprise")
+
+func authorAffirm(request *model.ApprovalRequest, policy *model.ApprovalPolicy) bool {
+	var fbConfig *model.FeedbackConfig
+	if policy.Feedback == nil {
+		fbConfig = &request.Config.Feedback
+	} else {
+		fbConfig = policy.Feedback
+	}
+	if !fbConfig.AuthorAffirm {
+		return true
+	}
+	for _, c := range request.Commits {
+		if len(c.Parents) == 2 && systemAccounts.Contains(c.Committer) {
+			continue
+		}
+		if c.Author != request.PullRequest.Author {
+			return authorApproved(request)
+		}
+	}
+	return true
+}
+
+func removeAuthor(author lowercase.String, req *model.ApprovalRequest) {
+	var filter []model.Feedback
+	for _, fb := range req.ApprovalComments {
+		if fb.GetAuthor() != author {
+			filter = append(filter, fb)
+		}
+	}
+	req.ApprovalComments = filter
+}
+
+func calculateApprovalInfo(request *model.ApprovalRequest, policy *model.ApprovalPolicy, audit bool) (*ApprovalInfo, error) {
 	approvers := set.Empty()
 	disapprovers := set.Empty()
 	validAuthor := false
 	validTitle := false
 	validAudit := audit
-	approved := model.Approve(request, policy,
+	authAffirm := false
+	approved, err := model.Approve(request, policy,
 		func(f model.Feedback, op model.ApprovalOp) {
 			author := f.GetAuthor().String()
 			switch op {
@@ -242,7 +307,35 @@ func calculateApprovalInfo(request *model.ApprovalRequest, policy *model.Approva
 				panic(fmt.Sprintf("Unknown approval operation %d", op))
 			}
 		})
-	approved = approved && audit
+	if err != nil {
+		return nil, err
+	}
+	if !approved {
+		// only after sufficient approvals are received
+		// test the author affirm feature
+		authAffirm = true
+	} else {
+		authAffirm = authorAffirm(request, policy)
+		if !authAffirm {
+			clone := *request
+			for _, c := range request.Commits {
+				removeAuthor(c.Author, &clone)
+			}
+			approvers = set.Empty()
+			authAffirm, err = model.Approve(&clone, policy,
+				func(f model.Feedback, op model.ApprovalOp) {
+					author := f.GetAuthor().String()
+					switch op {
+					case model.Approval:
+						approvers.Add(author)
+					}
+				})
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+	approved = approved && audit && authAffirm
 
 	ai := ApprovalInfo{
 		Policy:         policy,
@@ -250,6 +343,7 @@ func calculateApprovalInfo(request *model.ApprovalRequest, policy *model.Approva
 		AuthorApproved: validAuthor,
 		TitleApproved:  validTitle,
 		AuditApproved:  validAudit,
+		AuthorAffirmed: authAffirm,
 		Approvers:      approvers,
 		Disapprovers:   disapprovers,
 		CurCommentInfo: CurCommentInfo{
@@ -284,7 +378,7 @@ func calculateApprovalInfo(request *model.ApprovalRequest, policy *model.Approva
 			})
 	}
 
-	return &ai
+	return &ai, nil
 }
 
 func generateStatus(info *ApprovalInfo) (string, string) {
@@ -297,6 +391,9 @@ func generateStatus(info *ApprovalInfo) (string, string) {
 		} else {
 			desc = "approval did not require approvers"
 		}
+	} else if !info.AuthorAffirmed {
+		status = "error"
+		desc = "non-committer or PR author must approve"
 	} else if !info.AuditApproved {
 		status = "error"
 		desc = "audit chain must be manually approved"

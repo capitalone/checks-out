@@ -22,8 +22,9 @@ import (
 	"context"
 	"strings"
 
-	multierror "github.com/mspiegel/go-multierror"
 	"github.com/capitalone/checks-out/model"
+
+	multierror "github.com/mspiegel/go-multierror"
 )
 
 func (hook *CommentHook) Process(c context.Context) (interface{}, error) {
@@ -39,5 +40,5 @@ func doCommentHook(c context.Context, hook *CommentHook) (*ApprovalOutput, error
 	if strings.HasPrefix(hook.Comment, model.CommentPrefix) {
 		return nil, nil
 	}
-	return doApprovalHook(c, &hook.ApprovalHook)
+	return doApprovalHook(c, &hook.ApprovalHook, hook)
 }

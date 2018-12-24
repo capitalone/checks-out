@@ -23,7 +23,6 @@ import (
 	"net/http"
 
 	"github.com/dgrijalva/jwt-go"
-	"golang.org/x/oauth2/jwt"
 )
 
 type SecretFunc func(*Token) (string, error)

@@ -29,7 +29,21 @@ import (
 	"github.com/capitalone/checks-out/store"
 )
 
-func GetHookParameters(c context.Context, slug string, fixSlackTargets bool) (HookParams, error) {
+func GetHookParameters(c context.Context, h HookCommon, slug string) (HookParams, error) {
+	result, err := GetHookParametersBasic(c, slug)
+	if err != nil {
+		return HookParams{}, err
+	}
+	err = snapshot.FixSlackTargets(c, result.Config, result.User.Login)
+	if err != nil {
+		return HookParams{}, err
+	}
+	result.Event = h.Event
+	result.Action = h.Action
+	return result, nil
+}
+
+func GetHookParametersBasic(c context.Context, slug string) (HookParams, error) {
 	repo, user, cap, err := GetRepoAndUser(c, slug)
 	if err != nil {
 		return HookParams{}, err
@@ -37,12 +51,6 @@ func GetHookParameters(c context.Context, slug string, fixSlackTargets bool) (Ho
 	config, maintainer, err := snapshot.GetConfigAndMaintainers(c, user, cap, repo)
 	if err != nil {
 		return HookParams{}, err
-	}
-	if fixSlackTargets {
-		err = snapshot.FixSlackTargets(c, config, user.Login)
-		if err != nil {
-			return HookParams{}, err
-		}
 	}
 	result := HookParams{
 		Repo:     repo,

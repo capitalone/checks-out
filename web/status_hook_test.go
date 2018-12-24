@@ -29,7 +29,9 @@ import (
 	"time"
 
 	"github.com/capitalone/checks-out/model"
+	"github.com/capitalone/checks-out/notifier"
 	"github.com/capitalone/checks-out/remote"
+	"github.com/capitalone/checks-out/set"
 	"github.com/capitalone/checks-out/strings/lowercase"
 	"github.com/capitalone/checks-out/strings/rxserde"
 
@@ -696,5 +698,239 @@ func TestGetCommitComment(t *testing.T) {
 	comment := getCommitComment(request, model.DefaultApprovalPolicy())
 	if comment != "Hi there" {
 		t.Error("Expected Hi there, got", comment)
+	}
+}
+
+func TestEligibleForDeletion(t *testing.T) {
+	config := model.NonEmptyConfig()
+	pr := &model.PullRequest{
+		Branch: model.Branch{
+			CompareOwner: "foo",
+			CompareName:  "baz",
+		},
+	}
+	request := &model.ApprovalRequest{
+		Config:      config,
+		PullRequest: pr,
+		Repository: &model.Repo{
+			Owner: "bar",
+		},
+	}
+	mw := &notifier.MessageWrapper{}
+	if eligibleForDeletion(request, mw) {
+		t.Error("branch belongs to another owner")
+	}
+	request.Repository.Owner = "foo"
+	if eligibleForDeletion(request, mw) {
+		t.Error("default policy should not be eligible for deletion")
+	}
+	config.Approvals[0].Match.Matcher = &model.DisableMatch{}
+	if !eligibleForDeletion(request, mw) {
+		t.Error("off policy should be eligible for deletion")
+	}
+	config.Approvals[0] = model.DefaultApprovalPolicy()
+	config.Approvals[0].Merge = &model.MergeConfig{
+		Delete: false,
+	}
+	if !eligibleForDeletion(request, mw) {
+		t.Error("disable deletion should allow other branches to be deleted")
+	}
+	config.Approvals = append(config.Approvals, model.DefaultApprovalPolicy())
+	config.Approvals[0].Scope.Branches = set.New("baz")
+	if eligibleForDeletion(request, mw) {
+		t.Error("branch match should not be eligible for deletion")
+	}
+}
+
+func TestGetLastVersionComment(t *testing.T) {
+	c := &gin.Context{}
+
+	remote.ToContext(c, &myR{})
+	config := model.NonEmptyConfig()
+	config.Tag.Enable = true
+	m := &model.MaintainerSnapshot{
+		People: map[string]*model.Person{
+			"test_guy": &model.Person{
+				Name: "test_guy",
+			},
+			"test_guy2": &model.Person{
+				Name: "test_guy2",
+			},
+			"test_guy3": &model.Person{
+				Name: "test_guy3",
+			},
+		},
+	}
+	i := model.PullRequest{
+		Issue: model.Issue{Author: lowercase.Create("test_guy")},
+	}
+	comments := []model.Feedback{
+		&model.Comment{
+			Author: lowercase.Create("test_guy"),
+			Body:   "I approve version:0.1.0",
+		},
+		&model.Comment{
+			Author: lowercase.Create("not_test_guy"),
+			Body:   "this is not an I approve comment",
+		},
+		&model.Comment{
+			Author: lowercase.Create("not_test_guy"),
+			Body:   "I approve",
+		},
+		&model.Comment{
+			Author: lowercase.Create("test_guy"),
+			Body:   "I approve version:0.1.0",
+		},
+		&model.Comment{
+			Author: lowercase.Create("test_guy2"),
+			Body:   "I approve",
+		},
+		&model.Comment{
+			Author: lowercase.Create("test_guy3"),
+			Body:   "I approve version:0.0.1",
+		},
+	}
+	request := &model.ApprovalRequest{
+		Config:           config,
+		Maintainer:       m,
+		PullRequest:      &i,
+		ApprovalComments: comments,
+	}
+	ver := getLastVersionComment(request, model.DefaultApprovalPolicy())
+	if ver == "" {
+		t.Fatalf("Got empty for version")
+	}
+	if ver != "0.0.1" {
+		t.Errorf("Expected 0.0.1, got %s", ver)
+	}
+}
+
+func TestGetLastVersionCommentBadPattern(t *testing.T) {
+	c := &gin.Context{}
+
+	remote.ToContext(c, &myR{})
+	config := model.NonEmptyConfig()
+	config.Tag.Enable = true
+	config.Pattern = rxserde.RegexSerde{Regex: nil}
+	m := &model.MaintainerSnapshot{
+		People: map[string]*model.Person{
+			"test_guy": &model.Person{
+				Name: "test_guy",
+			},
+			"test_guy2": &model.Person{
+				Name: "test_guy2",
+			},
+			"test_guy3": &model.Person{
+				Name: "test_guy3",
+			},
+		},
+	}
+	i := model.PullRequest{
+		Issue: model.Issue{Author: lowercase.Create("test_guy")},
+	}
+	comments := []model.Feedback{
+		&model.Comment{
+			Author: lowercase.Create("test_guy"),
+			Body:   "I approve version:0.1.0",
+		},
+		&model.Comment{
+			Author: lowercase.Create("not_test_guy"),
+			Body:   "this is not an I approve comment",
+		},
+		&model.Comment{
+			Author: lowercase.Create("not_test_guy"),
+			Body:   "I approve",
+		},
+		&model.Comment{
+			Author: lowercase.Create("test_guy"),
+			Body:   "not an approval comment",
+		},
+		&model.Comment{
+			Author: lowercase.Create("test_guy"),
+			Body:   "I approve version:0.1.0",
+		},
+		&model.Comment{
+			Author: lowercase.Create("test_guy2"),
+			Body:   "I approve",
+		},
+		&model.Comment{
+			Author: lowercase.Create("test_guy3"),
+			Body:   "I approve version:0.0.1",
+		},
+	}
+	request := &model.ApprovalRequest{
+		Config:           config,
+		Maintainer:       m,
+		PullRequest:      &i,
+		ApprovalComments: comments,
+	}
+	ver := getLastVersionComment(request, model.DefaultApprovalPolicy())
+	if ver != "" {
+		t.Fatal("Should get empty for version. Version is ", ver)
+	}
+}
+
+func TestGetLastVersionCommentNoSelfApproval(t *testing.T) {
+	c := &gin.Context{}
+
+	remote.ToContext(c, &myR{})
+	policy := model.DefaultApprovalPolicy()
+	policy.Match.Matcher.(*model.MaintainerMatch).Self = false
+	config := model.NonEmptyConfig()
+	config.Approvals[0] = policy
+	m := &model.MaintainerSnapshot{
+		People: map[string]*model.Person{
+			"test_guy": &model.Person{
+				Name: "test_guy",
+			},
+			"test_guy2": &model.Person{
+				Name: "test_guy2",
+			},
+			"test_guy3": &model.Person{
+				Name: "test_guy3",
+			},
+		},
+	}
+	i := model.PullRequest{
+		Issue: model.Issue{Author: lowercase.Create("test_guy")},
+	}
+	comments := []model.Feedback{
+		&model.Comment{
+			Author: lowercase.Create("test_guy"),
+			Body:   "I approve version:0.1.0",
+		},
+		&model.Comment{
+			Author: lowercase.Create("not_test_guy"),
+			Body:   "this is not an I approve comment",
+		},
+		&model.Comment{
+			Author: lowercase.Create("not_test_guy"),
+			Body:   "I approve",
+		},
+		&model.Comment{
+			Author: lowercase.Create("test_guy"),
+			Body:   "I approve version:0.1.0",
+		},
+		&model.Comment{
+			Author: lowercase.Create("test_guy2"),
+			Body:   "I approve",
+		},
+		&model.Comment{
+			Author: lowercase.Create("test_guy3"),
+			Body:   "I approve version:0.0.1",
+		},
+	}
+	request := &model.ApprovalRequest{
+		Config:           config,
+		Maintainer:       m,
+		PullRequest:      &i,
+		ApprovalComments: comments,
+	}
+	ver := getLastVersionComment(request, policy)
+	if ver == "" {
+		t.Fatal("Got empty for version")
+	}
+	if ver != "0.0.1" {
+		t.Errorf("Expected 0.0.1, got %s", ver)
 	}
 }

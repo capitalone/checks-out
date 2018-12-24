@@ -64,7 +64,7 @@ func antiMatch(req *ApprovalRequest, f Feedback, people set.Set, proc Processor)
 }
 
 func doMatch(candidates set.Set, self bool, min int, req *ApprovalRequest,
-	proc Processor, action MatchAction, feedback []Feedback) bool {
+	proc Processor, action MatchAction, feedback []Feedback) (bool, error) {
 
 	participants := set.Empty()
 
@@ -80,10 +80,10 @@ func doMatch(candidates set.Set, self bool, min int, req *ApprovalRequest,
 		}
 		action(req, f, participants, proc)
 	}
-	return len(participants) >= min
+	return len(participants) >= min, nil
 }
 
-func (match *UniverseMatch) Match(req *ApprovalRequest, proc Processor, a MatchAction, feedback []Feedback) bool {
+func (match *UniverseMatch) Match(req *ApprovalRequest, proc Processor, a MatchAction, feedback []Feedback) (bool, error) {
 	candidates := set.Empty()
 	for _, f := range feedback {
 		candidates.Add(f.GetAuthor().String())
@@ -91,7 +91,7 @@ func (match *UniverseMatch) Match(req *ApprovalRequest, proc Processor, a MatchA
 	return doMatch(candidates, match.Self, match.Approvals, req, proc, a, feedback)
 }
 
-func (match *MaintainerMatch) Match(req *ApprovalRequest, proc Processor, a MatchAction, feedback []Feedback) bool {
+func (match *MaintainerMatch) Match(req *ApprovalRequest, proc Processor, a MatchAction, feedback []Feedback) (bool, error) {
 	candidates := set.Empty()
 	for k := range req.Maintainer.People {
 		candidates.Add(k)
@@ -99,12 +99,16 @@ func (match *MaintainerMatch) Match(req *ApprovalRequest, proc Processor, a Matc
 	return doMatch(candidates, match.Self, match.Approvals, req, proc, a, feedback)
 }
 
-func (match *AnonymousMatch) Match(req *ApprovalRequest, proc Processor, a MatchAction, feedback []Feedback) bool {
+func (match *AnonymousMatch) Match(req *ApprovalRequest, proc Processor, a MatchAction, feedback []Feedback) (bool, error) {
 	candidates := set.Empty()
 	for entity := range match.Entities {
 		ent := entity.String()
 		if org, ok := req.Maintainer.Org[ent]; ok {
-			candidates.AddAll(org.People)
+			people, err := org.GetPeople()
+			if err != nil {
+				return false, err
+			}
+			candidates.AddAll(people)
 		} else {
 			candidates.Add(ent)
 		}
@@ -112,35 +116,55 @@ func (match *AnonymousMatch) Match(req *ApprovalRequest, proc Processor, a Match
 	return doMatch(candidates, match.Self, match.Approvals, req, proc, a, feedback)
 }
 
-func (match *EntityMatch) Match(req *ApprovalRequest, proc Processor, a MatchAction, feedback []Feedback) bool {
+func (match *EntityMatch) Match(req *ApprovalRequest, proc Processor, a MatchAction, feedback []Feedback) (bool, error) {
 	candidates := set.Empty()
 	ent := match.Entity.String()
 	if org, ok := req.Maintainer.Org[ent]; ok {
-		candidates = org.People
+		people, err := org.GetPeople()
+		if err != nil {
+			return false, err
+		}
+		candidates.AddAll(people)
 	} else {
 		candidates.Add(ent)
 	}
 	return doMatch(candidates, match.Self, match.Approvals, req, proc, a, feedback)
 }
 
-func (match *UsMatch) Match(req *ApprovalRequest, proc Processor, a MatchAction, feedback []Feedback) bool {
+func (match *UsMatch) Match(req *ApprovalRequest, proc Processor, a MatchAction, feedback []Feedback) (bool, error) {
 	candidates := set.Empty()
-	if orgs, ok := req.Maintainer.PersonToOrg[req.PullRequest.Author.String()]; ok {
+	mapping, err := req.Maintainer.PersonToOrg()
+	if err != nil {
+		return false, err
+	}
+	if orgs, ok := mapping[req.PullRequest.Author.String()]; ok {
 		for name := range orgs {
 			if org, ok := req.Maintainer.Org[name]; ok {
-				candidates.AddAll(org.People)
+				people, err := org.GetPeople()
+				if err != nil {
+					return false, err
+				}
+				candidates.AddAll(people)
 			}
 		}
 	}
 	return doMatch(candidates, match.Self, match.Approvals, req, proc, a, feedback)
 }
 
-func (match *ThemMatch) Match(req *ApprovalRequest, proc Processor, a MatchAction, feedback []Feedback) bool {
+func (match *ThemMatch) Match(req *ApprovalRequest, proc Processor, a MatchAction, feedback []Feedback) (bool, error) {
 	us := set.Empty()
-	if orgs, ok := req.Maintainer.PersonToOrg[req.PullRequest.Author.String()]; ok {
+	mapping, err := req.Maintainer.PersonToOrg()
+	if err != nil {
+		return false, err
+	}
+	if orgs, ok := mapping[req.PullRequest.Author.String()]; ok {
 		for name := range orgs {
 			if org, ok := req.Maintainer.Org[name]; ok {
-				us.AddAll(org.People)
+				people, err := org.GetPeople()
+				if err != nil {
+					return false, err
+				}
+				us.AddAll(people)
 			}
 		}
 	}
@@ -152,27 +176,31 @@ func (match *ThemMatch) Match(req *ApprovalRequest, proc Processor, a MatchActio
 	return doMatch(candidates, match.Self, match.Approvals, req, proc, a, feedback)
 }
 
-func (match *AtLeastMatch) Match(req *ApprovalRequest, proc Processor, a MatchAction, feedback []Feedback) bool {
+func (match *AtLeastMatch) Match(req *ApprovalRequest, proc Processor, a MatchAction, feedback []Feedback) (bool, error) {
 	if len(match.Choose) == 0 {
-		return false
+		return false, nil
 	}
 	count := 0
 	for _, m := range match.Choose {
-		if m.Match(req, proc, a, feedback) {
+		inner, err := m.Match(req, proc, a, feedback)
+		if err != nil {
+			return false, err
+		}
+		if inner {
 			count++
 		}
 	}
-	return count >= match.Approvals
+	return count >= match.Approvals, nil
 }
 
-func (match *AuthorMatch) Match(req *ApprovalRequest, proc Processor, _ MatchAction, feedback []Feedback) bool {
+func (match *AuthorMatch) Match(req *ApprovalRequest, proc Processor, _ MatchAction, feedback []Feedback) (bool, error) {
 	authorReq := *req
 	authorComment := Comment{Author: req.PullRequest.Author}
 	authorReq.ApprovalComments = []Feedback{&authorComment}
 	return match.Inner.Match(&authorReq, proc, authorPolicyAction, authorReq.ApprovalComments)
 }
 
-func (match *IssueAuthorMatch) Match(req *ApprovalRequest, proc Processor, a MatchAction, feedback []Feedback) bool {
+func (match *IssueAuthorMatch) Match(req *ApprovalRequest, proc Processor, a MatchAction, feedback []Feedback) (bool, error) {
 	candidates := set.Empty()
 	self := req.PullRequest.Author
 	for _, issue := range req.Issues {
@@ -184,44 +212,51 @@ func (match *IssueAuthorMatch) Match(req *ApprovalRequest, proc Processor, a Mat
 	return doMatch(candidates, false, len(candidates), req, proc, a, feedback)
 }
 
-func (match *AndMatch) Match(req *ApprovalRequest, proc Processor, a MatchAction, feedback []Feedback) bool {
+func (match *AndMatch) Match(req *ApprovalRequest, proc Processor, a MatchAction, feedback []Feedback) (bool, error) {
 	if len(match.And) == 0 {
-		return false
+		return false, nil
 	}
 	result := true
 	for _, m := range match.And {
-		// prevent short circuit evaluation
-		result = m.Match(req, proc, a, feedback) && result
+		inner, err := m.Match(req, proc, a, feedback)
+		if err != nil {
+			return false, err
+		}
+		result = inner && result
 	}
-	return result
+	return result, nil
 }
 
-func (match *OrMatch) Match(req *ApprovalRequest, proc Processor, a MatchAction, feedback []Feedback) bool {
+func (match *OrMatch) Match(req *ApprovalRequest, proc Processor, a MatchAction, feedback []Feedback) (bool, error) {
 	if len(match.Or) == 0 {
-		return false
+		return false, nil
 	}
 	result := false
 	for _, m := range match.Or {
-		// prevent short circuit evaluation
-		result = m.Match(req, proc, a, feedback) || result
+		inner, err := m.Match(req, proc, a, feedback)
+		if err != nil {
+			return false, err
+		}
+		result = inner || result
 	}
-	return result
+	return result, nil
 }
 
-func (match *NotMatch) Match(req *ApprovalRequest, proc Processor, a MatchAction, feedback []Feedback) bool {
-	return !match.Not.Match(req, proc, a, feedback)
+func (match *NotMatch) Match(req *ApprovalRequest, proc Processor, a MatchAction, feedback []Feedback) (bool, error) {
+	inner, err := match.Not.Match(req, proc, a, feedback)
+	return !inner, err
 }
 
-func (match *TrueMatch) Match(req *ApprovalRequest, proc Processor, a MatchAction, feedback []Feedback) bool {
-	return true
+func (match *TrueMatch) Match(req *ApprovalRequest, proc Processor, a MatchAction, feedback []Feedback) (bool, error) {
+	return true, nil
 }
 
-func (match *FalseMatch) Match(req *ApprovalRequest, proc Processor, a MatchAction, feedback []Feedback) bool {
-	return false
+func (match *FalseMatch) Match(req *ApprovalRequest, proc Processor, a MatchAction, feedback []Feedback) (bool, error) {
+	return false, nil
 }
 
-func (match *DisableMatch) Match(req *ApprovalRequest, proc Processor, a MatchAction, feedback []Feedback) bool {
-	return true
+func (match *DisableMatch) Match(req *ApprovalRequest, proc Processor, a MatchAction, feedback []Feedback) (bool, error) {
+	return true, nil
 }
 
 func (match *DisableMatch) ChangePolicy(policy *ApprovalPolicy) {

@@ -32,7 +32,7 @@ type TagConfig struct {
 	// enable automatic tagging of merges. Default is false.
 	Enable bool `json:"enable"`
 	// algorithm for generating tag name. Allowed values are
-	// "semver", "timestamp-rfc3339", and "timestamp-millis".
+	// "explicit", "semver", "timestamp-rfc3339", and "timestamp-millis".
 	// Default is "semver".
 	Alg string `json:"algorithm"`
 	// golang text/template for producing tag name.
@@ -117,7 +117,7 @@ func (t *TagConfig) build() error {
 }
 
 func (t *TagConfig) validate() error {
-	buffer, err := t.execute(TemplateTag{})
+	buffer, err := t.execute(TemplateTag{Version:"1.0.0"})
 	if err != nil {
 		return err
 	}

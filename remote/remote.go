@@ -115,7 +115,7 @@ type Remote interface {
 	CreatePR(c context.Context, u *model.User, r *model.Repo, title, head, base, body string) (int, error)
 
 	// MergePR merges the named pull request from the remote system
-	MergePR(c context.Context, u *model.User, r *model.Repo, pullRequest model.PullRequest, approvers []*model.Person, message string, mergeMethod string) (*string, error)
+	MergePR(c context.Context, u *model.User, r *model.Repo, pullRequest model.PullRequest, approvers []*model.Person, message string, mergeMethod string) (string, error)
 
 	// CompareBranches compares two branches for changes
 	CompareBranches(c context.Context, u *model.User, repo *model.Repo, base string, head string, owner string) (model.BranchCompare, error)
@@ -127,13 +127,16 @@ type Remote interface {
 	ListTags(c context.Context, u *model.User, r *model.Repo) ([]model.Tag, error)
 
 	// Tag applies a tag with the specified string to the specified sha
-	Tag(c context.Context, u *model.User, r *model.Repo, tag *string, sha *string) error
+	Tag(c context.Context, u *model.User, r *model.Repo, tag string, sha string) error
 
 	// GetPullRequest returns the pull request associated with a pull request number
 	GetPullRequest(c context.Context, u *model.User, r *model.Repo, number int) (model.PullRequest, error)
 
 	// GetPullRequestFiles returns the changed files associated with a pull request number
 	GetPullRequestFiles(c context.Context, u *model.User, r *model.Repo, number int) ([]model.CommitFile, error)
+
+	// GetPullRequestCommits returns the commits associated with a pull request number
+	GetPullRequestCommits(c context.Context, u *model.User, r *model.Repo, number int) ([]model.Commit, error)
 
 	// GetPullRequestsForCommit returns all pull requests associated with a commit SHA
 	GetPullRequestsForCommit(c context.Context, u *model.User, r *model.Repo, sha *string) ([]model.PullRequest, error)
@@ -274,7 +277,7 @@ func CreatePR(c context.Context, u *model.User, r *model.Repo, title, head, base
 	return FromContext(c).CreatePR(c, u, r, title, head, base, body)
 }
 
-func MergePR(c context.Context, u *model.User, r *model.Repo, pullRequest model.PullRequest, approvers []*model.Person, message string, mergeMethod string) (*string, error) {
+func MergePR(c context.Context, u *model.User, r *model.Repo, pullRequest model.PullRequest, approvers []*model.Person, message string, mergeMethod string) (string, error) {
 	return FromContext(c).MergePR(c, u, r, pullRequest, approvers, message, mergeMethod)
 }
 
@@ -290,7 +293,7 @@ func ListTags(c context.Context, u *model.User, r *model.Repo) ([]model.Tag, err
 	return FromContext(c).ListTags(c, u, r)
 }
 
-func Tag(c context.Context, u *model.User, r *model.Repo, tag *string, sha *string) error {
+func Tag(c context.Context, u *model.User, r *model.Repo, tag string, sha string) error {
 	return FromContext(c).Tag(c, u, r, tag, sha)
 }
 
@@ -300,6 +303,10 @@ func GetPullRequest(c context.Context, u *model.User, r *model.Repo, number int)
 
 func GetPullRequestFiles(c context.Context, u *model.User, r *model.Repo, number int) ([]model.CommitFile, error) {
 	return FromContext(c).GetPullRequestFiles(c, u, r, number)
+}
+
+func GetPullRequestCommits(c context.Context, u *model.User, r *model.Repo, number int) ([]model.Commit, error) {
+	return FromContext(c).GetPullRequestCommits(c, u, r, number)
 }
 
 func GetPullRequestsForCommit(c context.Context, u *model.User, r *model.Repo, sha *string) ([]model.PullRequest, error) {

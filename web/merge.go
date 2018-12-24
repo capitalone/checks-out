@@ -35,10 +35,10 @@ func isBehind(c context.Context, user *model.User, repo *model.Repo, branch mode
 }
 
 func doMerge(c context.Context, user *model.User,
-	hook *StatusHook, req *model.ApprovalRequest, policy *model.ApprovalPolicy, mergeMethod string) (*string, error) {
+	hook *StatusHook, req *model.ApprovalRequest, policy *model.ApprovalPolicy, mergeMethod string) (string, error) {
 	approvals, err := buildApprovers(c, user, req)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	var people []*model.Person
 	for id := range approvals.Approvers {
@@ -53,7 +53,7 @@ func doMerge(c context.Context, user *model.User,
 
 	SHA, err := remote.MergePR(c, user, hook.Repo, *req.PullRequest, people, message, mergeMethod)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	return SHA, nil
 }

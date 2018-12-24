@@ -3,6 +3,39 @@ at 4cbae5. Checks-out uses [semantic versioning](http://semver.org/). The
 Checks-out configuration format is incompatible with the LGTM configuration
 format but the legacy format can be parsed.
 
+# 0.27.0
+
+* Change default behavior of 'ignoreuimerge' from false to true.
+
+# 0.26.0
+
+* Reduce scope of 'authoraffirm' feature. The message will only appear
+when the pull request has multiple committers AND there are approvers
+who are also committers. If the approvers are not committers then no
+error message appears. When the error message appears, we have changed
+the wording of the message posted to the pull request.
+* Improvement to branch deletion protected that was added in 0.25.0.
+If deletion of the compare branch is enabled then the final approval
+policy in the policy array must either have a match of "off" or have
+deletion disabled in the policy.
+* Fix several 500-level http responses that should be 400-level
+responses.
+
+# 0.25.0
+
+* Add 'authoraffirm' feature when multiple committers on pull request.
+Pull request author must approve the pull request when there are committers
+on the pull request other than the pull request author. This is
+enabled by default.
+* Enhanced logging of GitHub webhook events
+* Lazy loading of teams for github-team repo-self. Teams are only loaded
+when they are needed by the approval policy in the .checks-out file.
+This will fix the triggering of GitHub rate limiters for organizations
+with many teams.
+* github-team repo-self [orgname] support. It is now possible to load
+all the teams from another organization.
+* Fix docker tag validation
+
 # 0.23.0
 
 * Improved error message when configuration or MAINTAINERS file is missing.

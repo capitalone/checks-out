@@ -51,6 +51,7 @@ func TestGenerateStatus(t *testing.T) {
 			AuditApproved:  false,
 			TitleApproved:  false,
 			AuthorApproved: false,
+			AuthorAffirmed: true,
 		}: {
 			status: "error",
 			desc:   "audit chain must be manually approved",
@@ -61,6 +62,7 @@ func TestGenerateStatus(t *testing.T) {
 			AuditApproved:  true,
 			TitleApproved:  false,
 			AuthorApproved: false,
+			AuthorAffirmed: true,
 		}: {
 			status: "error",
 			desc:   "pull request title is blocking merge",
@@ -71,6 +73,7 @@ func TestGenerateStatus(t *testing.T) {
 			AuditApproved:  true,
 			TitleApproved:  true,
 			AuthorApproved: false,
+			AuthorAffirmed: true,
 		}: {
 			status: "error",
 			desc:   "pull request author not allowed",
@@ -81,6 +84,18 @@ func TestGenerateStatus(t *testing.T) {
 			AuditApproved:  true,
 			TitleApproved:  true,
 			AuthorApproved: true,
+			AuthorAffirmed: false,
+		}: {
+			status: "error",
+			desc:   "non-committer or PR author must approve",
+		},
+
+		&ApprovalInfo{
+			Approved:       false,
+			AuditApproved:  true,
+			TitleApproved:  true,
+			AuthorApproved: true,
+			AuthorAffirmed: true,
 			Disapprovers:   set.New("bob", "frank"),
 		}: {
 			status: "pending",
@@ -92,6 +107,7 @@ func TestGenerateStatus(t *testing.T) {
 			AuditApproved:  true,
 			TitleApproved:  true,
 			AuthorApproved: true,
+			AuthorAffirmed: true,
 			Approvers:      set.New("bob", "frank"),
 		}: {
 			status: "pending",
@@ -103,6 +119,7 @@ func TestGenerateStatus(t *testing.T) {
 			AuditApproved:  true,
 			TitleApproved:  true,
 			AuthorApproved: true,
+			AuthorAffirmed: true,
 		}: {
 			status: "pending",
 			desc:   "no approvals received",

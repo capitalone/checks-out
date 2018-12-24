@@ -67,6 +67,9 @@ func createHook(c context.Context, r *http.Request) (Hook, context.Context, erro
 	case "repository":
 		hook, err = createRepoHook(r, body)
 	}
+	if hook != nil {
+		hook.SetEvent(event)
+	}
 	c2 := usage.AddEventToContext(c, event)
 	return hook, c2, err
 }
@@ -88,6 +91,9 @@ func createReviewHook(body []byte) (Hook, error) {
 		return nil, err
 	}
 
+	log.Infof("repository %s pr %d pull_request_review state %s",
+		data.Repo.GetFullName(), data.PullRequest.GetNumber(),
+		data.PullRequest.GetState())
 	// don't process reviews on closed pull requests
 	if data.PullRequest.GetState() == "closed" {
 		log.Debugf("PR %s is closed -- not processing comments for it any more", data.PullRequest.Title)
@@ -107,6 +113,7 @@ func createReviewHook(body []byte) (Hook, error) {
 				Slug:  data.Repo.GetFullName(),
 			},
 		},
+		State: lowercase.Create(data.Review.GetState()),
 	}
 
 	return hook, nil
@@ -126,6 +133,9 @@ func createCommentHook(body []byte) (Hook, error) {
 		return nil, nil
 	}
 
+	log.Infof("repository %s pr %d issue_comment state %s",
+		data.Repo.GetFullName(), data.Issue.GetNumber(),
+		data.Issue.GetState())
 	// don't process comments on closed pull requests
 	if data.Issue.GetState() == "closed" {
 		log.Debugf("PR %s is closed -- not processing comments for it any more", data.Issue.Title)
@@ -160,6 +170,9 @@ func createStatusHook(body []byte) (Hook, error) {
 		return nil, err
 	}
 
+	log.Infof("repository %s status commit %s",
+		data.Repo.GetFullName(),
+		data.GetSHA())
 	log.Debug(data)
 
 	hook := &StatusHook{
@@ -190,6 +203,11 @@ func createPRHook(body []byte) (Hook, error) {
 
 	log.Debug(data)
 
+	log.Infof("repository %s pr %d pull_request action %s state %s",
+		data.Repo.GetFullName(), data.PullRequest.GetNumber(),
+		data.GetAction(),
+		data.PullRequest.GetState())
+
 	mergeable := true
 	if data.PullRequest.Mergeable != nil {
 		mergeable = data.PullRequest.GetMergeable()
@@ -197,6 +215,9 @@ func createPRHook(body []byte) (Hook, error) {
 
 	hook := &PRHook{
 		ApprovalHook: ApprovalHook{
+			HookCommon: HookCommon{
+				Action: data.GetAction(),
+			},
 			Issue: &model.Issue{
 				Title:  data.PullRequest.GetTitle(),
 				Number: data.PullRequest.GetNumber(),
@@ -228,7 +249,6 @@ func createPRHook(body []byte) (Hook, error) {
 			},
 			Body: data.PullRequest.GetBody(),
 		},
-		Action: data.GetAction(),
 	}
 
 	return hook, nil
@@ -246,7 +266,9 @@ func createRepoHook(r *http.Request, body []byte) (Hook, error) {
 	log.Debug(data)
 
 	hook := &RepoHook{
-		Action:  data.GetAction(),
+		HookCommon: HookCommon{
+			Action: data.GetAction(),
+		},
 		Name:    data.Repo.GetName(),
 		Owner:   data.Repo.Owner.GetLogin(),
 		BaseURL: httputil.GetURL(r),

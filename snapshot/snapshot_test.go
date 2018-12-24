@@ -75,10 +75,10 @@ func TestMaintainerToSnapshot(t *testing.T) {
 		RawPeople: map[string]*model.Person{
 			"Foo": &model.Person{Login: "Foo", Name: "Mr. Foo"},
 		},
-		RawOrg: map[string]*model.Org{
-			"G1": &model.Org{People: set.New("github-org a")},
-			"G2": &model.Org{People: set.New("github-org org")},
-			"G3": &model.Org{People: set.New("github-team team")},
+		RawOrg: map[string]*model.OrgSerde{
+			"G1": &model.OrgSerde{People: set.New("github-org a")},
+			"G2": &model.OrgSerde{People: set.New("github-org org")},
+			"G3": &model.OrgSerde{People: set.New("github-team team")},
 		},
 	}
 	remote.ToContext(c, &mockRemote{})
@@ -92,10 +92,14 @@ func TestMaintainerToSnapshot(t *testing.T) {
 	if _, ok := s.Org["G1"]; ok {
 		t.Error("group G1 was not converted to lowercase")
 	}
-	if s.Org["g1"].People.Contains("Foo") {
+	g1, err := s.Org["g1"].GetPeople()
+	if err != nil {
+		t.Error(err)
+	}
+	if g1.Contains("Foo") {
 		t.Error("user Foo was not converted to lowercase")
 	}
-	if !s.Org["g1"].People.Contains("foo") {
+	if !g1.Contains("foo") {
 		t.Error("user foo is missing from group g1")
 	}
 	if s.People["foo"].Name != "Mr. Foo" {
@@ -109,8 +113,8 @@ func TestMaintainerToSnapshotOrgSelf(t *testing.T) {
 	caps := model.AllowAll()
 	r := &model.Repo{Owner: "a", Org: true}
 	m := &model.Maintainer{
-		RawOrg: map[string]*model.Org{
-			"g1": &model.Org{People: set.New("github-org repo-self")},
+		RawOrg: map[string]*model.OrgSerde{
+			"g1": &model.OrgSerde{People: set.New("github-org repo-self")},
 		},
 	}
 	remote.ToContext(c, &mockRemote{})
@@ -124,11 +128,11 @@ func TestMaintainerToSnapshotOrgSelf(t *testing.T) {
 	if _, ok := s.People["bar"]; ok {
 		t.Error("bar is populated")
 	}
-	org, ok := s.Org["g1"]
-	if !ok {
-		t.Error("org not populated")
+	g1, err := s.Org["g1"].GetPeople()
+	if err != nil {
+		t.Error(err)
 	}
-	if !org.People.Contains("foo") {
+	if !g1.Contains("foo") {
 		t.Error("org contents not populated")
 	}
 }
@@ -139,8 +143,8 @@ func TestSnapshotValidateApproval(t *testing.T) {
 	caps := model.AllowAll()
 	r := &model.Repo{Owner: "a", Org: true}
 	m := &model.Maintainer{
-		RawOrg: map[string]*model.Org{
-			"g1": &model.Org{People: set.New("github-org repo-self")},
+		RawOrg: map[string]*model.OrgSerde{
+			"g1": &model.OrgSerde{People: set.New("github-org repo-self")},
 		},
 	}
 	remote.ToContext(c, &mockRemote{})
@@ -166,12 +170,13 @@ func TestSnapshotValidateApproval(t *testing.T) {
 }
 
 func TestAddMembers(t *testing.T) {
+	c := model.OrgSerde{People: set.New("foo")}
 	m := model.MaintainerSnapshot{
 		People: map[string]*model.Person{
 			"foo": &model.Person{Login: "foo", Name: "Mr. Foo"},
 		},
-		Org: map[string]*model.Org{
-			"c": &model.Org{People: set.New("foo")},
+		Org: map[string]model.Org{
+			"c": &c,
 		},
 	}
 	lst := []*model.Person{
@@ -179,12 +184,13 @@ func TestAddMembers(t *testing.T) {
 		&model.Person{Login: "bar"},
 		&model.Person{Login: "baz"},
 	}
-	addMembers(&m, lst, m.Org["c"])
+	addToPeople(lst, &m)
+	addToOrg(lst, c.People)
 	if len(m.People) != 3 {
 		t.Error("Persons not added to snapshot", m.People)
 	}
-	if len(m.Org["c"].People) != 3 {
-		t.Error("Persons not added to organization", m.Org["c"].People)
+	if len(c.People) != 3 {
+		t.Error("Persons not added to organization", c.People)
 	}
 	if m.People["foo"].Name != "Mr. Foo" {
 		t.Error("foo user was overridden", m.People["foo"])
@@ -198,28 +204,31 @@ func TestPopulatePersonToOrg(t *testing.T) {
 			"bar": &model.Person{Login: "bar"},
 			"baz": &model.Person{Login: "baz"},
 		},
-		Org: map[string]*model.Org{
-			"a": &model.Org{People: set.New("foo")},
-			"b": &model.Org{People: set.New("foo", "bar")},
-			"c": &model.Org{People: set.New("foo", "bar", "baz", "quux")},
+		Org: map[string]model.Org{
+			"a": &model.OrgSerde{People: set.New("foo")},
+			"b": &model.OrgSerde{People: set.New("foo", "bar")},
+			"c": &model.OrgSerde{People: set.New("foo", "bar", "baz", "quux")},
 		},
 	}
-	populatePersonToOrg(&m)
-	if len(m.PersonToOrg["foo"]) != 3 {
+	mapping, err := m.PersonToOrg()
+	if err != nil {
+		t.Error(err)
+	}
+	if len(mapping) != 3 {
 		t.Errorf("foo was not mapped to the correct organizations: %v",
-			m.PersonToOrg["foo"])
+			mapping["foo"])
 	}
-	if len(m.PersonToOrg["bar"]) != 2 {
+	if len(mapping["bar"]) != 2 {
 		t.Errorf("bar was not mapped to the correct organizations: %v",
-			m.PersonToOrg["bar"])
+			mapping["bar"])
 	}
-	if len(m.PersonToOrg["baz"]) != 1 {
+	if len(mapping["baz"]) != 1 {
 		t.Errorf("baz was not mapped to the correct organizations: %v",
-			m.PersonToOrg["baz"])
+			mapping["baz"])
 	}
-	if len(m.PersonToOrg["quux"]) != 0 {
+	if len(mapping["quux"]) != 0 {
 		t.Errorf("quux was not mapped to the correct organizations: %v",
-			m.PersonToOrg["quux"])
+			mapping["quux"])
 	}
 }
 

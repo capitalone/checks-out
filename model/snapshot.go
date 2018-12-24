@@ -18,12 +18,32 @@ See the License for the specific language governing permissions and limitations 
 */
 package model
 
-import (
-	"github.com/capitalone/checks-out/set"
-)
+import "github.com/capitalone/checks-out/set"
 
 type MaintainerSnapshot struct {
-	People      map[string]*Person
-	Org         map[string]*Org
-	PersonToOrg map[string]set.Set
+	People map[string]*Person
+	Org    map[string]Org
+}
+
+func (m *MaintainerSnapshot) PersonToOrg() (map[string]set.Set, error) {
+	mapping := make(map[string]set.Set)
+	for k, v := range m.Org {
+		//value is name of person in the org
+		people, err := v.GetPeople()
+		if err != nil {
+			return nil, err
+		}
+		for name := range people {
+			if _, ok := m.People[name]; !ok {
+				continue
+			}
+			orgs, ok := mapping[name]
+			if !ok {
+				orgs = set.Empty()
+				mapping[name] = orgs
+			}
+			orgs.Add(k)
+		}
+	}
+	return mapping, nil
 }

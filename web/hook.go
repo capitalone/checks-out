@@ -21,15 +21,27 @@ package web
 import (
 	"context"
 
-	"github.com/gin-gonic/gin"
 	"github.com/capitalone/checks-out/model"
+	"github.com/capitalone/checks-out/strings/lowercase"
+	"github.com/gin-gonic/gin"
 )
 
 type Hook interface {
 	Process(c context.Context) (interface{}, error)
+	SetEvent(event string)
+}
+
+type IsApprover interface {
+	IsApproval(req *model.ApprovalRequest) bool
+}
+
+type HookCommon struct {
+	Event  string
+	Action string
 }
 
 type ApprovalHook struct {
+	HookCommon
 	Repo  *model.Repo
 	Issue *model.Issue
 }
@@ -41,22 +53,23 @@ type CommentHook struct {
 
 type ReviewHook struct {
 	ApprovalHook
+	State lowercase.String
 }
 
 type PRHook struct {
 	ApprovalHook
 	PullRequest *model.PullRequest
-	Action      string
 }
 
 type RepoHook struct {
+	HookCommon
 	Name    string
 	Owner   string
-	Action  string
 	BaseURL string
 }
 
 type StatusHook struct {
+	HookCommon
 	SHA    string
 	Status *model.CommitStatus
 	Repo   *model.Repo
@@ -68,6 +81,9 @@ type HookParams struct {
 	Cap      *model.Capabilities
 	Config   *model.Config
 	Snapshot *model.MaintainerSnapshot
+	Event    string
+	Action   string
+	Approval IsApprover
 }
 
 func ProcessHook(c *gin.Context) {
@@ -89,4 +105,22 @@ func ProcessHook(c *gin.Context) {
 
 		}
 	}
+}
+
+func (h *CommentHook) IsApproval(req *model.ApprovalRequest) bool {
+	c := model.Comment{
+		Body: h.Comment,
+	}
+	return c.IsApproval(req)
+}
+
+func (h *ReviewHook) IsApproval(req *model.ApprovalRequest) bool {
+	r := model.Review{
+		State: h.State,
+	}
+	return r.IsApproval(req)
+}
+
+func (h *HookCommon) SetEvent(event string) {
+	h.Event = event
 }
