@@ -70,6 +70,10 @@ func matchesPathsRegexp(exprs []rxserde.RegexSerde, files []CommitFile) bool {
 }
 
 func matchesScope(branch *Branch, scope *ApprovalScope, files []CommitFile) bool {
+	// don't handle nested scopes here
+	if len(scope.Nested) > 0 {
+		return false
+	}
 	paths := true
 	branches := true
 	pathRegexp := true
@@ -93,6 +97,64 @@ func matchesScope(branch *Branch, scope *ApprovalScope, files []CommitFile) bool
 	return paths && branches && pathRegexp && baseRegexp && compareRegexp
 }
 
+func matchesPartialScope(branch *Branch, policy *ApprovalPolicy, files []CommitFile) *ApprovalPolicy {
+	scope := policy.Scope
+	if len(scope.Nested) == 0 {
+		return nil
+	}
+	branches := true
+	baseRegexp := true
+	compareRegexp := true
+	if len(scope.Branches) > 0 {
+		branches = scope.Branches.Contains(branch.BaseName)
+	}
+	if len(scope.BaseRegexp) > 0 {
+		baseRegexp = matchesRegexp(scope.BaseRegexp, branch.BaseName)
+	}
+	if len(scope.CompareRegexp) > 0 {
+		compareRegexp = matchesRegexp(scope.CompareRegexp, branch.CompareName)
+	}
+	if !branches || !baseRegexp || !compareRegexp {
+		return nil
+	}
+
+	var matchers = []MatcherHolder{policy.Match}
+	var antiMatchers []MatcherHolder
+	if policy.AntiMatch != nil {
+		antiMatchers = append(antiMatchers, *policy.AntiMatch)
+	}
+
+	outPolicy := ApprovalPolicy{
+		Name: policy.Name,
+		Position: policy.Position,
+		AuthorMatch: policy.AuthorMatch,
+		Tag: policy.Tag,
+		Merge: policy.Merge,
+		Pattern: policy.Pattern,
+		AntiPattern: policy.AntiPattern,
+		AntiTitle: policy.AntiTitle,
+		Feedback: policy.Feedback,
+		Scope: policy.Scope,
+	}
+	//get each match that applies
+	for _, v := range scope.Nested {
+		for _, file := range files {
+			if v.PathRegexp.Regex.MatchString(file.Filename) {
+				matchers = append(matchers, v.Match)
+				if v.AntiMatch !=  nil {
+					antiMatchers = append(antiMatchers, *v.AntiMatch)
+				}
+				break
+			}
+		}
+	}
+	outPolicy.Match = MatcherHolder{Matcher: &AndMatch{matchers}}
+	if len(antiMatchers) > 0 {
+		outPolicy.AntiMatch = &MatcherHolder{&OrMatch{antiMatchers}}
+	}
+	return &outPolicy
+}
+
 var internalErrorPolicy = ApprovalPolicy{
 	Scope: &ApprovalScope{},
 	Match: MatcherHolder{&FalseMatch{}},
@@ -102,6 +164,10 @@ func FindApprovalPolicy(req *ApprovalRequest) *ApprovalPolicy {
 	for _, approval := range req.Config.Approvals {
 		if matchesScope(&req.PullRequest.Branch, approval.Scope, req.Files) {
 			return approval
+		}
+		//handle nested approvals for monorepos
+		if partialApproval := matchesPartialScope(&req.PullRequest.Branch, approval, req.Files); partialApproval != nil {
+			return partialApproval
 		}
 	}
 	log.Warnf("Internal error. repo %s does not have a default scope.",

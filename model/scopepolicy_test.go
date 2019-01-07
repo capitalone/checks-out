@@ -131,3 +131,34 @@ func TestMatchesPathsRegexp(t *testing.T) {
 		t.Error("Path policy should not match")
 	}
 }
+
+//req.Config.Approvals
+//req.PullRequest.Branch.BaseName
+//req.PullRequest.Branch.CompareName
+//req.Files
+//req.Repository.Name
+func TestFindApprovalPolicy(t *testing.T) {
+	req := &ApprovalRequest{
+		Config: &Config{
+			Approvals: []*ApprovalPolicy{
+				//todo
+			},
+		},
+		PullRequest: &PullRequest{
+			Branch: Branch{
+				BaseName:    "", //todo
+				CompareName: "", //todo
+			},
+		},
+		Files: []CommitFile{
+			//todo
+		},
+		Repository: &Repo{
+			Name: "", //todo
+		},
+	}
+	policy := FindApprovalPolicy(req)
+	if policy == nil {
+		t.Error("didn't find the monorepo policy")
+	}
+}

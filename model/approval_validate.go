@@ -58,6 +58,9 @@ func (a *ApprovalScope) ValidateFinal() error {
 	if len(a.CompareRegexp) > 0 {
 		errs = multierror.Append(errs, errors.New("Final scope must have no compare branch regular expressions"))
 	}
+	if len(a.Nested) > 0 {
+		errs = multierror.Append(errs, errors.New("Final scope must have no nested scopes"))
+	}
 	return errs
 }
 
@@ -72,6 +75,10 @@ func (a *ApprovalPolicy) Validate() error {
 	}
 	if len(a.Scope.Branches) > 0 && len(a.Scope.BaseRegexp) > 0 {
 		err := errors.New("'branches' and 'regexbase' cannot be used together")
+		errs = multierror.Append(errs, err)
+	}
+	if len(a.Scope.Nested) > 0 && (len(a.Scope.Paths) > 0 || len(a.Scope.PathRegexp) > 0) {
+		err := errors.New("nested scopes cannot be used with 'paths' or 'regexpaths'")
 		errs = multierror.Append(errs, err)
 	}
 	return errs

@@ -104,7 +104,7 @@ type ApprovalPolicy struct {
 	Match MatcherHolder `json:"match"`
 	// AntiMatch is a JSON object that stores the disapproval match.
 	AntiMatch *MatcherHolder `json:"antimatch,omitempty"`
-	// AntiMatch is a JSON object that stores the author match.
+	// AuthorMatch is a JSON object that stores the author match.
 	AuthorMatch *MatcherHolder `json:"authormatch,omitempty"`
 	// Tag is an optional tag section to be used for this
 	// approval scope. If this field is empty then the
@@ -139,6 +139,20 @@ type ApprovalScope struct {
 	PathRegexp    []rxserde.RegexSerde `json:"regexpaths,omitempty"`
 	BaseRegexp    []rxserde.RegexSerde `json:"regexbase,omitempty"`
 	CompareRegexp []rxserde.RegexSerde `json:"regexcompare,omitempty"`
+	Nested        []InnerScope         `json:"nested,omitempty"`
+}
+
+// InnerScope is used to provide different paths within a monorepo with their own
+// Match and AntiMatch rules. All InnerScopes that match are required for approval.
+// Any InnerScopes that don't match are ignored. Note that a person who qualifies for
+// two different matches will count for both.
+type InnerScope struct {
+	PathRegexp rxserde.RegexSerde `json:"regexpath"`
+	// Match is a JSON object that stores the approval match.
+	// every approval policy needs a Match
+	Match MatcherHolder `json:"match"`
+	// AntiMatch is a JSON object that stores the disapproval match.
+	AntiMatch *MatcherHolder `json:"antimatch,omitempty"`
 }
 
 // MatcherHolder stores an an Matcher
