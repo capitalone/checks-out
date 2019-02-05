@@ -20,7 +20,11 @@ package model
 
 import (
 	"encoding/json"
+	"fmt"
+	"github.com/capitalone/checks-out/strings/lowercase"
+	"github.com/capitalone/checks-out/strings/rxserde"
 	"reflect"
+	"regexp"
 	"testing"
 
 	"github.com/capitalone/checks-out/hjson"
@@ -216,4 +220,57 @@ func TestAnonymousGroupRoundTripping(t *testing.T) {
 		}
 	}
 
+}
+
+func TestNestedApprovals(t *testing.T) {
+	c := DefaultConfig()
+	c.Approvals = []*ApprovalPolicy{
+		{
+			Name:     "nested",
+			Position: 1,
+			Match: MatcherHolder{
+				Matcher: &TrueMatch{},
+			},
+			Scope: &ApprovalScope{
+				Branches: set.Set{
+					"dev": true,
+				},
+				Nested: []InnerScope{
+					{
+						PathRegexp: rxserde.RegexSerde{
+							Regex: regexp.MustCompile(".*/gui/.*"),
+						},
+						Match: MatcherHolder{
+							Matcher: &EntityMatch{
+								Entity: lowercase.Create("front_end_devs"),
+								CommonMatch: CommonMatch{
+									Approvals: 2,
+									Self:      false,
+								},
+							},
+						},
+					},
+					{
+						PathRegexp: rxserde.RegexSerde{
+							Regex: regexp.MustCompile(".*/server/.*"),
+						},
+						Match: MatcherHolder{
+							Matcher: &EntityMatch{
+								Entity: lowercase.Create("back_end_devs"),
+								CommonMatch: CommonMatch{
+									Approvals: 2,
+									Self:      false,
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	js, err := hjson.Marshal(c)
+	if err != nil {
+		t.Error(err)
+	}
+	fmt.Println(string(js))
 }

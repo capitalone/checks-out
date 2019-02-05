@@ -20,6 +20,8 @@ package snapshot
 
 import (
 	"context"
+	"fmt"
+	"github.com/capitalone/checks-out/hjson"
 	"testing"
 
 	"github.com/capitalone/checks-out/cache"
@@ -73,14 +75,17 @@ func TestMaintainerToSnapshot(t *testing.T) {
 	r := &model.Repo{Org: true}
 	m := &model.Maintainer{
 		RawPeople: map[string]*model.Person{
-			"Foo": &model.Person{Login: "Foo", Name: "Mr. Foo"},
+			"Foo": {Login: "Foo", Name: "Mr. Foo"},
 		},
 		RawOrg: map[string]*model.OrgSerde{
-			"G1": &model.OrgSerde{People: set.New("github-org a")},
-			"G2": &model.OrgSerde{People: set.New("github-org org")},
-			"G3": &model.OrgSerde{People: set.New("github-team team")},
+			"G1": {People: set.New("github-org a")},
+			"G2": {People: set.New("github-org org")},
+			"G3": {People: set.New("github-team team")},
 		},
 	}
+	hj, _  := hjson.Marshal(m)
+	fmt.Println(string(hj))
+
 	remote.ToContext(c, &mockRemote{})
 	s, err := maintainerToSnapshot(c, u, caps, r, m)
 	if err != nil {
@@ -114,7 +119,7 @@ func TestMaintainerToSnapshotOrgSelf(t *testing.T) {
 	r := &model.Repo{Owner: "a", Org: true}
 	m := &model.Maintainer{
 		RawOrg: map[string]*model.OrgSerde{
-			"g1": &model.OrgSerde{People: set.New("github-org repo-self")},
+			"g1": {People: set.New("github-org repo-self")},
 		},
 	}
 	remote.ToContext(c, &mockRemote{})
@@ -144,7 +149,7 @@ func TestSnapshotValidateApproval(t *testing.T) {
 	r := &model.Repo{Owner: "a", Org: true}
 	m := &model.Maintainer{
 		RawOrg: map[string]*model.OrgSerde{
-			"g1": &model.OrgSerde{People: set.New("github-org repo-self")},
+			"g1": {People: set.New("github-org repo-self")},
 		},
 	}
 	remote.ToContext(c, &mockRemote{})
@@ -173,16 +178,16 @@ func TestAddMembers(t *testing.T) {
 	c := model.OrgSerde{People: set.New("foo")}
 	m := model.MaintainerSnapshot{
 		People: map[string]*model.Person{
-			"foo": &model.Person{Login: "foo", Name: "Mr. Foo"},
+			"foo": {Login: "foo", Name: "Mr. Foo"},
 		},
 		Org: map[string]model.Org{
 			"c": &c,
 		},
 	}
 	lst := []*model.Person{
-		&model.Person{Login: "foo"},
-		&model.Person{Login: "bar"},
-		&model.Person{Login: "baz"},
+		{Login: "foo"},
+		{Login: "bar"},
+		{Login: "baz"},
 	}
 	addToPeople(lst, &m)
 	addToOrg(lst, c.People)
@@ -200,9 +205,9 @@ func TestAddMembers(t *testing.T) {
 func TestPopulatePersonToOrg(t *testing.T) {
 	m := model.MaintainerSnapshot{
 		People: map[string]*model.Person{
-			"foo": &model.Person{Login: "foo"},
-			"bar": &model.Person{Login: "bar"},
-			"baz": &model.Person{Login: "baz"},
+			"foo": {Login: "foo"},
+			"bar": {Login: "bar"},
+			"baz": {Login: "baz"},
 		},
 		Org: map[string]model.Org{
 			"a": &model.OrgSerde{People: set.New("foo")},
