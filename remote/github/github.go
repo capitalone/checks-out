@@ -1113,7 +1113,13 @@ func getPullRequestCommits(ctx context.Context, client *github.Client, r *model.
 	res := []model.Commit{}
 	for _, c := range commits {
 		parents := []string{}
-		for _, p := range c.Commit.Parents {
+		// At some point the parents stopped appearing on the git commit, and started appearing on the github commit.
+		// This checks both places.
+		pList := c.Commit.Parents
+		if pList == nil {
+			pList = c.Parents
+		}
+		for _, p := range pList {
 			parents = append(parents, p.GetSHA())
 		}
 		res = append(res, model.Commit{
