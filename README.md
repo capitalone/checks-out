@@ -1,5 +1,7 @@
 # Checks-Out
 
+[![Join the chat at https://gitter.im/capitalone/checks-out](https://badges.gitter.im/capitalone/checks-out.svg)](https://gitter.im/capitalone/checks-out?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Checks-Out is a simple pull request approval system using GitHub
 protected branches and maintainers files. Pull requests are locked and cannot be
 merged until the minimum number of approvals are received. Project maintainers
