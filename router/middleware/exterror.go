@@ -23,8 +23,8 @@ import (
 
 	"github.com/capitalone/checks-out/exterror"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 )
 
 func ExtError() gin.HandlerFunc {

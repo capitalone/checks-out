@@ -22,8 +22,8 @@ import (
 	"github.com/capitalone/checks-out/remote"
 	"github.com/capitalone/checks-out/router/middleware/session"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 )
 
 func OwnerAdmin(c *gin.Context) {

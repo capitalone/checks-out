@@ -21,15 +21,15 @@ package middleware
 import (
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"github.com/capitalone/checks-out/cache"
 	"github.com/capitalone/checks-out/envvars"
+	"github.com/gin-gonic/gin"
 )
 
 func Cache() gin.HandlerFunc {
 	cache_ := cache.NewTTL(time.Duration(envvars.Env.Cache.CacheTTL))
 	return func(c *gin.Context) {
-		cache.ToContext(c,  cache_)
+		cache.ToContext(c, cache_)
 		c.Next()
 	}
 }

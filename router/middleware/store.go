@@ -21,9 +21,9 @@ package middleware
 import (
 	"fmt"
 
-	"github.com/gin-gonic/gin"
 	"github.com/capitalone/checks-out/store"
 	"github.com/capitalone/checks-out/store/datastore"
+	"github.com/gin-gonic/gin"
 )
 
 func Store() gin.HandlerFunc {

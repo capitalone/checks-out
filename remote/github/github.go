@@ -34,9 +34,9 @@ import (
 	"github.com/capitalone/checks-out/shared/httputil"
 	"github.com/capitalone/checks-out/strings/lowercase"
 
-	log "github.com/Sirupsen/logrus"
-	"github.com/google/go-github/github"
+	"github.com/google/go-github/v30/github"
 	multierror "github.com/mspiegel/go-multierror"
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 )
 
@@ -258,7 +258,7 @@ func (g *Github) ListTeams(ctx context.Context, user *model.User, org string) (s
 func getTeams(ctx context.Context, client *github.Client, org string) ([]*github.Team, error) {
 	var teams []*github.Team
 	resp, err := buildCompleteList(func(opts *github.ListOptions) (*github.Response, error) {
-		newTeams, response, err := client.Organizations.ListTeams(ctx, org, opts)
+		newTeams, response, err := client.Teams.ListTeams(ctx, org, opts)
 		teams = append(teams, newTeams...)
 		return response, err
 	})
@@ -279,22 +279,22 @@ func getTeamMembers(ctx context.Context, client *github.Client, org string, team
 	if err != nil {
 		return nil, err
 	}
-	var id *int64
+	var slug *string
 	for _, t := range teams {
 		if strings.EqualFold(t.GetSlug(), team) {
-			id = t.ID
+			slug = t.Slug
 			break
 		}
 	}
-	if id == nil {
+	if slug == nil {
 		err = fmt.Errorf("Team %s not found for organization %s.", team, org)
 		return nil, exterror.Create(http.StatusNotFound, err)
 	}
-	topts := github.OrganizationListTeamMembersOptions{}
+	topts := github.TeamListTeamMembersOptions{}
 	var teammates []*github.User
 	resp, err := buildCompleteList(func(opts *github.ListOptions) (*github.Response, error) {
 		topts.ListOptions = *opts
-		newTmates, resp2, err2 := client.Organizations.ListTeamMembers(ctx, *id, &topts)
+		newTmates, resp2, err2 := client.Teams.ListTeamMembersBySlug(ctx, org, *slug, &topts)
 		teammates = append(teammates, newTmates...)
 		return resp2, err2
 	})
@@ -715,7 +715,7 @@ func (g *Github) GetAllComments(ctx context.Context, u *model.User, r *model.Rep
 }
 
 func getAllComments(ctx context.Context, client *github.Client, r *model.Repo, num int) ([]*model.Comment, error) {
-	lcOpts := github.IssueListCommentsOptions{Direction: "desc", Sort: "created"}
+	lcOpts := github.IssueListCommentsOptions{Direction: github.String("desc"), Sort: github.String("created")}
 	var comm []*github.IssueComment
 	resp, err := buildCompleteList(func(opts *github.ListOptions) (*github.Response, error) {
 		lcOpts.ListOptions = *opts
@@ -773,15 +773,19 @@ func getHead(ctx context.Context, client *github.Client, r *model.Repo, num int,
 	return commit, nil
 }
 
+func timep(t time.Time) *time.Time {
+	return &t
+}
+
 func getCommentsSinceHead(ctx context.Context, client *github.Client, r *model.Repo, num int, noUIMerge bool) ([]*model.Comment, error) {
 	commit, err := getHead(ctx, client, r, num, noUIMerge)
 	if err != nil {
 		return nil, err
 	}
 	lcOpts := github.IssueListCommentsOptions{
-		Direction: "desc",
-		Sort:      "created",
-		Since:     commit.Commit.Committer.GetDate()}
+		Direction: github.String("desc"),
+		Sort:      github.String("created"),
+		Since:     timep(commit.Commit.Committer.GetDate())}
 	var comm []*github.IssueComment
 	resp, err := buildCompleteList(func(opts *github.ListOptions) (*github.Response, error) {
 		lcOpts.ListOptions = *opts
@@ -1010,7 +1014,7 @@ func createEmptyCommit(ctx context.Context, client *github.Client, r *model.Repo
 	commit, resp, err := client.Git.CreateCommit(ctx, r.Owner, r.Name, &github.Commit{
 		Message: github.String(msg),
 		Tree:    prev.Tree,
-		Parents: []github.Commit{{
+		Parents: []*github.Commit{{
 			SHA: github.String(sha),
 		}},
 	})

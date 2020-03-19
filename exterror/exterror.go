@@ -23,8 +23,8 @@ import (
 	"fmt"
 	"reflect"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/mspiegel/go-multierror"
+	log "github.com/sirupsen/logrus"
 )
 
 type ExtError struct {

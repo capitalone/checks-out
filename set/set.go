@@ -82,7 +82,7 @@ func (s Set) Difference(other Set) Set {
 
 func (s Set) Print(sep string) string {
 	res := ""
-	keys := s.KeysSorted(func(s1,s2 string) bool {
+	keys := s.KeysSorted(func(s1, s2 string) bool {
 		return s1 < s2
 	})
 	for i, k := range keys {
@@ -115,7 +115,7 @@ func (s Set) Keys() []string {
 	return lst
 }
 
-func (s Set) KeysSorted(f func (s1, s2 string) bool) []string {
+func (s Set) KeysSorted(f func(s1, s2 string) bool) []string {
 	lst := s.Keys()
 	sort.Slice(lst, func(i, j int) bool {
 		return f(lst[i], lst[j])

@@ -23,8 +23,8 @@ import (
 	"fmt"
 	"strings"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/capitalone/checks-out/model"
+	log "github.com/sirupsen/logrus"
 )
 
 var (

@@ -26,7 +26,6 @@ import (
 	"net/http"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/capitalone/checks-out/envvars"
 	"github.com/capitalone/checks-out/exterror"
 	"github.com/capitalone/checks-out/model"
@@ -35,6 +34,7 @@ import (
 	"github.com/capitalone/checks-out/shared/token"
 	"github.com/capitalone/checks-out/store"
 	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 )
 
 // Login attempts to authorize a user via GitHub oauth2. If the user does not
