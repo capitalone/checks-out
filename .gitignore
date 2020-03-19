@@ -8,3 +8,5 @@ checks-out.sqlite
 report.out
 report.xml
 *.iml
+coverage.html
+coverage.out
