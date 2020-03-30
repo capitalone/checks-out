@@ -274,6 +274,7 @@
 			if (!repo.id) {
 				$scope.delete(repo);
 			} else {
+				// TODO get confirmation that you really want to do this
 				$scope.activate(repo);
 			}
 		};
@@ -282,6 +283,7 @@
             if (!org.enabled) {
                 $scope.deleteOrg(org);
             } else {
+				// TODO get confirmation that you really want to do this
                 $scope.activateOrg(org);
             }
         };
