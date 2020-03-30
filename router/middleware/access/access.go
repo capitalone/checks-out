@@ -22,8 +22,8 @@ import (
 	"github.com/capitalone/checks-out/remote"
 	"github.com/capitalone/checks-out/router/middleware/session"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 )
 
 func OwnerAdmin(c *gin.Context) {
@@ -34,7 +34,7 @@ func OwnerAdmin(c *gin.Context) {
 
 	perm, err := remote.GetOrgPerm(c, user, owner)
 	if err != nil {
-		log.Warnf("Cannot find org %s/%s. %s", owner, err)
+		log.Warnf("Cannot find org %s. %s", owner, err)
 		c.String(404, "Not Found")
 		c.Abort()
 		return

@@ -27,7 +27,7 @@ import (
 	"github.com/capitalone/checks-out/set"
 	"github.com/capitalone/checks-out/store/datastore"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 var (

@@ -19,8 +19,8 @@ See the License for the specific language governing permissions and limitations 
 package usage
 
 import (
-	"testing"
 	"context"
+	"testing"
 )
 
 func TestContextUnique(t *testing.T) {
@@ -33,6 +33,6 @@ func TestContextUnique(t *testing.T) {
 	}
 	v2 := GetEventFromContext(c2)
 	if v2 != "Hello" {
-		t.Errorf("Expected Hello, got %v",v2)
+		t.Errorf("Expected Hello, got %v", v2)
 	}
 }

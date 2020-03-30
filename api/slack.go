@@ -19,13 +19,13 @@ See the License for the specific language governing permissions and limitations 
 package api
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/capitalone/checks-out/store"
-	"github.com/capitalone/checks-out/exterror"
-	"fmt"
 	"encoding/json"
-	"io/ioutil"
+	"fmt"
+	"github.com/capitalone/checks-out/exterror"
 	"github.com/capitalone/checks-out/router/middleware/session"
+	"github.com/capitalone/checks-out/store"
+	"github.com/gin-gonic/gin"
+	"io/ioutil"
 )
 
 type UrlHolder struct {

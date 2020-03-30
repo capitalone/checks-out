@@ -35,8 +35,8 @@ import (
 	"github.com/capitalone/checks-out/usage"
 	"github.com/capitalone/checks-out/version"
 
-	"github.com/Sirupsen/logrus"
 	_ "github.com/joho/godotenv/autoload"
+	"github.com/sirupsen/logrus"
 )
 
 func setLogLevel(level string) {
@@ -81,7 +81,7 @@ func startService() {
 
 	handler := router.Load()
 
-	logrus.Infof("Starting %s service on %d", envvars.Env.Branding.ShortName, time.Now().Format(time.RFC1123))
+	logrus.Infof("Starting %s service on %s", envvars.Env.Branding.ShortName, time.Now().Format(time.RFC1123))
 
 	if envvars.Env.Server.Cert != "" {
 		logrus.Fatal(

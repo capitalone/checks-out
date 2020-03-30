@@ -24,7 +24,6 @@ import (
 	rpprof "runtime/pprof"
 	"time"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/capitalone/checks-out/api"
 	"github.com/capitalone/checks-out/envvars"
 	"github.com/capitalone/checks-out/router/middleware"
@@ -35,6 +34,7 @@ import (
 	"github.com/capitalone/checks-out/web/static"
 	"github.com/capitalone/checks-out/web/template"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 )
 
 // Load creates a new HTTP handler

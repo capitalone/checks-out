@@ -32,7 +32,7 @@ import (
 	"github.com/capitalone/checks-out/set"
 	"github.com/capitalone/checks-out/strings/lowercase"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 // https://help.github.com/articles/closing-issues-via-commit-messages/

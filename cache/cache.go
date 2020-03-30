@@ -22,8 +22,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/koding/cache"
 	"github.com/capitalone/checks-out/envvars"
+	"github.com/koding/cache"
 )
 
 type Cache interface {

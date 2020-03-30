@@ -3,6 +3,12 @@ at 4cbae5. Checks-out uses [semantic versioning](http://semver.org/). The
 Checks-out configuration format is incompatible with the LGTM configuration
 format but the legacy format can be parsed.
 
+# 0.28.0
+
+* Apply fix for https://github.com/google/go-github/issues/664.
+Allows users to onboard to checks-out when GitHub Reviews is
+enabled on the repository.
+
 # 0.27.0
 
 * Change default behavior of 'ignoreuimerge' from false to true.
