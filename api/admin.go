@@ -19,7 +19,6 @@ See the License for the specific language governing permissions and limitations 
 package api
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -33,21 +32,25 @@ import (
 	"github.com/capitalone/checks-out/store"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jonbodner/stackerr"
 	"github.com/sirupsen/logrus"
+)
+
+const (
+	notAdmin   = "user is not an administrator"
+	noAdminOrg = "GITHUB_ADMIN_ORG environment variable not defined"
 )
 
 func unauthorizedError() error {
 	status := http.StatusUnauthorized
-	msg := "user is not an administrator"
-	return exterror.Create(status, errors.New(msg))
+	return exterror.Create(status, stackerr.New(notAdmin))
 }
 
 func adminMissingError() error {
 	if envvars.Env.Github.AdminOrg == "" {
 		if envvars.Env.Monitor.Sunlight {
 			status := http.StatusUnauthorized
-			msg := "GITHUB_ADMIN_ORG environment variable not defined"
-			return exterror.Create(status, errors.New(msg))
+			return exterror.Create(status, stackerr.New(noAdminOrg))
 		}
 		return unauthorizedError()
 	}
