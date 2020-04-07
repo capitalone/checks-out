@@ -21,6 +21,10 @@ build: test
 	@# static linking sqlite seems to break DNS
 	go build --ldflags '-X github.com/capitalone/checks-out/version.Version=$(VERSION)' -o checks-out
 
+build-debug: test
+	@# static linking sqlite seems to break DNS
+	go build --ldflags '-X github.com/capitalone/checks-out/version.Version=$(VERSION)' -gcflags "all=-N -l" -o checks-out
+
 test: vet
 	@# use redirect instead of tee to preserve exit code
 	go test -short -cover -v ./... > report.out; \

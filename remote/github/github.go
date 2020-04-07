@@ -138,7 +138,7 @@ func (g *Github) GetUser(ctx context.Context, res http.ResponseWriter, req *http
 	// get the subset of requested scopes granted to the access token
 	scopes, err = g.GetScopes(ctx, token.AccessToken)
 	if err != nil {
-		err = fmt.Errorf("Fetching user. %s", err)
+		err = fmt.Errorf("Getting scopes. %s", err)
 		return nil, createError(resp, err)
 	}
 
@@ -162,7 +162,7 @@ func (g *Github) GetUserToken(ctx context.Context, token string) (string, error)
 
 func (g *Github) GetScopes(ctx context.Context, token string) (string, error) {
 	client := basicAuthClient(g.API, g.Client, g.Secret)
-	auth, resp, err := client.Authorizations.Check(ctx, g.Client, token)
+	auth, resp, err := getScopesDeprecated(ctx, client, g.Client, token)
 	if err != nil {
 		err = fmt.Errorf("Checking authorization. %s", err)
 		return "", createError(resp, err)
@@ -172,6 +172,30 @@ func (g *Github) GetScopes(ctx context.Context, token string) (string, error) {
 		scopes.Add(string(scope))
 	}
 	return scopes.Print(","), nil
+}
+
+const mediaTypeOAuthAppPreview = "application/vnd.github.doctor-strange-preview+json"
+
+// getScopesDeprecated implements a method that has been removed from the Github API. Unfortunately,
+// Enterprise Github doesn't currently support the endpoint documented at
+// https://developer.github.com/changes/2020-02-14-deprecating-oauth-app-endpoint/ . This function is only needed
+// until Enterprise Github is updated to use the new API.
+func getScopesDeprecated(ctx context.Context, client *github.Client, clientID, token string) (*github.Authorization, *github.Response, error) {
+	u := fmt.Sprintf("applications/%v/tokens/%v", clientID, token)
+
+	req, err := client.NewRequest(http.MethodGet, u, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+	req.Header.Set("Accept", mediaTypeOAuthAppPreview)
+
+	a := new(github.Authorization)
+	resp, err := client.Do(ctx, req, a)
+	if err != nil {
+		return nil, resp, err
+	}
+
+	return a, resp, nil
 }
 
 func (g *Github) RevokeAuthorization(ctx context.Context, user *model.User) error {
