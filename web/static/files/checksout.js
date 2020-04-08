@@ -290,14 +290,12 @@
 				$scope.delete(repo);
 			} else {
 				ngDialog.openConfirm({
-					template:'/static/_confirm_template.html',
+					template:'/_confirm_template',
 					className: 'ngdialog-theme-default',
 					scope: $scope,
 				}).then(function (value) {
-					console.log('Decided to use LGTMeow. Value: ', value);
 					$scope.activate(repo);
 				}, function (reason) {
-					console.log('Decided to use CODEOWNERS. Reason: ', reason);
 					delete repo.id;
 				});
 			}
@@ -308,14 +306,12 @@
                 $scope.deleteOrg(org);
             } else {
 				ngDialog.openConfirm({
-					template:'/static/_confirm_template.html',
+					template:'/_confirm_template',
 					className: 'ngdialog-theme-default',
 					scope: $scope,
 				}).then(function (value) {
-					console.log('Decided to use LGTMeow. Value: ', value);
 					$scope.activateOrg(org);
 				}, function (reason) {
-					console.log('Decided to use CODEOWNERS. Reason: ', reason);
 					delete $scope.repo;
 					org.enabled = false;
 				});

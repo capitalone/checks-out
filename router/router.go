@@ -117,6 +117,7 @@ func Load() http.Handler {
 	e.GET("/login", web.Login)
 	e.POST("/login", web.LoginToken)
 	e.GET("/logout", web.Logout)
+	e.GET("/_confirm_template", web.ConfirmTemplate)
 	e.NoRoute(web.Index)
 
 	return e

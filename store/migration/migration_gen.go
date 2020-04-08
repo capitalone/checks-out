@@ -560,25 +560,25 @@ func AssetNames() []string {
 
 // _bindata is a table, holding each asset generator, mapped to its name.
 var _bindata = map[string]func() (*asset, error){
-	"sqlite3/001_init.sql":            sqlite3001_initSql,
-	"sqlite3/002_org.sql":             sqlite3002_orgSql,
-	"sqlite3/003_drop_emails.sql":     sqlite3003_drop_emailsSql,
-	"sqlite3/004_limit_users.sql":     sqlite3004_limit_usersSql,
-	"sqlite3/005_oauth_scope.sql":     sqlite3005_oauth_scopeSql,
-	"sqlite3/006_add_orgs_table.sql":  sqlite3006_add_orgs_tableSql,
-	"sqlite3/007_add_slack_urls.sql":  sqlite3007_add_slack_urlsSql,
-	"mysql/001_init.sql":              mysql001_initSql,
-	"mysql/002_org.sql":               mysql002_orgSql,
-	"mysql/003_drop_emails.sql":       mysql003_drop_emailsSql,
-	"mysql/004_limit_users.sql":       mysql004_limit_usersSql,
-	"mysql/005_oauth_scope.sql":       mysql005_oauth_scopeSql,
-	"mysql/006_add_orgs_table.sql":    mysql006_add_orgs_tableSql,
-	"mysql/007_add_slack_urls.sql":    mysql007_add_slack_urlsSql,
-	"postgres/001_init.sql":           postgres001_initSql,
-	"postgres/002_org.sql":            postgres002_orgSql,
-	"postgres/003_drop_emails.sql":    postgres003_drop_emailsSql,
-	"postgres/004_limit_users.sql":    postgres004_limit_usersSql,
-	"postgres/005_oauth_scope.sql":    postgres005_oauth_scopeSql,
+	"sqlite3/001_init.sql": sqlite3001_initSql,
+	"sqlite3/002_org.sql": sqlite3002_orgSql,
+	"sqlite3/003_drop_emails.sql": sqlite3003_drop_emailsSql,
+	"sqlite3/004_limit_users.sql": sqlite3004_limit_usersSql,
+	"sqlite3/005_oauth_scope.sql": sqlite3005_oauth_scopeSql,
+	"sqlite3/006_add_orgs_table.sql": sqlite3006_add_orgs_tableSql,
+	"sqlite3/007_add_slack_urls.sql": sqlite3007_add_slack_urlsSql,
+	"mysql/001_init.sql": mysql001_initSql,
+	"mysql/002_org.sql": mysql002_orgSql,
+	"mysql/003_drop_emails.sql": mysql003_drop_emailsSql,
+	"mysql/004_limit_users.sql": mysql004_limit_usersSql,
+	"mysql/005_oauth_scope.sql": mysql005_oauth_scopeSql,
+	"mysql/006_add_orgs_table.sql": mysql006_add_orgs_tableSql,
+	"mysql/007_add_slack_urls.sql": mysql007_add_slack_urlsSql,
+	"postgres/001_init.sql": postgres001_initSql,
+	"postgres/002_org.sql": postgres002_orgSql,
+	"postgres/003_drop_emails.sql": postgres003_drop_emailsSql,
+	"postgres/004_limit_users.sql": postgres004_limit_usersSql,
+	"postgres/005_oauth_scope.sql": postgres005_oauth_scopeSql,
 	"postgres/006_add_orgs_table.sql": postgres006_add_orgs_tableSql,
 	"postgres/007_add_slack_urls.sql": postgres007_add_slack_urlsSql,
 }
@@ -622,32 +622,31 @@ type bintree struct {
 	Func     func() (*asset, error)
 	Children map[string]*bintree
 }
-
 var _bintree = &bintree{nil, map[string]*bintree{
 	"mysql": &bintree{nil, map[string]*bintree{
-		"001_init.sql":           &bintree{mysql001_initSql, map[string]*bintree{}},
-		"002_org.sql":            &bintree{mysql002_orgSql, map[string]*bintree{}},
-		"003_drop_emails.sql":    &bintree{mysql003_drop_emailsSql, map[string]*bintree{}},
-		"004_limit_users.sql":    &bintree{mysql004_limit_usersSql, map[string]*bintree{}},
-		"005_oauth_scope.sql":    &bintree{mysql005_oauth_scopeSql, map[string]*bintree{}},
+		"001_init.sql": &bintree{mysql001_initSql, map[string]*bintree{}},
+		"002_org.sql": &bintree{mysql002_orgSql, map[string]*bintree{}},
+		"003_drop_emails.sql": &bintree{mysql003_drop_emailsSql, map[string]*bintree{}},
+		"004_limit_users.sql": &bintree{mysql004_limit_usersSql, map[string]*bintree{}},
+		"005_oauth_scope.sql": &bintree{mysql005_oauth_scopeSql, map[string]*bintree{}},
 		"006_add_orgs_table.sql": &bintree{mysql006_add_orgs_tableSql, map[string]*bintree{}},
 		"007_add_slack_urls.sql": &bintree{mysql007_add_slack_urlsSql, map[string]*bintree{}},
 	}},
 	"postgres": &bintree{nil, map[string]*bintree{
-		"001_init.sql":           &bintree{postgres001_initSql, map[string]*bintree{}},
-		"002_org.sql":            &bintree{postgres002_orgSql, map[string]*bintree{}},
-		"003_drop_emails.sql":    &bintree{postgres003_drop_emailsSql, map[string]*bintree{}},
-		"004_limit_users.sql":    &bintree{postgres004_limit_usersSql, map[string]*bintree{}},
-		"005_oauth_scope.sql":    &bintree{postgres005_oauth_scopeSql, map[string]*bintree{}},
+		"001_init.sql": &bintree{postgres001_initSql, map[string]*bintree{}},
+		"002_org.sql": &bintree{postgres002_orgSql, map[string]*bintree{}},
+		"003_drop_emails.sql": &bintree{postgres003_drop_emailsSql, map[string]*bintree{}},
+		"004_limit_users.sql": &bintree{postgres004_limit_usersSql, map[string]*bintree{}},
+		"005_oauth_scope.sql": &bintree{postgres005_oauth_scopeSql, map[string]*bintree{}},
 		"006_add_orgs_table.sql": &bintree{postgres006_add_orgs_tableSql, map[string]*bintree{}},
 		"007_add_slack_urls.sql": &bintree{postgres007_add_slack_urlsSql, map[string]*bintree{}},
 	}},
 	"sqlite3": &bintree{nil, map[string]*bintree{
-		"001_init.sql":           &bintree{sqlite3001_initSql, map[string]*bintree{}},
-		"002_org.sql":            &bintree{sqlite3002_orgSql, map[string]*bintree{}},
-		"003_drop_emails.sql":    &bintree{sqlite3003_drop_emailsSql, map[string]*bintree{}},
-		"004_limit_users.sql":    &bintree{sqlite3004_limit_usersSql, map[string]*bintree{}},
-		"005_oauth_scope.sql":    &bintree{sqlite3005_oauth_scopeSql, map[string]*bintree{}},
+		"001_init.sql": &bintree{sqlite3001_initSql, map[string]*bintree{}},
+		"002_org.sql": &bintree{sqlite3002_orgSql, map[string]*bintree{}},
+		"003_drop_emails.sql": &bintree{sqlite3003_drop_emailsSql, map[string]*bintree{}},
+		"004_limit_users.sql": &bintree{sqlite3004_limit_usersSql, map[string]*bintree{}},
+		"005_oauth_scope.sql": &bintree{sqlite3005_oauth_scopeSql, map[string]*bintree{}},
 		"006_add_orgs_table.sql": &bintree{sqlite3006_add_orgs_tableSql, map[string]*bintree{}},
 		"007_add_slack_urls.sql": &bintree{sqlite3007_add_slack_urlsSql, map[string]*bintree{}},
 	}},
@@ -699,3 +698,4 @@ func _filePath(dir, name string) string {
 	cannonicalName := strings.Replace(name, "\\", "/", -1)
 	return filepath.Join(append([]string{dir}, strings.Split(cannonicalName, "/")...)...)
 }
+
