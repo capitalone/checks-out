@@ -3,10 +3,25 @@
 	/**
 	 * Creates the angular application.
 	 */
-	angular.module('app', [
+	var app = angular.module('app', [
 			'ngRoute',
+			'ngDialog',
 			'toggle-switch'
 		]);
+
+	app.config(["ngDialogProvider", function (ngDialogProvider) {
+		ngDialogProvider.setDefaults({
+			className: "ngdialog-theme-default",
+			plain: false,
+			showClose: true,
+			closeByDocument: true,
+			closeByEscape: true,
+			appendTo: false,
+			preCloseCallback: function () {
+				console.log("default pre-close callback");
+			}
+		});
+	}]);
 
 	/**
 	 * Defines the route configuration for the
@@ -166,7 +181,7 @@
 })();
 
 (function () {
-	function RepoCtrl($scope, $routeParams, $location, repos, teams, user, prop, orgs) {
+	function RepoCtrl($scope, $routeParams, $location, repos, teams, user, prop, orgs, ngDialog) {
 
 		$scope.refresh = function() {
             repos.list($scope.user.login, $scope.org.login).then(function(payload){
@@ -274,8 +289,17 @@
 			if (!repo.id) {
 				$scope.delete(repo);
 			} else {
-				// TODO get confirmation that you really want to do this
-				$scope.activate(repo);
+				ngDialog.openConfirm({
+					template:'/static/_confirm_template.html',
+					className: 'ngdialog-theme-default',
+					scope: $scope,
+				}).then(function (value) {
+					console.log('Decided to use LGTMeow. Value: ', value);
+					$scope.activate(repo);
+				}, function (reason) {
+					console.log('Decided to use CODEOWNERS. Reason: ', reason);
+					delete repo.id;
+				});
 			}
 		};
 
@@ -283,8 +307,18 @@
             if (!org.enabled) {
                 $scope.deleteOrg(org);
             } else {
-				// TODO get confirmation that you really want to do this
-                $scope.activateOrg(org);
+				ngDialog.openConfirm({
+					template:'/static/_confirm_template.html',
+					className: 'ngdialog-theme-default',
+					scope: $scope,
+				}).then(function (value) {
+					console.log('Decided to use LGTMeow. Value: ', value);
+					$scope.activateOrg(org);
+				}, function (reason) {
+					console.log('Decided to use CODEOWNERS. Reason: ', reason);
+					delete $scope.repo;
+					org.enabled = false;
+				});
             }
         };
 

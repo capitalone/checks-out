@@ -68,7 +68,7 @@ func Login(c *gin.Context) {
 	// get the user from the database
 	u, err := store.GetUserLogin(c, tmpuser.Login)
 	if err != nil && err != sql.ErrNoRows {
-		c.HTML(500, "error.html", gin.H{"error": err})
+		c.HTML(500, "error.html", gin.H{"error": err.Error()})
 		return
 	} else if err == sql.ErrNoRows {
 		err = validateUserAccess(c, tmpuser)

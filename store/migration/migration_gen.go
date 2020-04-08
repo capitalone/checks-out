@@ -503,7 +503,7 @@ func postgres007_add_slack_urlsSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "postgres/007_add_slack_urls.sql", size: 228, mode: os.FileMode(420), modTime: time.Unix(1586188331, 0)}
+	info := bindataFileInfo{name: "postgres/007_add_slack_urls.sql", size: 228, mode: os.FileMode(420), modTime: time.Unix(1586277869, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
