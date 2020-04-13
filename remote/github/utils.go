@@ -29,7 +29,7 @@ import (
 	"github.com/capitalone/checks-out/model"
 	"github.com/capitalone/checks-out/usage"
 
-	"github.com/google/go-github/github"
+	"github.com/google/go-github/v30/github"
 	"golang.org/x/oauth2"
 )
 
@@ -180,7 +180,6 @@ func getOrgHook(ctx context.Context, client *github.Client, owner, rawurl string
 // for the specified repository.
 func createHook(ctx context.Context, client *github.Client, owner, name, url string) (*github.Hook, error) {
 	var hook = new(github.Hook)
-	hook.Name = github.String("web")
 	hook.Events = []string{"issue_comment", "status", "pull_request", "pull_request_review"}
 	hook.Config = map[string]interface{}{}
 	hook.Config["url"] = url
@@ -196,7 +195,6 @@ func createHook(ctx context.Context, client *github.Client, owner, name, url str
 // for the specified Organization.
 func createOrgHook(ctx context.Context, client *github.Client, owner, url string) (*github.Hook, error) {
 	var hook = new(github.Hook)
-	hook.Name = github.String("web")
 	hook.Events = []string{"repository"}
 	hook.Config = map[string]interface{}{}
 	hook.Config["url"] = url

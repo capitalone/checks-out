@@ -34,9 +34,9 @@ import (
 	"github.com/capitalone/checks-out/shared/httputil"
 	"github.com/capitalone/checks-out/strings/lowercase"
 
-	log "github.com/Sirupsen/logrus"
-	"github.com/google/go-github/github"
+	"github.com/google/go-github/v30/github"
 	multierror "github.com/mspiegel/go-multierror"
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 )
 
@@ -138,7 +138,7 @@ func (g *Github) GetUser(ctx context.Context, res http.ResponseWriter, req *http
 	// get the subset of requested scopes granted to the access token
 	scopes, err = g.GetScopes(ctx, token.AccessToken)
 	if err != nil {
-		err = fmt.Errorf("Fetching user. %s", err)
+		err = fmt.Errorf("Getting scopes. %s", err)
 		return nil, createError(resp, err)
 	}
 
@@ -162,7 +162,7 @@ func (g *Github) GetUserToken(ctx context.Context, token string) (string, error)
 
 func (g *Github) GetScopes(ctx context.Context, token string) (string, error) {
 	client := basicAuthClient(g.API, g.Client, g.Secret)
-	auth, resp, err := client.Authorizations.Check(ctx, g.Client, token)
+	auth, resp, err := getScopesDeprecated(ctx, client, g.Client, token)
 	if err != nil {
 		err = fmt.Errorf("Checking authorization. %s", err)
 		return "", createError(resp, err)
@@ -172,6 +172,30 @@ func (g *Github) GetScopes(ctx context.Context, token string) (string, error) {
 		scopes.Add(string(scope))
 	}
 	return scopes.Print(","), nil
+}
+
+const mediaTypeOAuthAppPreview = "application/vnd.github.doctor-strange-preview+json"
+
+// getScopesDeprecated implements a method that has been removed from the Github API. Unfortunately,
+// Enterprise Github doesn't currently support the endpoint documented at
+// https://developer.github.com/changes/2020-02-14-deprecating-oauth-app-endpoint/ . This function is only needed
+// until Enterprise Github is updated to use the new API.
+func getScopesDeprecated(ctx context.Context, client *github.Client, clientID, token string) (*github.Authorization, *github.Response, error) {
+	u := fmt.Sprintf("applications/%v/tokens/%v", clientID, token)
+
+	req, err := client.NewRequest(http.MethodGet, u, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+	req.Header.Set("Accept", mediaTypeOAuthAppPreview)
+
+	a := new(github.Authorization)
+	resp, err := client.Do(ctx, req, a)
+	if err != nil {
+		return nil, resp, err
+	}
+
+	return a, resp, nil
 }
 
 func (g *Github) RevokeAuthorization(ctx context.Context, user *model.User) error {
@@ -258,7 +282,7 @@ func (g *Github) ListTeams(ctx context.Context, user *model.User, org string) (s
 func getTeams(ctx context.Context, client *github.Client, org string) ([]*github.Team, error) {
 	var teams []*github.Team
 	resp, err := buildCompleteList(func(opts *github.ListOptions) (*github.Response, error) {
-		newTeams, response, err := client.Organizations.ListTeams(ctx, org, opts)
+		newTeams, response, err := client.Teams.ListTeams(ctx, org, opts)
 		teams = append(teams, newTeams...)
 		return response, err
 	})
@@ -279,22 +303,22 @@ func getTeamMembers(ctx context.Context, client *github.Client, org string, team
 	if err != nil {
 		return nil, err
 	}
-	var id *int64
+	var slug *string
 	for _, t := range teams {
 		if strings.EqualFold(t.GetSlug(), team) {
-			id = t.ID
+			slug = t.Slug
 			break
 		}
 	}
-	if id == nil {
+	if slug == nil {
 		err = fmt.Errorf("Team %s not found for organization %s.", team, org)
 		return nil, exterror.Create(http.StatusNotFound, err)
 	}
-	topts := github.OrganizationListTeamMembersOptions{}
+	topts := github.TeamListTeamMembersOptions{}
 	var teammates []*github.User
 	resp, err := buildCompleteList(func(opts *github.ListOptions) (*github.Response, error) {
 		topts.ListOptions = *opts
-		newTmates, resp2, err2 := client.Organizations.ListTeamMembers(ctx, *id, &topts)
+		newTmates, resp2, err2 := client.Teams.ListTeamMembersBySlug(ctx, org, *slug, &topts)
 		teammates = append(teammates, newTmates...)
 		return resp2, err2
 	})
@@ -715,7 +739,7 @@ func (g *Github) GetAllComments(ctx context.Context, u *model.User, r *model.Rep
 }
 
 func getAllComments(ctx context.Context, client *github.Client, r *model.Repo, num int) ([]*model.Comment, error) {
-	lcOpts := github.IssueListCommentsOptions{Direction: "desc", Sort: "created"}
+	lcOpts := github.IssueListCommentsOptions{Direction: github.String("desc"), Sort: github.String("created")}
 	var comm []*github.IssueComment
 	resp, err := buildCompleteList(func(opts *github.ListOptions) (*github.Response, error) {
 		lcOpts.ListOptions = *opts
@@ -773,15 +797,19 @@ func getHead(ctx context.Context, client *github.Client, r *model.Repo, num int,
 	return commit, nil
 }
 
+func timep(t time.Time) *time.Time {
+	return &t
+}
+
 func getCommentsSinceHead(ctx context.Context, client *github.Client, r *model.Repo, num int, noUIMerge bool) ([]*model.Comment, error) {
 	commit, err := getHead(ctx, client, r, num, noUIMerge)
 	if err != nil {
 		return nil, err
 	}
 	lcOpts := github.IssueListCommentsOptions{
-		Direction: "desc",
-		Sort:      "created",
-		Since:     commit.Commit.Committer.GetDate()}
+		Direction: github.String("desc"),
+		Sort:      github.String("created"),
+		Since:     timep(commit.Commit.Committer.GetDate())}
 	var comm []*github.IssueComment
 	resp, err := buildCompleteList(func(opts *github.ListOptions) (*github.Response, error) {
 		lcOpts.ListOptions = *opts
@@ -1010,7 +1038,7 @@ func createEmptyCommit(ctx context.Context, client *github.Client, r *model.Repo
 	commit, resp, err := client.Git.CreateCommit(ctx, r.Owner, r.Name, &github.Commit{
 		Message: github.String(msg),
 		Tree:    prev.Tree,
-		Parents: []github.Commit{{
+		Parents: []*github.Commit{{
 			SHA: github.String(sha),
 		}},
 	})

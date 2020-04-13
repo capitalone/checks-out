@@ -28,7 +28,7 @@ import (
 	"github.com/capitalone/checks-out/store"
 	"github.com/capitalone/checks-out/store/migration"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	// bindings for meddler
 	_ "github.com/go-sql-driver/mysql"
 	// bindings for meddler

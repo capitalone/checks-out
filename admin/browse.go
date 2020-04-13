@@ -22,11 +22,11 @@ import (
 	"context"
 	"fmt"
 
-	jsonpointer "github.com/mattn/go-jsonpointer"
 	"github.com/capitalone/checks-out/envvars"
 	"github.com/capitalone/checks-out/hjson"
 	"github.com/capitalone/checks-out/model"
 	"github.com/capitalone/checks-out/remote"
+	jsonpointer "github.com/mattn/go-jsonpointer"
 )
 
 var configFileName = fmt.Sprintf(".%s", envvars.Env.Branding.Name)

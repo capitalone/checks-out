@@ -3,10 +3,25 @@
 	/**
 	 * Creates the angular application.
 	 */
-	angular.module('app', [
+	var app = angular.module('app', [
 			'ngRoute',
+			'ngDialog',
 			'toggle-switch'
 		]);
+
+	app.config(["ngDialogProvider", function (ngDialogProvider) {
+		ngDialogProvider.setDefaults({
+			className: "ngdialog-theme-default",
+			plain: false,
+			showClose: true,
+			closeByDocument: true,
+			closeByEscape: true,
+			appendTo: false,
+			preCloseCallback: function () {
+				console.log("default pre-close callback");
+			}
+		});
+	}]);
 
 	/**
 	 * Defines the route configuration for the
@@ -166,7 +181,7 @@
 })();
 
 (function () {
-	function RepoCtrl($scope, $routeParams, $location, repos, teams, user, prop, orgs) {
+	function RepoCtrl($scope, $routeParams, $location, repos, teams, user, prop, orgs, ngDialog) {
 
 		$scope.refresh = function() {
             repos.list($scope.user.login, $scope.org.login).then(function(payload){
@@ -274,7 +289,15 @@
 			if (!repo.id) {
 				$scope.delete(repo);
 			} else {
-				$scope.activate(repo);
+				ngDialog.openConfirm({
+					template:'/_confirm_template',
+					className: 'ngdialog-theme-default',
+					scope: $scope,
+				}).then(function (value) {
+					$scope.activate(repo);
+				}, function (reason) {
+					delete repo.id;
+				});
 			}
 		};
 
@@ -282,7 +305,16 @@
             if (!org.enabled) {
                 $scope.deleteOrg(org);
             } else {
-                $scope.activateOrg(org);
+				ngDialog.openConfirm({
+					template:'/_confirm_template',
+					className: 'ngdialog-theme-default',
+					scope: $scope,
+				}).then(function (value) {
+					$scope.activateOrg(org);
+				}, function (reason) {
+					delete $scope.repo;
+					org.enabled = false;
+				});
             }
         };
 

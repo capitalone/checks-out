@@ -30,7 +30,7 @@ import (
 	"github.com/capitalone/checks-out/exterror"
 	"github.com/capitalone/checks-out/model"
 
-	"github.com/google/go-github/github"
+	"github.com/google/go-github/v30/github"
 	"golang.org/x/oauth2"
 )
 
@@ -140,7 +140,7 @@ func testGetRepo(t *testing.T, client *github.Client, repo *github.Repository) {
 
 func testGetComments(t *testing.T, client *github.Client, repo *github.Repository, pr *github.PullRequest) {
 	ctx := context.Background()
-	opts := github.IssueListCommentsOptions{Direction: "desc", Sort: "created"}
+	opts := github.IssueListCommentsOptions{Direction: github.String("desc"), Sort: github.String("created")}
 	opts.PerPage = 100
 	comm, _, err := client.Issues.ListComments(ctx, *repo.Owner.Login, *repo.Name, *pr.Number, &opts)
 	if err != nil {
@@ -360,7 +360,7 @@ func createTestCommit(t *testing.T, client *github.Client, repo *github.Reposito
 	if err != nil {
 		t.Fatal("Unable to get create blob", filename, err)
 	}
-	tree, _, err := client.Git.CreateTree(ctx, *repo.Owner.Login, *repo.Name, *branch.Object.SHA, []github.TreeEntry{{
+	tree, _, err := client.Git.CreateTree(ctx, *repo.Owner.Login, *repo.Name, *branch.Object.SHA, []*github.TreeEntry{{
 		Path: github.String(filename),
 		Mode: github.String("100644"),
 		Type: github.String("blob"),
@@ -372,7 +372,7 @@ func createTestCommit(t *testing.T, client *github.Client, repo *github.Reposito
 	commit, _, err := client.Git.CreateCommit(ctx, *repo.Owner.Login, *repo.Name, &github.Commit{
 		Message: github.String(fmt.Sprintf("%s commit", filename)),
 		Tree:    tree,
-		Parents: []github.Commit{{
+		Parents: []*github.Commit{{
 			SHA: branch.Object.SHA,
 		},
 		},

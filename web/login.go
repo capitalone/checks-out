@@ -26,7 +26,6 @@ import (
 	"net/http"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/capitalone/checks-out/envvars"
 	"github.com/capitalone/checks-out/exterror"
 	"github.com/capitalone/checks-out/model"
@@ -35,6 +34,7 @@ import (
 	"github.com/capitalone/checks-out/shared/token"
 	"github.com/capitalone/checks-out/store"
 	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 )
 
 // Login attempts to authorize a user via GitHub oauth2. If the user does not
@@ -68,7 +68,7 @@ func Login(c *gin.Context) {
 	// get the user from the database
 	u, err := store.GetUserLogin(c, tmpuser.Login)
 	if err != nil && err != sql.ErrNoRows {
-		c.HTML(500, "error.html", gin.H{"error": err})
+		c.HTML(500, "error.html", gin.H{"error": err.Error()})
 		return
 	} else if err == sql.ErrNoRows {
 		err = validateUserAccess(c, tmpuser)

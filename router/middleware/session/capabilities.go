@@ -19,10 +19,10 @@ See the License for the specific language governing permissions and limitations 
 package session
 
 import (
-	"github.com/gin-gonic/gin"
 	"github.com/capitalone/checks-out/exterror"
 	"github.com/capitalone/checks-out/model"
 	"github.com/capitalone/checks-out/remote"
+	"github.com/gin-gonic/gin"
 )
 
 func Capability(c *gin.Context) *model.Capabilities {
