@@ -117,7 +117,7 @@ func (t *TagConfig) build() error {
 }
 
 func (t *TagConfig) validate() error {
-	buffer, err := t.execute(TemplateTag{Version:"1.0.0"})
+	buffer, err := t.execute(TemplateTag{Version: "1.0.0"})
 	if err != nil {
 		return err
 	}

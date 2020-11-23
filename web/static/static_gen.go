@@ -372,17 +372,17 @@ func AssetNames() []string {
 // _bindata is a table, holding each asset generator, mapped to its name.
 var _bindata = map[string]func() (*asset, error){
 	"files/angular-toggle-switch.min.js": filesAngularToggleSwitchMinJs,
-	"files/checksout.html": filesChecksoutHtml,
-	"files/checksout.js": filesChecksoutJs,
-	"files/favicon.ico": filesFaviconIco,
-	"files/images/maintainers.png": filesImagesMaintainersPng,
-	"files/images/meowser.png": filesImagesMeowserPng,
-	"files/images/pending_approval.png": filesImagesPending_approvalPng,
+	"files/checksout.html":               filesChecksoutHtml,
+	"files/checksout.js":                 filesChecksoutJs,
+	"files/favicon.ico":                  filesFaviconIco,
+	"files/images/maintainers.png":       filesImagesMaintainersPng,
+	"files/images/meowser.png":           filesImagesMeowserPng,
+	"files/images/pending_approval.png":  filesImagesPending_approvalPng,
 	"files/images/received_approval.png": filesImagesReceived_approvalPng,
-	"files/logo.svg": filesLogoSvg,
-	"files/main_styles.css": filesMain_stylesCss,
-	"files/styles.css": filesStylesCss,
-	"files/toggle_switch.css": filesToggle_switchCss,
+	"files/logo.svg":                     filesLogoSvg,
+	"files/main_styles.css":              filesMain_stylesCss,
+	"files/styles.css":                   filesStylesCss,
+	"files/toggle_switch.css":            filesToggle_switchCss,
 }
 
 // AssetDir returns the file names below a certain
@@ -424,21 +424,22 @@ type bintree struct {
 	Func     func() (*asset, error)
 	Children map[string]*bintree
 }
+
 var _bintree = &bintree{nil, map[string]*bintree{
 	"files": &bintree{nil, map[string]*bintree{
 		"angular-toggle-switch.min.js": &bintree{filesAngularToggleSwitchMinJs, map[string]*bintree{}},
-		"checksout.html": &bintree{filesChecksoutHtml, map[string]*bintree{}},
-		"checksout.js": &bintree{filesChecksoutJs, map[string]*bintree{}},
-		"favicon.ico": &bintree{filesFaviconIco, map[string]*bintree{}},
+		"checksout.html":               &bintree{filesChecksoutHtml, map[string]*bintree{}},
+		"checksout.js":                 &bintree{filesChecksoutJs, map[string]*bintree{}},
+		"favicon.ico":                  &bintree{filesFaviconIco, map[string]*bintree{}},
 		"images": &bintree{nil, map[string]*bintree{
-			"maintainers.png": &bintree{filesImagesMaintainersPng, map[string]*bintree{}},
-			"meowser.png": &bintree{filesImagesMeowserPng, map[string]*bintree{}},
-			"pending_approval.png": &bintree{filesImagesPending_approvalPng, map[string]*bintree{}},
+			"maintainers.png":       &bintree{filesImagesMaintainersPng, map[string]*bintree{}},
+			"meowser.png":           &bintree{filesImagesMeowserPng, map[string]*bintree{}},
+			"pending_approval.png":  &bintree{filesImagesPending_approvalPng, map[string]*bintree{}},
 			"received_approval.png": &bintree{filesImagesReceived_approvalPng, map[string]*bintree{}},
 		}},
-		"logo.svg": &bintree{filesLogoSvg, map[string]*bintree{}},
-		"main_styles.css": &bintree{filesMain_stylesCss, map[string]*bintree{}},
-		"styles.css": &bintree{filesStylesCss, map[string]*bintree{}},
+		"logo.svg":          &bintree{filesLogoSvg, map[string]*bintree{}},
+		"main_styles.css":   &bintree{filesMain_stylesCss, map[string]*bintree{}},
+		"styles.css":        &bintree{filesStylesCss, map[string]*bintree{}},
 		"toggle_switch.css": &bintree{filesToggle_switchCss, map[string]*bintree{}},
 	}},
 }}
@@ -489,4 +490,3 @@ func _filePath(dir, name string) string {
 	cannonicalName := strings.Replace(name, "\\", "/", -1)
 	return filepath.Join(append([]string{dir}, strings.Split(cannonicalName, "/")...)...)
 }
-

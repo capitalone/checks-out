@@ -30,7 +30,7 @@ import (
 	"github.com/capitalone/checks-out/model"
 	"github.com/capitalone/checks-out/notifier"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 var (

@@ -25,8 +25,8 @@ import (
 	"github.com/capitalone/checks-out/remote"
 	"github.com/capitalone/checks-out/store"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/mspiegel/go-multierror"
+	log "github.com/sirupsen/logrus"
 )
 
 // Migrate performs any (store x remote) operations necessary

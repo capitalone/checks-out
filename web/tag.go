@@ -25,10 +25,10 @@ import (
 	"strings"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
-	"github.com/hashicorp/go-version"
 	"github.com/capitalone/checks-out/model"
 	"github.com/capitalone/checks-out/remote"
+	"github.com/hashicorp/go-version"
+	log "github.com/sirupsen/logrus"
 )
 
 func tagIfEnabled(c context.Context, user *model.User, hook *StatusHook,

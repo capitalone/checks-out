@@ -20,9 +20,9 @@ package set
 
 import (
 	"encoding/json"
+	"github.com/capitalone/checks-out/strings/lowercase"
 	"reflect"
 	"testing"
-	"github.com/capitalone/checks-out/strings/lowercase"
 )
 
 func TestAddAllLower(t *testing.T) {

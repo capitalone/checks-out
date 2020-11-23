@@ -28,9 +28,9 @@ import (
 
 	"github.com/capitalone/checks-out/model"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/franela/goblin"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 )
 
 func TestUsers(t *testing.T) {

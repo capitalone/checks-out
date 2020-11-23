@@ -31,9 +31,9 @@ import (
 	"github.com/capitalone/checks-out/shared/token"
 	"github.com/capitalone/checks-out/store"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 func collectAllOrgs(c *gin.Context) ([]*model.GitHubOrg, set.Set, error) {

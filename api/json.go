@@ -22,8 +22,8 @@ import (
 	"bytes"
 	"encoding/json"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 )
 
 func IndentedJSON(c *gin.Context, code int, obj interface{}) {

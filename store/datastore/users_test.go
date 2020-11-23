@@ -19,8 +19,8 @@ See the License for the specific language governing permissions and limitations 
 package datastore
 
 import (
-	"github.com/franela/goblin"
 	"github.com/capitalone/checks-out/model"
+	"github.com/franela/goblin"
 	"testing"
 )
 

@@ -20,8 +20,8 @@ package set
 
 import (
 	"encoding/json"
-	"sort"
 	"github.com/capitalone/checks-out/strings/lowercase"
+	"sort"
 	"strings"
 )
 
@@ -106,7 +106,7 @@ func (s LowerSet) Difference(other LowerSet) LowerSet {
 }
 
 func (s LowerSet) Print(sep string) string {
-	keys := s.KeysSorted(func(s1,s2 lowercase.String) bool {
+	keys := s.KeysSorted(func(s1, s2 lowercase.String) bool {
 		return s1.String() < s2.String()
 	})
 	return strings.Join(keys.ToStringSlice(), sep)
@@ -142,7 +142,7 @@ func (s LowerSet) Keys() lowercase.Slice {
 	return lst
 }
 
-func (s LowerSet) KeysSorted(f func (s1, s2 lowercase.String) bool) lowercase.Slice {
+func (s LowerSet) KeysSorted(f func(s1, s2 lowercase.String) bool) lowercase.Slice {
 	lst := s.Keys()
 	sort.Slice(lst, func(i, j int) bool {
 		return f(lst[i], lst[j])

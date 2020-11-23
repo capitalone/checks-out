@@ -23,8 +23,8 @@ import (
 	"github.com/capitalone/checks-out/router/middleware/session"
 	"github.com/capitalone/checks-out/shared/token"
 
-	"github.com/gin-gonic/gin"
 	"github.com/capitalone/checks-out/envvars"
+	"github.com/gin-gonic/gin"
 )
 
 func Index(c *gin.Context) {

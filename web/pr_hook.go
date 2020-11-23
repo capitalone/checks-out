@@ -27,8 +27,8 @@ import (
 	"github.com/capitalone/checks-out/remote"
 	"github.com/capitalone/checks-out/set"
 
-	log "github.com/Sirupsen/logrus"
 	multierror "github.com/mspiegel/go-multierror"
+	log "github.com/sirupsen/logrus"
 )
 
 type ApprovalOutput struct {

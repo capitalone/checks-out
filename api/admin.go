@@ -32,8 +32,8 @@ import (
 	"github.com/capitalone/checks-out/shared/httputil"
 	"github.com/capitalone/checks-out/store"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 )
 
 func unauthorizedError() error {
@@ -126,7 +126,7 @@ func AdminDeleteRepo(c *gin.Context) {
 		httputil.GetURL(c.Request),
 	)
 
-	user, err  := store.GetUser(c, repo.UserID)
+	user, err := store.GetUser(c, repo.UserID)
 	if err != nil {
 		msg := fmt.Sprintf("Deleting repository %s", name)
 		c.Error(exterror.Append(err, msg))

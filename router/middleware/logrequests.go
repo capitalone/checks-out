@@ -25,8 +25,8 @@ import (
 	"github.com/capitalone/checks-out/envvars"
 	"github.com/capitalone/checks-out/exterror"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 )
 
 func Ginrus(logger *logrus.Logger, timeFormat string, utc bool) gin.HandlerFunc {

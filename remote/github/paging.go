@@ -19,7 +19,7 @@ See the License for the specific language governing permissions and limitations 
 package github
 
 import (
-	"github.com/google/go-github/github"
+	"github.com/google/go-github/v30/github"
 )
 
 func buildCompleteList(process func(opts *github.ListOptions) (*github.Response, error)) (*github.Response, error) {

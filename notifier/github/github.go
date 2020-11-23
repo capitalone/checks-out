@@ -22,11 +22,11 @@ import (
 	"context"
 	"fmt"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/capitalone/checks-out/model"
 	"github.com/capitalone/checks-out/notifier"
 	"github.com/capitalone/checks-out/remote"
 	"github.com/capitalone/checks-out/web"
+	log "github.com/sirupsen/logrus"
 )
 
 type MySender struct{}

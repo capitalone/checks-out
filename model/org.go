@@ -19,8 +19,8 @@ See the License for the specific language governing permissions and limitations 
 package model
 
 type GitHubOrg struct {
-	Login  string `json:"login"`
-	Avatar string `json:"avatar"`
-	Enabled bool  `json:"enabled"`
-	Admin bool `json:"admin"`
+	Login   string `json:"login"`
+	Avatar  string `json:"avatar"`
+	Enabled bool   `json:"enabled"`
+	Admin   bool   `json:"admin"`
 }

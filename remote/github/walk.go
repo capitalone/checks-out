@@ -25,7 +25,7 @@ import (
 	"github.com/capitalone/checks-out/model"
 	"github.com/capitalone/checks-out/set"
 
-	"github.com/google/go-github/github"
+	"github.com/google/go-github/v30/github"
 )
 
 var systemAccounts = set.New("GitHub", "GitHub Enterprise")
@@ -71,8 +71,8 @@ func followCommit(ctx context.Context, client *github.Client, r *model.Repo, com
 	if !isCommitUIMerge(commit) {
 		return commit, nil
 	}
-	left := &commit.Parents[0]
-	right := &commit.Parents[1]
+	left := commit.Parents[0]
+	right := commit.Parents[1]
 	if baseref.Contains(*left.SHA) && baseref.Contains(*right.SHA) {
 		return commit, nil
 	}

@@ -33,8 +33,8 @@ import (
 	"github.com/capitalone/checks-out/envvars"
 	gh "github.com/capitalone/checks-out/remote/github"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/google/go-github/github"
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 )
 
