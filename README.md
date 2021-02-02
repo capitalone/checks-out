@@ -126,3 +126,4 @@ at https://github.com/go-sql-driver/mysql
 Please use [GitHub Reviews](https://help.github.com/articles/about-pull-request-reviews/) if it meets all your requirements. Some significant features in Checks-Out that are not (yet) in GitHub Reviews are: custom
 approval policies, different approval policies for different branches and/or file paths, optional auto-merge
 when all status checks have passed, optional auto-tagging of merges.
+*
