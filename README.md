@@ -2,6 +2,7 @@
 
 # Checks-Out
 
+[![Build Status](https://travis-ci.org/capitalone/checks-out.svg?branch=dev)](https://travis-ci.org/capitalone/checks-out)
 [![Join the chat at https://gitter.im/capitalone/checks-out](https://badges.gitter.im/capitalone/checks-out.svg)](https://gitter.im/capitalone/checks-out?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 Checks-Out is a simple pull request approval system using GitHub
