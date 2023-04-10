@@ -35,8 +35,8 @@ import (
 	"github.com/capitalone/checks-out/usage"
 	"github.com/capitalone/checks-out/version"
 
-	"github.com/Sirupsen/logrus"
 	_ "github.com/joho/godotenv/autoload"
+	"github.com/sirupsen/logrus"
 )
 
 func setLogLevel(level string) {

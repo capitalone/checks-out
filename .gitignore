@@ -7,3 +7,6 @@ checks-out.sqlite
 .vscode
 report.out
 report.xml
+*.iml
+coverage.html
+coverage.out

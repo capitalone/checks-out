@@ -36,7 +36,6 @@ type Perm struct {
 	Admin bool
 }
 
-
 type OrgDb struct {
 	ID      int64  `json:"id,omitempty"       meddler:"org_id,pk"`
 	UserID  int64  `json:"-"                  meddler:"org_user_id"`

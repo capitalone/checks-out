@@ -33,10 +33,10 @@ import (
 	"github.com/capitalone/checks-out/router/middleware"
 	"github.com/capitalone/checks-out/store"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/franela/goblin"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 type mockCache struct {

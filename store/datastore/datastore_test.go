@@ -20,8 +20,8 @@ package datastore
 
 import (
 	"database/sql"
-	"os"
 	"github.com/capitalone/checks-out/set"
+	"os"
 )
 
 // OpenTest opens a new database connection for testing purposes.

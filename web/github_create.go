@@ -32,8 +32,8 @@ import (
 	"github.com/capitalone/checks-out/strings/lowercase"
 	"github.com/capitalone/checks-out/usage"
 
-	log "github.com/Sirupsen/logrus"
-	"github.com/google/go-github/github"
+	"github.com/google/go-github/v30/github"
+	log "github.com/sirupsen/logrus"
 )
 
 // TODO: move this into its own package when

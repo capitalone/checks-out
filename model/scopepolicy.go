@@ -22,7 +22,7 @@ import (
 	"github.com/capitalone/checks-out/strings/miniglob"
 	"github.com/capitalone/checks-out/strings/rxserde"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 func fileMatch(globs []miniglob.MiniGlob, filename string) bool {
